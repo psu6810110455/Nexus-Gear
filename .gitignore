@@ -1,20 +1,27 @@
-# Dependencies
+# --- Dependencies ---
 node_modules/
-.pnp
-.pnp.js
+npm-debug.log
+yarn-error.log
+venv/
+__pycache__/
 
-# Environment variables (ห้ามหลุดขึ้น Git เด็ดขาด)
+# --- Secrets (ห้ามเอาขึ้นเด็ดขาด) ---
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+*.pem
+*.key
 
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# --- Build Outputs ---
+dist/
+build/
+coverage/
 
-# System Files
+# --- System & IDE ---
 .DS_Store
 Thumbs.db
+.vscode/
+.idea/
+*.swp

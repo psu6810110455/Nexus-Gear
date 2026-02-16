@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  # 1. Database MySQL
+  db:
+    image: mysql:8.0
+    container_name: ecommerce_db_container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword  # รหัสผ่าน Root
+      MYSQL_DATABASE: ecommerce_db       # ชื่อ Database ที่จะสร้างให้อัตโนมัติ
+      MYSQL_USER: user                   # User ทั่วไป (เผื่อไม่อยากใช้ Root)
+      MYSQL_PASSWORD: password
+    ports:
+      - "5433:3306"                      # <--- เจาะ Port 5433 (เข้าผ่าน localhost:5433)
+    volumes:
+      - db_data_mysql:/var/lib/mysql     # เก็บข้อมูลถาวร (ปิด docker ข้อมูลไม่หาย)
+      # ถ้ามีไฟล์ init.sql ให้เอาบรรทัดล่างนี้ออก comment
+      # - ./init.sql:/docker-entrypoint-initdb.d/init.sql 
+
+  # 2. phpMyAdmin (ตัวจัดการ Database ผ่านเว็บ)
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin_container
+    restart: always
+    links:
+      - db
+    environment:
+      PMA_HOST: db                       # บอกให้รู้ว่า Database ชื่อ service "db"
+      PMA_PORT: 3306
+    ports:
+      - "8080:80"                        # เข้าผ่าน localhost:8080
+
+volumes:
+  db_data_mysql:

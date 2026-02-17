@@ -2,6 +2,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './users/entities/user.entity';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { User } from './users/entities/user.entity';
       entities: [User],
       synchronize: true,
     }),
+    UsersModule, // นำ UsersModule เข้ามาใช้งานใน AppModule
     // ...
   ],
 })

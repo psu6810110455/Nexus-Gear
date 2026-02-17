@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import logoImg from '../assets/logo.jpg';
+// ✅ รูป logo.png (ต้องเป็นรูปที่เจาะพื้นหลังแล้ว)
+import logoImg from '../assets/logo.png';
+
 interface Product {
   id: number;
   name: string;
@@ -19,9 +21,9 @@ const ProductDetail: React.FC = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  
   const [quantity, setQuantity] = useState(1);
 
+  // ... (ฟังก์ชัน handleQuantityChange และ renderStars เหมือนเดิม) ...
   const handleQuantityChange = (type: 'increase' | 'decrease') => {
     if (type === 'decrease' && quantity > 1) {
       setQuantity(quantity - 1);
@@ -67,27 +69,25 @@ const ProductDetail: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#0f0f12] text-white font-sans pb-20">
       
-      {/* === 1. Navbar ใหม่ (ใส่ Logo รูปภาพ) === */}
+      {/* === Navbar (แก้ไขใหม่ ใส่ข้อความแล้ว) === */}
       <nav className="bg-[#0f0f12] border-b border-white/10 py-4 px-6 sticky top-0 z-50 shadow-md">
         <div className="container mx-auto flex justify-between items-center">
-            {/* Logo Image Section */}
+            
+            {/* ✅ ส่วน Logo + ข้อความ */}
             <div 
-                className="flex items-center gap-3 cursor-pointer" 
-                onClick={() => navigate('/')} // กดโลโก้แล้วกลับหน้าแรก
+                className="flex items-center gap-3 cursor-pointer group" 
+                onClick={() => navigate('/')} 
+                title="หน้าแรก"
             >
-                 {/* ดึงรูปจากโฟลเดอร์ public/logo.png */}
+                 {/* รูปโลโก้ */}
                  <img 
-                    src={logoImg}
+                    src={logoImg} 
                     alt="Nexus Gear Logo" 
-                    className="h-16 w-auto object-contain hover:brightness-110 transition drop-shadow-[0_0_10px_rgba(220,38,38,0.5)]" 
-                    onError={(e) => {
-                        // ถ้ายังไม่ได้ใส่รูป หรือรูปเสีย จะแสดง Text แบบเดิมแทน
-                        e.currentTarget.style.display = 'none';
-                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                    }}
+                    className="h-10 w-auto object-contain group-hover:brightness-110 transition drop-shadow-[0_0_8px_rgba(220,38,38,0.6)]" 
                  />
-                 {/* Fallback Text (ซ่อนถ้ามีรูป) */}
-                 <span className="hidden text-xl font-bold tracking-wider text-white">
+                 
+                 {/* ✅ เพิ่มข้อความ Nexus Gear กลับมาแล้ว */}
+                 <span className="text-xl md:text-2xl font-bold tracking-wide text-white uppercase font-sans">
                     NEXUS <span className="text-red-600">GEAR</span>
                  </span>
             </div>
@@ -104,16 +104,18 @@ const ProductDetail: React.FC = () => {
         </div>
       </nav>
 
+      {/* ... (ส่วนเนื้อหาข้างล่างเหมือนเดิมทุกอย่าง) ... */}
+      
       <div className="container mx-auto px-4 mt-6 max-w-6xl">
-        
-        {/* === 2. ปุ่มย้อนกลับ === */}
         <div className="mb-6">
-            <button onClick={() => navigate('/')} className="text-gray-500 hover:text-white flex items-center gap-2 text-sm font-bold transition group">
+            <button 
+                onClick={() => navigate(-1)} 
+                className="text-gray-500 hover:text-white flex items-center gap-2 text-sm font-bold transition group"
+            >
                 <span className="group-hover:-translate-x-1 transition">←</span> กลับหน้ารายการสินค้า
             </button>
         </div>
 
-        {/* === 3. Hero Section === */}
         <div className="flex flex-col md:flex-row gap-12 mb-16">
             <div className="w-full md:w-3/5 bg-white rounded-xl overflow-hidden p-8 flex items-center justify-center relative shadow-[0_0_30px_rgba(255,255,255,0.05)] min-h-[400px]">
                 <img 
@@ -191,7 +193,6 @@ const ProductDetail: React.FC = () => {
             </div>
         </div>
 
-        {/* === 4. รายละเอียดสินค้า === */}
         <div className="mb-12">
             <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
                 <span className="w-1.5 h-8 bg-red-600 rounded-full block"></span> รายละเอียดสินค้า
@@ -221,7 +222,6 @@ const ProductDetail: React.FC = () => {
             </div>
         </div>
 
-        {/* === 5. รีวิวจากลูกค้า === */}
         <div className="mb-16">
             <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
                 <span className="w-1.5 h-8 bg-gray-600 rounded-full block"></span> รีวิวจากลูกค้า (Customer Reviews)
@@ -244,7 +244,6 @@ const ProductDetail: React.FC = () => {
             </div>
         </div>
 
-        {/* === 6. สินค้าแนะนำ === */}
         <div className="border-t border-white/10 pt-10">
             <h3 className="text-2xl font-bold mb-8 text-white flex items-center gap-2">
                 สินค้าที่คุณอาจจะชอบ <span className="text-red-600 text-sm font-normal cursor-pointer hover:underline">ดูทั้งหมด →</span>
@@ -257,7 +256,6 @@ const ProductDetail: React.FC = () => {
                         className="cursor-pointer group bg-[#18181b] border border-white/5 rounded-xl overflow-hidden hover:border-red-600/50 transition-all shadow-lg hover:shadow-red-900/10"
                     >
                         <div className="h-48 bg-white p-6 flex items-center justify-center overflow-hidden relative">
-                             {/* Tag Sale เล็กๆ */}
                              <div className="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">-15%</div>
                             <img 
                                 src={relProduct.imageUrl || relProduct.image_url || 'https://placehold.co/400x400'} 

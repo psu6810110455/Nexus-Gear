@@ -1,22 +1,21 @@
 // src/app.module.ts
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersModule } from './users/users.module';
 import { User } from './users/entities/user.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
-      type: 'postgres', // หรือ 'mysql' ตามที่คุณตั้งไว้ใน Docker
+      type: 'mysql',            // เปลี่ยนเป็น mysql ตามรูป
       host: 'localhost',
-      port: 5432,
-      username: 'your_username',
-      password: 'your_password',
-      database: 'nexus_gear_db', // ชื่อโปรเจกต์ของคุณ
+      port: 5433,               // เปลี่ยนเป็น 5433 ตามที่เห็นใน docker ps
+      username: 'root',         // โดยปกติของ MySQL ใน Docker มักจะเป็น root
+      password: 'rootpassword', // ใส่รหัสผ่านที่คุณตั้งไว้ใน docker-compose
+      database: 'ecommerce_db', // ชื่อฐานข้อมูลที่เห็นใน phpMyAdmin
       entities: [User],
-      synchronize: true, // เฉพาะช่วงพัฒนา: ให้ระบบสร้างตารางใหม่ตาม Entity อัตโนมัติ
+      synchronize: true,
     }),
-    UsersModule,
+    // ...
   ],
 })
 export class AppModule {}

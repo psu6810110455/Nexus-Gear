@@ -1,0 +1,16 @@
+/* src/pages/Login.css */
+
+/* ... โค้ดส่วนอื่นๆ ... */
+
+.login-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* เปลี่ยน background เป็นแบบเดียวกับหน้า Register ครับ */
+  background: radial-gradient(circle at center, #2b0000 0%, #050000 70%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ... โค้ดส่วนอื่นๆ ... */

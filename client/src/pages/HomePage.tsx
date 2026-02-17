@@ -1,26 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; 
 import axios from 'axios';
+import logoImg from '../assets/logo.png'; 
 
-// Mock Data สินค้า (เดี๋ยวเราเปลี่ยนไปดึงจาก Backend ได้)
-// หรือใช้ Component ProductList ที่เราทำไว้แล้วมาใส่ก็ได้ครับ
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  imageUrl: string;
-}
+// Mock Data (เผื่อโหลดไม่มา)
+const MOCK_PRODUCTS = [
+    { id: 1, name: 'ROG Phone 7', price: 34990, imageUrl: 'https://dlcdnwebimgs.asus.com/gain/44268636-6202-4048-96bd-276632057342/w800' },
+    { id: 2, name: 'Black Shark 5', price: 18900, imageUrl: 'https://m.media-amazon.com/images/I/61imgK9J+lL.jpg' },
+    { id: 3, name: 'HyperX Cloud', price: 2990, imageUrl: 'https://row.hyperx.com/cdn/shop/products/hyperx_cloud_alpha_red_1_main_900x.jpg' },
+    { id: 4, name: 'Kishi V2', price: 3590, imageUrl: 'https://m.media-amazon.com/images/I/61iXE1nZkGL.jpg' },
+    { id: 5, name: 'ROG Kunai 3', price: 3990, imageUrl: 'https://dlcdnwebimgs.asus.com/gain/57F833C8-94D9-4824-913A-98C152B336A1' },
+    { id: 6, name: 'Flydigi Apex 3', price: 2990, imageUrl: 'https://m.media-amazon.com/images/I/61K-x+w+pXIL._AC_SL1500_.jpg' },
+    { id: 7, name: 'Finger Sleeve', price: 190, imageUrl: 'https://m.media-amazon.com/images/I/61+y+w+pXIL._AC_SL1500_.jpg' },
+    { id: 8, name: 'Cooler Fan', price: 990, imageUrl: 'https://m.media-amazon.com/images/I/61t-XhJ-xRL.jpg' },
+];
 
 function HomePage() {
-  const [showWelcome, setShowWelcome] = useState(true); // ควบคุม Popup
-  const [products, setProducts] = useState<Product[]>([]);
+  const [showWelcome, setShowWelcome] = useState(true);
+  const [products, setProducts] = useState<any[]>(MOCK_PRODUCTS);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // ดึงสินค้ามาโชว์ (ตัวอย่าง 8 ชิ้น)
-    axios.get('http://localhost:3000/products').then(res => {
-        setProducts(res.data.slice(0, 8));
-    });
+    axios.get('http://localhost:3000/products')
+      .then(res => {
+         if(res.data && res.data.length > 0) {
+            setProducts(res.data); 
+         }
+      })
+      .catch(err => console.log("Using Mock Data"));
   }, []);
 
   const handleEnterSite = () => {
@@ -28,77 +35,109 @@ function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f0f12] text-white relative font-sans">
+    <div className="min-h-screen bg-[#050505] text-white relative font-sans overflow-x-hidden flex flex-col items-center">
       
-      {/* === 1. Welcome Overlay (Popup) === */}
+      {/* --- WELCOME POPUP --- */}
       {showWelcome && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md transition-all duration-500">
-          <div className="bg-black border-2 border-red-600 rounded-3xl p-10 text-center max-w-md w-full shadow-[0_0_50px_rgba(220,38,38,0.5)] mx-4">
-             <h1 className="text-3xl font-bold uppercase tracking-widest text-white mb-2">
-                Welcome to <span className="text-red-600">Nexus Gear</span>
-             </h1>
-             <p className="text-gray-400 text-sm mb-8">ยินดีต้อนรับสู่ NEXUS GEAR</p>
-
-             <div className="mb-8">
-                <label className="text-xs text-gray-500 block mb-2">PLEASE SELECT YOUR LANGUAGE</label>
-                <select className="w-full bg-[#18181b] text-white border border-gray-700 rounded p-2 focus:border-red-600 outline-none">
-                    <option>ภาษาไทย</option>
-                    <option>English</option>
-                </select>
+        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/90 backdrop-blur-sm transition-opacity duration-500">
+          <div className="bg-black border-2 border-red-600 rounded-[30px] p-8 w-full max-w-sm mx-4 shadow-[0_0_60px_rgba(220,38,38,0.6)] flex flex-col items-center text-center relative overflow-hidden">
+             <div className="absolute top-0 w-full h-24 bg-gradient-to-b from-red-900/40 to-transparent pointer-events-none"></div>
+             <h2 className="text-xl font-bold text-white mb-1 tracking-wider mt-4">WELCOME TO NEXUS GEAR</h2>
+             <p className="text-white text-md mb-6 font-medium">ยินดีต้อนรับสู่ NEXUS GEAR</p>
+             
+             {/* ส่วนเลือกภาษา */}
+             <div className="w-full text-left mb-6">
+                <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">PLEASE SELECT YOUR LANGUAGE</p>
+                <div className="relative">
+                    <select className="w-full bg-[#1e1e1e] text-gray-200 border border-gray-700 rounded-lg px-4 py-3 appearance-none focus:border-red-600 outline-none cursor-pointer">
+                        <option>ภาษาไทย</option>
+                        <option>English</option>
+                    </select>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">▼</div>
+                </div>
              </div>
 
-             <button 
-                onClick={handleEnterSite}
-                className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-full transition shadow-lg shadow-red-900/50"
-             >
+             <button onClick={handleEnterSite} className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg transition-all shadow-lg shadow-red-900/50 mt-2">
                 เข้าสู่เว็บไซต์
              </button>
           </div>
         </div>
       )}
 
-      {/* === 2. Main Content (Home Page 2 & 3) === */}
-      <nav className="flex justify-between items-center p-6 container mx-auto">
-        <div className="text-2xl font-bold text-white">NEXUS <span className="text-red-600">GEAR</span></div>
-        <div className="flex gap-4 text-sm font-medium">
-             <button onClick={() => navigate('/admin')} className="text-gray-400 hover:text-red-500">Admin Login</button>
-             <button className="bg-white text-black px-4 py-1.5 rounded hover:bg-gray-200 font-bold">เข้าสู่ระบบ</button>
+      {/* --- NAVBAR --- */}
+      <nav className="w-full flex justify-between items-center px-6 py-6 max-w-6xl z-20">
+        <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
+            <img src={logoImg} alt="Logo" className="h-8 w-auto drop-shadow-[0_0_8px_rgba(255,0,0,0.8)]" />
+            <span className="text-lg font-bold tracking-widest text-white">NEXUS GEAR</span>
+        </div>
+        <div className="flex gap-4 text-xs font-bold text-gray-400">
+             <button className="bg-white text-black px-4 py-1.5 rounded hover:bg-gray-200 transition">เข้าสู่ระบบ</button>
         </div>
       </nav>
 
-      <div className="container mx-auto px-4 mt-8 text-center">
-         <h1 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter mb-4">
-            โทรศัพท์เกมมิ่ง <br/> <span className="text-red-600">อุปกรณ์เกมมิ่ง</span>
+      {/* --- HERO SECTION --- */}
+      <div className="text-center mt-6 mb-8 relative z-10">
+         <h1 className="text-3xl md:text-5xl font-black leading-tight uppercase tracking-tight drop-shadow-xl">
+            {/* ✅ ตัวหนังสือสีแดงเรืองแสง ตามที่ขอครับ */}
+            <span className="text-red-600 drop-shadow-[0_0_15px_rgba(220,38,38,0.9)]">
+                โทรศัพท์เกมมิ่ง
+            </span> 
+            <br/>
+            <span className="text-white">อุปกรณ์เกมมิ่ง</span>
          </h1>
-         <button className="bg-white text-black font-bold px-8 py-2 rounded-full hover:bg-gray-200 transition mt-4 mb-16">
+         
+         {/* ✅ ปุ่มนี้กดแล้วไปหน้า ProductList (หน้ารวมสินค้า) */}
+         <button 
+            onClick={() => navigate('/shop')} 
+            className="mt-6 bg-white text-black text-sm font-bold px-8 py-2.5 rounded hover:scale-105 transition shadow-[0_0_15px_rgba(255,255,255,0.4)]"
+         >
             ดูสินค้า
          </button>
+      </div>
 
-         {/* Grid สินค้า */}
-         <div className="bg-white rounded-[40px] p-8 md:p-12 min-h-[500px] shadow-2xl relative z-10">
-            <h2 className="text-red-600 font-bold text-xl mb-6 text-left border-b border-gray-200 pb-2">โปรโมชั่นแนะนำ</h2>
+      {/* --- PRODUCT CARD SECTION --- */}
+      <div className="w-full max-w-5xl px-4 pb-20 z-10">
+        <div className="bg-white rounded-[40px] p-6 md:p-10 shadow-2xl min-h-[500px] relative">
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="text-center mb-8">
+                <h2 className="text-red-600 font-extrabold text-lg inline-block border-b-2 border-red-600 pb-1">
+                    โปรโมชั่น
+                </h2>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
                 {products.map((product) => (
-                    <div key={product.id} className="group cursor-pointer" onClick={() => navigate(`/products/${product.id}`)}>
-                        <div className="aspect-square bg-gray-100 rounded-xl mb-3 flex items-center justify-center overflow-hidden p-4">
+                    <div 
+                        key={product.id} 
+                        // ✅ กดที่รูปสินค้าแล้วไปหน้า ProductDetail (หน้าจอรายละเอียด)
+                        onClick={() => navigate(`/products/${product.id}`)}
+                        className="group cursor-pointer flex flex-col items-center hover:-translate-y-2 transition-transform duration-300"
+                    >
+                        <div className="w-full aspect-square flex items-center justify-center mb-3">
                             <img 
-                                src={product.imageUrl} 
+                                src={product.imageUrl || product.image_url} 
                                 alt={product.name} 
-                                className="object-contain max-h-full group-hover:scale-110 transition duration-300"
-                                onError={(e) => { e.currentTarget.src = 'https://placehold.co/200x200'; }}
+                                className="max-h-full max-w-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500"
+                                onError={(e) => {e.currentTarget.src = 'https://placehold.co/150x150?text=No+Image'}}
                             />
                         </div>
-                        {/* <h3 className="text-black font-bold text-sm truncate">{product.name}</h3> */}
-                        {/* ตามดีไซน์ Home page อาจจะไม่โชว์ชื่อ เน้นรูปสวยๆ */}
+                         <div className="text-center">
+                            {/* ชื่อสินค้า */}
+                            <p className="text-gray-800 font-bold text-sm mb-1 group-hover:text-red-600 transition truncate w-32">
+                                {product.name}
+                            </p>
+                            {/* ราคา */}
+                            <span className="text-red-600 text-xs font-bold bg-red-50 px-2 py-1 rounded">
+                                ฿{Number(product.price).toLocaleString()}
+                            </span>
+                         </div>
                     </div>
                 ))}
             </div>
-         </div>
+
+        </div>
       </div>
-      
-      {/* Footer Decoration */}
-      <div className="h-24 bg-gradient-to-t from-red-900/20 to-transparent fixed bottom-0 w-full -z-10"></div>
+
     </div>
   );
 }

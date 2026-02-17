@@ -1,10 +1,15 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App.tsx' // <--- ชี้ไปที่ App.tsx
-import './index.css'        // <--- สำคัญมาก
+import App from './App.tsx'
+import './index.css'
+// 1. เพิ่มบรรทัดนี้เพื่อดึง BrowserRouter มาใช้
+import { BrowserRouter } from 'react-router-dom' 
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
+    {/* 2. เอา BrowserRouter มาครอบ App ไว้ตรงนี้ครับ */}
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </React.StrictMode>,
 )

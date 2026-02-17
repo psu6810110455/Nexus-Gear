@@ -1,8 +1,10 @@
 {
   "dependencies": {
     "@faker-js/faker": "^10.3.0",
+    "@nestjs/typeorm": "^11.0.0",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.3.1",
-    "mysql2": "^3.17.1"
+    "mysql2": "^3.17.2",
+    "typeorm": "^0.3.28"
   }
 }

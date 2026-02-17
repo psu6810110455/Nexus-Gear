@@ -32,4 +32,4 @@ services:
       - "8080:80"                        # เข้าผ่าน localhost:8080
 
 volumes:
-  db_data_mysql:
+  db_data_mysql: 

@@ -4,36 +4,28 @@ import { Category } from './category.entity';
 @Entity('products')
 export class Product {
   @PrimaryGeneratedColumn()
-  id!: number;
+  id: number;
 
   @Column()
-  name!: string;
+  name: string;
 
-  // แก้เป็นแบบ Object: { type: 'text' }
-  @Column({ type: 'text' }) 
-  description!: string;
+  @Column({ type: 'text' })
+  description: string;
 
-  // แก้เป็นแบบ Object: { type: 'decimal', ... }
   @Column({ type: 'decimal', precision: 10, scale: 2 })
-  price!: number;
+  price: number;
 
   @Column({ default: 0 })
-  stock!: number;
+  stock: number;
 
-  // แก้คำผิด Columin -> Column และใช้ name: 'image_url'
   @Column({ name: 'image_url', nullable: true })
-  imageUrl!: string;
+  imageUrl: string;
 
-  // รวม type และ options ไว้ในปีกกาเดียว
-  @Column({ type: 'decimal', name: 'rating_average', precision: 3, scale: 2, default: 0 })
-  ratingAverage!: number;
-
-  // Foreign Key Column
-  @Column({ name: 'category_id', nullable: true })
-  categoryId!: number;
-
-  // Relation
+  // เชื่อมกับ Category (หลาย Product อยู่ใน 1 Category)
   @ManyToOne(() => Category, (category) => category.products, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'category_id' })
-  category!: Category;
+  category: Category;
+
+  @Column({ name: 'category_id', nullable: true })
+  categoryId: number;
 }

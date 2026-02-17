@@ -1,17 +1,18 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
-import { Product } from './product.entity'; 
+import { Product } from './product.entity';
 
 @Entity('categories')
 export class Category {
   @PrimaryGeneratedColumn()
-  id!: number;  
-  
+  id: number;
+
   @Column()
-  name!: string;
+  name: string;
 
   @Column({ name: 'image_url', nullable: true })
-  imageUrl!: string;
+  imageUrl: string;
 
-  @OneToMany(() => Product, product => product.category)
-  products!: Product[];
+  // เชื่อมกับ Product (1 Category มีหลาย Product)
+  @OneToMany(() => Product, (product) => product.category)
+  products: Product[];
 }

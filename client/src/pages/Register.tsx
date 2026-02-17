@@ -36,29 +36,29 @@ const Register = () => {
         <div className="bg-glow"></div>
         <div className="register-card">
           <div className="register-header">
-            <Link to="/" className="btn-back-home">Back to home</Link>
-            <h3 className="form-title">Create Account</h3>
+            <Link to="/" className="btn-back-home">กลับสู่หน้าหลัก</Link>
+            <h1 className="form-title">สร้างบัญชีผู้ใช้</h1>
           </div>
 
           <form className="register-form">
             <div className="form-group">
-              <label>Username</label>
+              <label>ชื่อผู้ใช้</label>
               <div className="input-wrapper">
-                <input type="text" placeholder="Username" className="form-input" />
+                <input type="text" placeholder="ชื่อผู้ใช้" className="form-input" />
               </div>
             </div>
 
             <div className="form-group">
-              <label>Email</label>
+              <label>อีเมล</label>
               <div className="input-wrapper">
-                <input type="email" placeholder="Email Address" className="form-input" />
+                <input type="email" placeholder="ที่อยู่อีเมล" className="form-input" />
               </div>
             </div>
 
             <div className="form-group">
-              <label>Password</label>
+              <label>รหัสผ่าน</label>
               <div className="input-wrapper">
-                <input type={showPassword ? "text" : "password"} placeholder="Password" className="form-input" />
+                <input type={showPassword ? "text" : "password"} placeholder="กรอกรหัสผ่านของคุณ" className="form-input" />
                 <div className="icon-group">
                   <div className="icon-info"><IconInfo /></div>
                   <button type="button" className="btn-icon" onClick={() => setShowPassword(!showPassword)}>
@@ -69,9 +69,9 @@ const Register = () => {
             </div>
 
             <div className="form-group">
-              <label>Confirm Password</label>
+              <label>ยืนยันรหัสผ่าน</label>
               <div className="input-wrapper">
-                <input type={showConfirmPassword ? "text" : "password"} placeholder="Confirm Password" className="form-input" />
+                <input type={showConfirmPassword ? "text" : "password"} placeholder="ยืนยันรหัสผ่านของคุณ" className="form-input" />
                 <div className="icon-group">
                   <div className="icon-info"><IconInfo /></div>
                   <button type="button" className="btn-icon" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
@@ -84,15 +84,15 @@ const Register = () => {
             <div className="form-checkbox">
                 <input type="checkbox" id="terms" />
                 <label htmlFor="terms">
-                  I agree to <span className="highlight">Terms & Conditions and Privacy Policy </span> 
+                  ฉันยอมรับ <span className="highlight">ข้อกำหนดและเงื่อนไขและนโยบายความเป็นส่วนตัว</span>
                 </label>
           </div>
 
-            <button type="submit" className="btn-submit">Register</button>
+            <button type="submit" className="btn-submit">สมัครสมาชิก</button>
           </form>
 
           <div className="register-footer-text">
-            <p>Already have an account? <Link to="/login" className="link-login">Login</Link></p>
+            <p>มีบัญชีอยู่แล้ว? <Link to="/login" className="link-login">เข้าสู่ระบบ</Link></p>
           </div>
         </div>
       </div>

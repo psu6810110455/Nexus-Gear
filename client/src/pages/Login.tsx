@@ -30,24 +30,24 @@ const Login = () => {
 
         <div className="login-card">
           <div className="login-header">
-            <Link to="/" className="btn-back-home">Back to home</Link>
-            <h3 className="form-title">Login Your Account</h3>
+            <Link to="/" className="btn-back-home">กลับสู่หน้าหลัก</Link>
+            <h1 className="form-title">เข้าสู่ระบบ</h1>
           </div>
 
           <form className="login-form">
             {/* ส่วนที่ 4: Email & Password (คงเดิม) */}
             <div className="form-group">
-              <label>Email</label>
+              <label>อีเมล</label>
               <div className="input-wrapper">
-                <input type="email" placeholder="Email Address" className="form-input" />
+                <input type="email" placeholder="ที่อยู่อีเมล" className="form-input" />
                 <div className="icon-group empty"></div> 
               </div>
             </div>
 
             <div className="form-group">
-              <label>Password</label>
+              <label>รหัสผ่าน</label>
               <div className="input-wrapper">
-                <input type={showPassword ? "text" : "password"} placeholder="Password" className="form-input" />
+                <input type={showPassword ? "text" : "password"} placeholder="กรอกรหัสผ่านของคุณ" className="form-input" />
                 <div className="icon-group">
                   <div className="icon-info"><IconInfo /></div>
                   <button type="button" className="btn-icon" onClick={() => setShowPassword(!showPassword)}>
@@ -62,15 +62,15 @@ const Login = () => {
             <div className="login-helpers">
               <label className="remember-me">
                 <input type="checkbox" />
-                <span>Remember me</span>
+                <span>จดจำฉัน</span>
               </label>
-              <Link to="/forgot" className="forgot-link">Forgot Password?</Link>
+              <Link to="/forgot" className="forgot-link">ลืมรหัสผ่าน?</Link>
             </div>
 
-            <button type="submit" className="btn-submit">login</button>
+            <button type="submit" className="btn-submit">เข้าสู่ระบบ</button>
 
             <div className="login-footer">
-              <p>Don't have an account? <Link to="/register" className="link-red">Register</Link></p>
+              <p>ยังไม่มีบัญชี? <Link to="/register" className="link-red">สมัครสมาชิก</Link></p>
             </div>
 
             

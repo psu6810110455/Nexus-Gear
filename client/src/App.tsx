@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import Register from './pages/Register'; // <-- เช็คว่า import ถูก path
+import Login from './pages/Login'; // <-- เช็คว่า import ถูก path
 
 function App() {
   return (
@@ -8,6 +9,7 @@ function App() {
       <Routes>
         <Route path="/" element={<h1>หน้าแรก (Home Page)</h1>} />
         <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
       </Routes>
     </div>
   )

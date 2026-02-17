@@ -23,7 +23,6 @@ function ProductList() {
   const [appliedMin, setAppliedMin] = useState(0);   
   const [appliedMax, setAppliedMax] = useState(Infinity); 
   
-  // ✅ State สำหรับเก็บจำนวนสินค้าในแต่ละหมวด
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
 
   const navigate = useNavigate();
@@ -38,7 +37,6 @@ function ProductList() {
       const data = response.data;
       setProducts(data);
 
-      // ดึงชื่อหมวดหมู่และนับจำนวน
       const uniqueCategories = new Set<string>(['All']);
       const counts: Record<string, number> = { 'All': data.length };
 
@@ -51,12 +49,11 @@ function ProductList() {
         }
         
         uniqueCategories.add(catName);
-        // นับจำนวนสินค้าในแต่ละหมวด
         counts[catName] = (counts[catName] || 0) + 1;
       });
 
       setCategories(Array.from(uniqueCategories));
-      setCategoryCounts(counts); // บันทึกจำนวนที่นับได้
+      setCategoryCounts(counts);
       setLoading(false);
 
     } catch (error) {
@@ -72,7 +69,6 @@ function ProductList() {
     setAppliedMax(max);
   };
 
-  // Logic การกรอง (เหมือนเดิม)
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
     let productCategoryName = 'Uncategorized';
@@ -95,14 +91,16 @@ function ProductList() {
       {/* Navbar */}
       <nav className="bg-[#0f0f12] border-b border-white/10 py-4 px-6 sticky top-0 z-50 shadow-md">
         <div className="container mx-auto flex justify-between items-center">
-            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => window.scrollTo(0, 0)}>
+            {/* ✅ แก้ไข onClick ตรงนี้ให้ใช้ navigate('/') แทน scrollTo */}
+            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/')}>
                  <img src={logoImg} alt="Nexus Gear Logo" className="h-10 w-auto object-contain group-hover:brightness-110 transition drop-shadow-[0_0_8px_rgba(220,38,38,0.6)]" />
                  <span className="text-xl md:text-2xl font-bold tracking-wide text-white uppercase font-sans">
                     NEXUS <span className="text-red-600">GEAR</span>
                  </span>
             </div>
             <div className="flex items-center gap-6 md:gap-8 text-sm font-medium text-gray-400">
-                <button className="text-white font-bold transition">หน้าแรก</button>
+                {/* ✅ แก้ปุ่มหน้าแรก ให้กลับ Home */}
+                <button onClick={() => navigate('/')} className="text-white font-bold transition">หน้าแรก</button>
                 <button className="hover:text-white transition hidden md:block">ตะกร้า</button>
                 <button className="hover:text-white transition hidden md:block">โปรไฟล์</button>
                 <button className="bg-white text-black px-5 py-2 rounded hover:bg-gray-200 transition font-bold">เข้าสู่ระบบ</button>
@@ -112,10 +110,9 @@ function ProductList() {
 
       <div className="container mx-auto px-6 py-8">
         
-        {/* ✅ Search Bar (ดีไซน์ใหม่ตามภาพที่ 13) */}
+        {/* Search Bar */}
         <div className="flex justify-center mb-10">
             <div className="relative w-full max-w-3xl">
-                {/* ไอคอนแว่นขยาย สีจางๆ */}
                 <span className="absolute left-5 top-1/2 -translate-y-1/2 text-white/30 text-xl">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -124,7 +121,6 @@ function ProductList() {
                 <input 
                     type="text" 
                     placeholder="ค้นหาอุปกรณ์เทพของคุณ..." 
-                    // ใช้สีพื้นหลังเข้มๆ (#2a0b0b) และสีข้อความจางๆ
                     className="w-full bg-[#2a0b0b] border border-white/5 rounded-full py-4 pl-14 pr-6 text-white/70 placeholder-white/30 focus:outline-none focus:border-red-900/50 focus:ring-1 focus:ring-red-900/30 transition shadow-lg text-lg font-light tracking-wider"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -141,7 +137,7 @@ function ProductList() {
                         FILTER
                     </h2>
                     
-                    {/* ✅ Category Filter (แสดงจำนวนสินค้า) */}
+                    {/* Category Filter */}
                     <div className="space-y-2">
                         <p className="text-gray-500 text-xs font-bold uppercase mb-2">หมวดหมู่</p>
                         {categories.map((cat, index) => (
@@ -155,7 +151,6 @@ function ProductList() {
                                 }`}
                             >
                                 <span>{cat === 'All' ? 'ทั้งหมด' : cat}</span>
-                                {/* แสดงจำนวนสินค้าในวงเล็บ */}
                                 <span className="text-xs bg-black/30 px-2 py-0.5 rounded-full opacity-70">
                                     {categoryCounts[cat] || 0}
                                 </span>

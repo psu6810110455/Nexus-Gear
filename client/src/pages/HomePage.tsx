@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import logoImg from '../assets/logo.png'; 
 
-// Mock Data (เผื่อโหลดไม่มา)
 const MOCK_PRODUCTS = [
     { id: 1, name: 'ROG Phone 7', price: 34990, imageUrl: 'https://dlcdnwebimgs.asus.com/gain/44268636-6202-4048-96bd-276632057342/w800' },
     { id: 2, name: 'Black Shark 5', price: 18900, imageUrl: 'https://m.media-amazon.com/images/I/61imgK9J+lL.jpg' },
@@ -16,11 +15,20 @@ const MOCK_PRODUCTS = [
 ];
 
 function HomePage() {
-  const [showWelcome, setShowWelcome] = useState(true);
+  // ✅ เริ่มต้นเป็น false ก่อน เพื่อรอเช็ค sessionStorage
+  const [showWelcome, setShowWelcome] = useState(false);
   const [products, setProducts] = useState<any[]>(MOCK_PRODUCTS);
   const navigate = useNavigate();
 
   useEffect(() => {
+    // ✅ เช็คว่าเคยเข้าเว็บมารึยัง (sessionStorage)
+    const hasVisited = sessionStorage.getItem('visitedNexusGear');
+    
+    if (!hasVisited) {
+        // ถ้ายังไม่เคยเข้า ให้โชว์ Popup
+        setShowWelcome(true);
+    }
+
     axios.get('http://localhost:3000/products')
       .then(res => {
          if(res.data && res.data.length > 0) {
@@ -31,6 +39,8 @@ function HomePage() {
   }, []);
 
   const handleEnterSite = () => {
+    // ✅ บันทึกว่าเข้าเว็บแล้ว จะได้ไม่ถามอีก
+    sessionStorage.setItem('visitedNexusGear', 'true');
     setShowWelcome(false);
   };
 
@@ -45,7 +55,6 @@ function HomePage() {
              <h2 className="text-xl font-bold text-white mb-1 tracking-wider mt-4">WELCOME TO NEXUS GEAR</h2>
              <p className="text-white text-md mb-6 font-medium">ยินดีต้อนรับสู่ NEXUS GEAR</p>
              
-             {/* ส่วนเลือกภาษา */}
              <div className="w-full text-left mb-6">
                 <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">PLEASE SELECT YOUR LANGUAGE</p>
                 <div className="relative">
@@ -78,15 +87,16 @@ function HomePage() {
       {/* --- HERO SECTION --- */}
       <div className="text-center mt-6 mb-8 relative z-10">
          <h1 className="text-3xl md:text-5xl font-black leading-tight uppercase tracking-tight drop-shadow-xl">
-            {/* ✅ ตัวหนังสือสีแดงเรืองแสง ตามที่ขอครับ */}
             <span className="text-red-600 drop-shadow-[0_0_15px_rgba(220,38,38,0.9)]">
                 โทรศัพท์เกมมิ่ง
             </span> 
             <br/>
-            <span className="text-white">อุปกรณ์เกมมิ่ง</span>
+            {/* ✅ เปลี่ยน "อุปกรณ์เกมมิ่ง" เป็นสีแดงและมี Glow ตามคำขอ */}
+            <span className="text-red-600 drop-shadow-[0_0_15px_rgba(220,38,38,0.9)]">
+                อุปกรณ์เกมมิ่ง
+            </span>
          </h1>
          
-         {/* ✅ ปุ่มนี้กดแล้วไปหน้า ProductList (หน้ารวมสินค้า) */}
          <button 
             onClick={() => navigate('/shop')} 
             className="mt-6 bg-white text-black text-sm font-bold px-8 py-2.5 rounded hover:scale-105 transition shadow-[0_0_15px_rgba(255,255,255,0.4)]"
@@ -109,7 +119,6 @@ function HomePage() {
                 {products.map((product) => (
                     <div 
                         key={product.id} 
-                        // ✅ กดที่รูปสินค้าแล้วไปหน้า ProductDetail (หน้าจอรายละเอียด)
                         onClick={() => navigate(`/products/${product.id}`)}
                         className="group cursor-pointer flex flex-col items-center hover:-translate-y-2 transition-transform duration-300"
                     >
@@ -122,11 +131,9 @@ function HomePage() {
                             />
                         </div>
                          <div className="text-center">
-                            {/* ชื่อสินค้า */}
                             <p className="text-gray-800 font-bold text-sm mb-1 group-hover:text-red-600 transition truncate w-32">
                                 {product.name}
                             </p>
-                            {/* ราคา */}
                             <span className="text-red-600 text-xs font-bold bg-red-50 px-2 py-1 rounded">
                                 ฿{Number(product.price).toLocaleString()}
                             </span>

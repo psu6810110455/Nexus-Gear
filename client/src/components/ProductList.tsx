@@ -9,24 +9,24 @@ interface Product {
   price: number | string;
   imageUrl?: string;
   image_url?: string;
-  category?: { id: number; name: string };
+  category?: { id: number; name: string } | string; 
 }
 
-function App() {
+function ProductList() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [categories, setCategories] = useState<string[]>(['All']); 
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [minPrice, setMinPrice] = useState('');      
+  const [maxPrice, setMaxPrice] = useState('');      
+  const [appliedMin, setAppliedMin] = useState(0);   
+  const [appliedMax, setAppliedMax] = useState(Infinity); 
   
-  // ✅ 1. เพิ่ม State สำหรับราคาสินค้า
-  const [minPrice, setMinPrice] = useState('');      // ค่าในช่อง input ต่ำสุด
-  const [maxPrice, setMaxPrice] = useState('');      // ค่าในช่อง input สูงสุด
-  const [appliedMin, setAppliedMin] = useState(0);   // ค่าที่จะใช้กรองจริง (ต่ำสุด)
-  const [appliedMax, setAppliedMax] = useState(Infinity); // ค่าที่จะใช้กรองจริง (สูงสุด)
+  // ✅ State สำหรับเก็บจำนวนสินค้าในแต่ละหมวด
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
 
   const navigate = useNavigate();
-
-  const categories = ['All', 'Gaming Mouse', 'Keyboard', 'Headset', 'Monitor', 'Gaming Chair'];
 
   useEffect(() => {
     fetchProducts();
@@ -35,35 +35,55 @@ function App() {
   const fetchProducts = async () => {
     try {
       const response = await axios.get('http://localhost:3000/products');
-      setProducts(response.data);
+      const data = response.data;
+      setProducts(data);
+
+      // ดึงชื่อหมวดหมู่และนับจำนวน
+      const uniqueCategories = new Set<string>(['All']);
+      const counts: Record<string, number> = { 'All': data.length };
+
+      data.forEach((p: Product) => {
+        let catName = 'Uncategorized';
+        if (typeof p.category === 'object' && p.category !== null && 'name' in p.category) {
+            catName = p.category.name;
+        } else if (typeof p.category === 'string') {
+            catName = p.category;
+        }
+        
+        uniqueCategories.add(catName);
+        // นับจำนวนสินค้าในแต่ละหมวด
+        counts[catName] = (counts[catName] || 0) + 1;
+      });
+
+      setCategories(Array.from(uniqueCategories));
+      setCategoryCounts(counts); // บันทึกจำนวนที่นับได้
       setLoading(false);
+
     } catch (error) {
       console.error("Error fetching products:", error);
       setLoading(false);
     }
   };
 
-  // ✅ 2. ฟังก์ชันเมื่อกดปุ่ม "ค้นหา" (ช่วงราคา)
   const handlePriceFilter = () => {
-    // แปลงค่าจาก text เป็น number ถ้าว่างให้เป็น 0 หรือ Infinity
     const min = minPrice === '' ? 0 : Number(minPrice);
     const max = maxPrice === '' ? Infinity : Number(maxPrice);
-    
     setAppliedMin(min);
     setAppliedMax(max);
   };
 
-  // ✅ 3. อัปเดต Logic การกรองสินค้า
+  // Logic การกรอง (เหมือนเดิม)
   const filteredProducts = products.filter((product) => {
-    // กรองชื่อ
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
-    // กรองหมวดหมู่
-    const matchesCategory = selectedCategory === 'All' || product.category?.name === selectedCategory; 
-    
-    // กรองราคา (แปลงราคาเป็นตัวเลขก่อนเปรียบเทียบ)
+    let productCategoryName = 'Uncategorized';
+    if (typeof product.category === 'object' && product.category !== null) {
+        productCategoryName = product.category.name;
+    } else if (typeof product.category === 'string') {
+        productCategoryName = product.category;
+    }
+    const matchesCategory = selectedCategory === 'All' || productCategoryName === selectedCategory; 
     const price = Number(product.price);
     const matchesPrice = price >= appliedMin && price <= appliedMax;
-
     return matchesSearch && matchesCategory && matchesPrice;
   });
 
@@ -90,17 +110,22 @@ function App() {
         </div>
       </nav>
 
-      {/* Content */}
       <div className="container mx-auto px-6 py-8">
         
-        {/* Search Bar */}
+        {/* ✅ Search Bar (ดีไซน์ใหม่ตามภาพที่ 13) */}
         <div className="flex justify-center mb-10">
-            <div className="relative w-full max-w-2xl">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+            <div className="relative w-full max-w-3xl">
+                {/* ไอคอนแว่นขยาย สีจางๆ */}
+                <span className="absolute left-5 top-1/2 -translate-y-1/2 text-white/30 text-xl">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </span>
                 <input 
                     type="text" 
-                    placeholder="ค้นหาอุปกรณ์เกมมิ่งของคุณ..." 
-                    className="w-full bg-[#18181b] border border-white/10 rounded-full py-3 pl-12 pr-6 text-gray-300 focus:outline-none focus:border-red-600/50 focus:ring-1 focus:ring-red-600/50 transition shadow-lg"
+                    placeholder="ค้นหาอุปกรณ์เทพของคุณ..." 
+                    // ใช้สีพื้นหลังเข้มๆ (#2a0b0b) และสีข้อความจางๆ
+                    className="w-full bg-[#2a0b0b] border border-white/5 rounded-full py-4 pl-14 pr-6 text-white/70 placeholder-white/30 focus:outline-none focus:border-red-900/50 focus:ring-1 focus:ring-red-900/30 transition shadow-lg text-lg font-light tracking-wider"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -116,25 +141,29 @@ function App() {
                         FILTER
                     </h2>
                     
-                    {/* Category Filter */}
+                    {/* ✅ Category Filter (แสดงจำนวนสินค้า) */}
                     <div className="space-y-2">
                         <p className="text-gray-500 text-xs font-bold uppercase mb-2">หมวดหมู่</p>
-                        {categories.map((cat) => (
+                        {categories.map((cat, index) => (
                             <button 
-                                key={cat}
+                                key={index}
                                 onClick={() => setSelectedCategory(cat)}
-                                className={`w-full text-left py-2 px-3 rounded transition text-sm ${
+                                className={`w-full text-left py-2 px-3 rounded transition text-sm flex justify-between items-center ${
                                     selectedCategory === cat 
                                     ? 'bg-gradient-to-r from-red-900/40 to-transparent text-red-500 font-bold border-l-2 border-red-500' 
                                     : 'text-gray-400 hover:text-white hover:bg-white/5'
                                 }`}
                             >
-                                {cat === 'All' ? 'ทั้งหมด' : cat}
+                                <span>{cat === 'All' ? 'ทั้งหมด' : cat}</span>
+                                {/* แสดงจำนวนสินค้าในวงเล็บ */}
+                                <span className="text-xs bg-black/30 px-2 py-0.5 rounded-full opacity-70">
+                                    {categoryCounts[cat] || 0}
+                                </span>
                             </button>
                         ))}
                     </div>
 
-                    {/* ✅ Price Range Filter (แก้ไขแล้ว) */}
+                    {/* Price Range Filter */}
                     <div className="mt-8 pt-6 border-t border-white/10">
                         <p className="text-gray-500 text-xs font-bold uppercase mb-4">ช่วงราคา</p>
                         <div className="flex items-center gap-2 text-sm text-gray-400">
@@ -154,7 +183,6 @@ function App() {
                                 onChange={(e) => setMaxPrice(e.target.value)} 
                              />
                         </div>
-                        {/* ปุ่มกดเพื่อยืนยันการกรอง */}
                         <button 
                             onClick={handlePriceFilter}
                             className="w-full mt-3 bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2 rounded transition active:scale-95"
@@ -170,7 +198,8 @@ function App() {
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold flex items-center gap-2">
                         <span className="w-1 h-6 bg-red-600 block"></span> 
-                        ทั้งหมด <span className="text-gray-500 text-base font-normal">({filteredProducts.length} รายการ)</span>
+                        {selectedCategory === 'All' ? 'สินค้าทั้งหมด' : selectedCategory} 
+                        <span className="text-gray-500 text-base font-normal ml-2">({filteredProducts.length} รายการ)</span>
                     </h2>
                 </div>
 
@@ -193,7 +222,9 @@ function App() {
                             </div>
 
                             <div className="p-5 flex flex-col flex-grow">
-                                <p className="text-gray-500 text-xs mb-1">{product.category?.name || 'Gaming Gear'}</p>
+                                <p className="text-gray-500 text-xs mb-1">
+                                    {typeof product.category === 'object' && product.category?.name ? product.category.name : (product.category as string || 'General')}
+                                </p>
                                 <h3 className="font-bold text-lg text-white mb-2 line-clamp-2 leading-snug group-hover:text-red-500 transition">
                                     {product.name}
                                 </h3>
@@ -214,13 +245,12 @@ function App() {
                 
                 {filteredProducts.length === 0 && (
                     <div className="text-center py-20 text-gray-500">
-                        <p className="text-xl">ไม่พบสินค้าที่คุณค้นหา</p>
-                        <p className="text-sm mt-2">ลองเปลี่ยนช่วงราคา หรือคำค้นหาดูใหม่นะครับ</p>
+                        <p className="text-xl">ไม่พบสินค้าในหมวดหมู่นี้</p>
                         <button 
-                            onClick={() => { setMinPrice(''); setMaxPrice(''); setAppliedMin(0); setAppliedMax(Infinity); }}
+                            onClick={() => setSelectedCategory('All')}
                             className="mt-4 text-red-500 underline hover:text-red-400"
                         >
-                            ล้างค่าการค้นหา
+                            กลับไปดูสินค้าทั้งหมด
                         </button>
                     </div>
                 )}
@@ -231,4 +261,4 @@ function App() {
   );
 }
 
-export default App;
+export default ProductList;

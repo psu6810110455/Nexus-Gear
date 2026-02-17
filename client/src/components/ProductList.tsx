@@ -1,32 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom'; // 1. นำเข้า useNavigate
 
-// Interface ปรับให้รองรับทั้งแบบเดิมและแบบ NestJS
+// ย้าย Interface มาไว้ข้างนอก เพื่อความเป็นระเบียบ
 interface Product {
   id: number;
   name: string;
   price: number;
   stock?: number;
-  // รองรับทั้ง 2 ชื่อ เผื่อ Backend ส่งมาไม่เหมือนกัน
-  image_url?: string; 
-  imageUrl?: string;
+  image_url?: string; // รองรับ snake_case
+  imageUrl?: string;  // รองรับ camelCase
   rating_average?: number;
   category?: { name: string };
 }
 
 const ProductList: React.FC = () => {
+  const navigate = useNavigate(); // 2. เรียกใช้ Hook
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('ทั้งหมด');
 
-  // รายชื่อหมวดหมู่ (ถ้าดึงจาก API ได้จะดีมาก แต่ใช้ Hardcode ไปก่อนตามดีไซน์)
+  // รายชื่อหมวดหมู่
   const categories = ['ทั้งหมด', 'มือถือเกมมิ่ง', 'จอยควบคุม', 'หูฟัง', 'พัดลมระบายอากาศ', 'ถุงนิ้วเกมมิ่ง'];
 
   useEffect(() => {
     // ดึงข้อมูลจาก Backend NestJS
     axios.get('http://localhost:3000/products')
       .then(res => {
-        console.log("Data received:", res.data); // เช็คข้อมูลใน Console
+        console.log("Data received:", res.data);
         setProducts(res.data);
         setLoading(false);
       })
@@ -100,17 +101,21 @@ const ProductList: React.FC = () => {
               ))
             ) : (
               filteredProducts.map((product) => (
-                <div key={product.id} className="group bg-[#18181b] border border-white/5 rounded-2xl overflow-hidden hover:border-red-600/50 transition-all duration-300 shadow-xl hover:shadow-red-900/10 flex flex-col h-full">
+                <div 
+                  key={product.id} 
+                  // ✅ 3. เพิ่ม onClick ให้กดแล้วไปหน้า Detail
+                  onClick={() => navigate(`/products/${product.id}`)}
+                  // ✅ 4. เพิ่ม cursor-pointer ให้รู้ว่ากดได้
+                  className="cursor-pointer group bg-[#18181b] border border-white/5 rounded-2xl overflow-hidden hover:border-red-600/50 transition-all duration-300 shadow-xl hover:shadow-red-900/10 flex flex-col h-full"
+                >
                   
                   {/* ส่วนแสดงรูปภาพ + Image Fallback */}
                   <div className="aspect-square bg-white p-6 relative overflow-hidden flex items-center justify-center">
                     <img 
-                      // ลองใช้ image_url ก่อน ถ้าไม่มีใช้ imageUrl ถ้าไม่มีใช้ Placeholder
                       src={product.image_url || product.imageUrl || 'https://placehold.co/600x400?text=No+Image'} 
                       alt={product.name} 
                       className="w-full h-full object-contain group-hover:scale-110 transition duration-500 mix-blend-multiply"
                       onError={(e) => {
-                        // ถ้าโหลดรูปไม่ได้ ให้เปลี่ยนเป็นรูปนี้ทันที
                         e.currentTarget.src = 'https://placehold.co/600x400/png?text=Nexus+Gear'; 
                         e.currentTarget.onerror = null;
                       }}

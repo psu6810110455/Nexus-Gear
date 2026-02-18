@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import logoImg from '../assets/logo.png'; 
+// import logoImg from '../assets/logo.png'; // ไม่ต้องใช้แล้วเพราะเราย้ายไป Navbar ส่วนกลาง
 
 interface Product {
   id: number;
@@ -86,35 +86,17 @@ function ProductList() {
   if (loading) return <div className="min-h-screen bg-[#0f0f12] flex items-center justify-center text-white">Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-[#0f0f12] text-white font-sans">
+    <div className="min-h-screen bg-[#0f0f12] text-white font-sans pb-20">
       
-      {/* Navbar */}
-      <nav className="bg-[#0f0f12] border-b border-white/10 py-4 px-6 sticky top-0 z-50 shadow-md">
-        <div className="container mx-auto flex justify-between items-center">
-            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/')}>
-                 <img src={logoImg} alt="Nexus Gear Logo" className="h-10 w-auto object-contain group-hover:brightness-110 transition drop-shadow-[0_0_8px_rgba(220,38,38,0.6)]" />
-                 <span className="text-xl md:text-2xl font-bold tracking-wide text-white uppercase font-sans">
-                    NEXUS <span className="text-red-600">GEAR</span>
-                 </span>
-            </div>
-            <div className="flex items-center gap-6 md:gap-8 text-sm font-medium text-gray-400">
-                <button onClick={() => navigate('/')} className="text-white font-bold transition">หน้าแรก</button>
-                <button className="hover:text-white transition hidden md:block">ตะกร้า</button>
-                <button className="hover:text-white transition hidden md:block">โปรไฟล์</button>
-                <button className="bg-white text-black px-5 py-2 rounded hover:bg-gray-200 transition font-bold">เข้าสู่ระบบ</button>
-            </div>
-        </div>
-      </nav>
-
+      {/* ลบ Navbar เดิมออก เพราะเรามี Navbar ส่วนกลางที่ App.tsx แล้ว */}
+      
       <div className="container mx-auto px-6 py-8">
         
         {/* Search Bar */}
         <div className="flex justify-center mb-10">
             <div className="relative w-full max-w-3xl">
                 <span className="absolute left-5 top-1/2 -translate-y-1/2 text-white/30 text-xl">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+                    🔍
                 </span>
                 <input 
                     type="text" 
@@ -227,7 +209,15 @@ function ProductList() {
                                         <p className="text-xs text-gray-500">ราคา</p>
                                         <p className="text-xl font-bold text-red-500">฿{Number(product.price).toLocaleString()}</p>
                                     </div>
-                                    <button className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-4 py-2 rounded transition shadow-lg shadow-red-900/20 active:scale-95">
+                                    
+                                    {/* ✅ ปรับปรุงปุ่มซื้อเลย: เพิ่ม onClick และ stopPropagation */}
+                                    <button 
+                                        onClick={(e) => {
+                                            e.stopPropagation(); // หยุดไม่ให้คลิกทะลุไปโดน Card (เพราะ Card ก็มี onClick)
+                                            navigate(`/products/${product.id}`); // ให้วิ่งไปหน้า Detail เหมือนกัน (หรือเปลี่ยนเป็นใส่ตะกร้าในอนาคต)
+                                        }}
+                                        className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-4 py-2 rounded transition shadow-lg shadow-red-900/20 active:scale-95 z-10"
+                                    >
                                         ซื้อเลย
                                     </button>
                                 </div>

@@ -34,7 +34,7 @@ export class CartService {
     }
   }
 
-  // ✅ ฟังก์ชันที่ 2: ดึงข้อมูลสินค้าในตะกร้า (getCart) -- [เพิ่มใหม่ตรงนี้ครับ]
+  // ✅ ฟังก์ชันที่ 2: ดึงข้อมูลสินค้าในตะกร้า (getCart)
   async getCart(userId: number) {
     const sql = `
       SELECT 
@@ -51,5 +51,16 @@ export class CartService {
     `;
     // ส่ง User ID ไปเพื่อดึงเฉพาะตะกร้าของคนนั้น
     return this.db.query(sql, [userId]);
+  }
+
+  // ✅ ฟังก์ชันที่ 3: ลบสินค้าออกจากตะกร้า (removeFromCart) -- [เพิ่มใหม่ตรงนี้ครับ]
+  async removeFromCart(userId: number, cartItemId: number) {
+    // ลบเฉพาะรายการที่เป็นของ User คนนี้เท่านั้น (เพื่อความปลอดภัย)
+    // ถ้าคนอื่นพยายามลบของคนอื่น มันจะหาไม่เจอและไม่ลบอะไร
+    await this.db.query(
+      'DELETE FROM cart_items WHERE id = ? AND user_id = ?',
+      [cartItemId, userId],
+    );
+    return { message: 'ลบสินค้าออกจากตะกร้าเรียบร้อย' };
   }
 }

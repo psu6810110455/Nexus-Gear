@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get } from '@nestjs/common'; // ✅ เพิ่ม Get
+import { Controller, Post, Body, Get, Delete, Param } from '@nestjs/common'; // ✅ เพิ่ม Delete, Param
 import { CartService } from './cart.service';
 
 @Controller('cart')
@@ -8,17 +8,22 @@ export class CartController {
   // ✅ 1. เพิ่มสินค้าลงตะกร้า (ของเดิม)
   @Post('add')
   async addToCart(@Body() body: { productId: number; quantity: number }) {
-    // สมมติว่า User ID = 1 (Admin) ไปก่อน
     const userId = 1; 
-    
-    // เรียกใช้ Service ให้ไปทำงาน
     return this.cartService.addToCart(userId, body.productId, body.quantity);
   }
 
-  // ✅ 2. ดูสินค้าในตะกร้า (เพิ่มใหม่)
+  // ✅ 2. ดูสินค้าในตะกร้า (ของเดิม)
   @Get()
   async getCart() {
-    const userId = 1; // ใช้ User คนเดิมเพื่อดูตะกร้าของตัวเอง
+    const userId = 1;
     return this.cartService.getCart(userId);
+  }
+
+  // ✅ 3. ลบสินค้าออกจากตะกร้า (เพิ่มใหม่)
+  @Delete(':itemId') // รับค่า itemId จาก URL เช่น /cart/5
+  async removeFromCart(@Param('itemId') itemId: string) {
+    const userId = 1;
+    // แปลง itemId เป็นตัวเลขก่อนส่งไปให้ Service
+    return this.cartService.removeFromCart(userId, Number(itemId));
   }
 }

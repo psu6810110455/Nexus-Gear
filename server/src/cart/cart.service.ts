@@ -33,4 +33,23 @@ export class CartService {
       return { message: 'เพิ่มสินค้าลงตะกร้าสำเร็จ', cartItemId: result.insertId };
     }
   }
+
+  // ✅ ฟังก์ชันที่ 2: ดึงข้อมูลสินค้าในตะกร้า (getCart) -- [เพิ่มใหม่ตรงนี้ครับ]
+  async getCart(userId: number) {
+    const sql = `
+      SELECT 
+        cart_items.id AS cart_item_id,
+        products.id AS product_id,
+        products.name,
+        products.price,
+        products.image_url,
+        cart_items.quantity,
+        (products.price * cart_items.quantity) AS total_price
+      FROM cart_items
+      JOIN products ON cart_items.product_id = products.id
+      WHERE cart_items.user_id = ?
+    `;
+    // ส่ง User ID ไปเพื่อดึงเฉพาะตะกร้าของคนนั้น
+    return this.db.query(sql, [userId]);
+  }
 }

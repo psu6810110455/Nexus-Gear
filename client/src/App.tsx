@@ -1,23 +1,29 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import HomePage from './pages/HomePage';
-import ProductList from './components/ProductList';  
+import ProductList from './components/ProductList';   
 import ProductDetail from './components/ProductDetail'; 
+import Register from './pages/Register';
+import Login from './pages/Login';
 
 function App() {
   return (
-    <Routes>
-      {/* 1. หน้าแรก (Home) */}
-      <Route path="/" element={<HomePage />} />
-      
-      {/* 2. หน้ารวมสินค้า (กดปุ่ม "ดูสินค้า" จาก Home มาที่นี่) */}
-      <Route path="/shop" element={<ProductList />} />
-      
-      {/* 3. หน้ารายละเอียดสินค้า (กดที่รูปสินค้า มาที่นี่) */}
-      <Route path="/products/:id" element={<ProductDetail />} />
+    <div style={{ minHeight: '100vh' }}> 
+      <Routes>
+        {/* 1. หน้าแรก (ใช้ HomePage ที่ทำไว้สวยๆ แทน h1 ธรรมดา) */}
+        <Route path="/" element={<HomePage />} />
+        
+        {/* 2. โซนสินค้า */}
+        <Route path="/shop" element={<ProductList />} />
+        <Route path="/products/:id" element={<ProductDetail />} />
 
-      {/* กันหลง: ถ้าพิมพ์ URL มั่ว ให้กลับมาหน้าแรก */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        {/* 3. โซนสมาชิก (Auth) */}
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+
+        {/* 4. กันหลง: ถ้าพิมพ์ URL มั่ว ให้เด้งกลับหน้าแรก */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </div>
   );
 }
 

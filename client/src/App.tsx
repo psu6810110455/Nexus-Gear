@@ -1,9 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-
-// 1. Import ไฟล์ที่คุณมีอยู่แล้ว
 import HomePage from './pages/HomePage';
-import ProductList from './components/ProductList';   // ✅ ใช้ไฟล์ ProductList เดิมของคุณ
-import ProductDetail from './components/ProductDetail'; // ✅ ใช้ไฟล์ ProductDetail เดิมของคุณ (เช็ค Path ให้ถูกนะครับ)
+import ProductList from './components/ProductList';  
+import ProductDetail from './components/ProductDetail'; 
 
 function App() {
   return (

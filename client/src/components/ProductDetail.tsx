@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-// ✅ รูป logo.png (ต้องเป็นรูปที่เจาะพื้นหลังแล้ว)
 import logoImg from '../assets/logo.png';
 
 interface Product {
@@ -22,8 +21,6 @@ const ProductDetail: React.FC = () => {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
-
-  // ... (ฟังก์ชัน handleQuantityChange และ renderStars เหมือนเดิม) ...
   const handleQuantityChange = (type: 'increase' | 'decrease') => {
     if (type === 'decrease' && quantity > 1) {
       setQuantity(quantity - 1);

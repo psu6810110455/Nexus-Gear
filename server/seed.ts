@@ -1,19 +1,26 @@
-const mysql = require('mysql2/promise');
-const { faker } = require('@faker-js/faker');
-const bcrypt = require('bcryptjs');
-require('dotenv').config();
+import mysql from 'mysql2/promise';
+import { faker } from '@faker-js/faker';
+import * as bcrypt from 'bcryptjs';
+import * as dotenv from 'dotenv';
 
-// ตั้งค่า Database ตาม Docker (5433:3306)
+dotenv.config();
+
+// ✅ 1. กำหนด Type ให้ Config และแปลง Port เป็นตัวเลข
 const dbConfig = {
-    host: process.env.DB_HOST || '127.0.0.1', // แนะนำให้ใช้ IP หากเป็น Docker
+    host: process.env.DB_HOST || '127.0.0.1',
     user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || 'rootpassword', // ใส่รหัสผ่านของคุณตรงนี้
+    password: process.env.DB_PASSWORD || 'rootpassword',
     database: process.env.DB_NAME || 'ecommerce_db',
-    port: process.env.DB_PORT || 5433 // พอร์ตที่ Map ออกมานอก Container
+    port: Number(process.env.DB_PORT) || 5433, // TS ต้องการ number ชัดเจน
 };
 
-// กำหนดหมวดหมู่
-const GAMING_CATEGORIES = [
+// ✅ 2. สร้าง Interface สำหรับหมวดหมู่ (Best Practice ของ TS)
+interface CategoryItem {
+    name: string;
+    searchKey: string;
+}
+
+const GAMING_CATEGORIES: CategoryItem[] = [
     { name: 'มือถือเกมมิ่ง', searchKey: 'gaming phone' },
     { name: 'จอยควบคุม', searchKey: 'game controller' },
     { name: 'หูฟัง', searchKey: 'gaming headset' },
@@ -22,34 +29,47 @@ const GAMING_CATEGORIES = [
     { name: 'อุปกรณ์เสริมอื่นๆ', searchKey: 'gaming accessories' }
 ];
 
-const BRANDS = ['Nexus', 'ROG', 'Razer', 'Logitech G', 'SteelSeries', 'Black Shark', 'RedMagic'];
+const BRANDS: string[] = ['Nexus', 'ROG', 'Razer', 'Logitech G', 'SteelSeries', 'Black Shark', 'RedMagic'];
 
 async function seedGamingData() {
     let connection;
     try {
-        console.log('🔌 กำลังเชื่อมต่อฐานข้อมูลที่ ' + dbConfig.host + ':' + dbConfig.port + '...');
+        console.log(`🔌 กำลังเชื่อมต่อ Database ที่ ${dbConfig.host}:${dbConfig.port}...`);
         connection = await mysql.createConnection(dbConfig);
-        console.log('✅ เชื่อมต่อฐานข้อมูลสำเร็จ!');
+        console.log('✅ เชื่อมต่อสำเร็จ! เริ่มต้นกระบวนการ Seed ข้อมูล...');
 
-        // 1. ล้างข้อมูลเก่า (Truncate)
-        console.log('🧹 กำลังล้างข้อมูลเดิม...');
+        // 1. ล้างข้อมูลเก่า
         await connection.execute('SET FOREIGN_KEY_CHECKS = 0');
-        const tables = ['order_status_history', 'payments', 'reviews', 'order_items', 'orders', 'cart_items', 'addresses', 'products', 'categories', 'coupons', 'users'];
+        const tables = [
+            'order_status_history', 'payments', 'reviews', 'order_items', 
+            'orders', 'cart_items', 'addresses', 'products', 'categories', 'coupons', 'users'
+        ];
+        
         for (const table of tables) {
-            await connection.execute(`TRUNCATE TABLE ${table}`);
+            try {
+                // ใช้ DELETE แทน TRUNCATE เพื่อความปลอดภัยและชัวร์กว่าในบาง Environment
+                await connection.execute(`DELETE FROM ${table}`);
+                // รีเซ็ต ID ให้เริ่มที่ 1 ใหม่
+                await connection.execute(`ALTER TABLE ${table} AUTO_INCREMENT = 1`);
+            } catch (err) {
+                // ข้าม error กรณีตารางยังไม่ถูกสร้าง
+            }
         }
         await connection.execute('SET FOREIGN_KEY_CHECKS = 1');
         console.log('🧹 ล้างข้อมูลเดิมเรียบร้อยแล้ว');
 
         // 2. สร้าง Admin
         const hashedPass = await bcrypt.hash('123456', 10);
-        await connection.execute('INSERT INTO users (email, password, name, role) VALUES (?, ?, ?, ?)', ['admin@nexus.com', hashedPass, 'Admin Nexus', 'admin']);
+        await connection.execute(
+            'INSERT INTO users (email, password, name, role) VALUES (?, ?, ?, ?)', 
+            ['admin@nexus.com', hashedPass, 'Admin Nexus', 'admin']
+        );
         console.log('👤 สร้าง User: Admin เรียบร้อย');
 
         // 3. สร้าง Categories
-        const categoryIds = [];
+        const categoryIds: { id: number; name: string; key: string }[] = [];
         for (const cat of GAMING_CATEGORIES) {
-            const [res] = await connection.execute(
+            const [res]: any = await connection.execute(
                 'INSERT INTO categories (name, image_url) VALUES (?, ?)',
                 [cat.name, `https://source.unsplash.com/random/400x400/?${cat.searchKey}`]
             );
@@ -59,7 +79,7 @@ async function seedGamingData() {
 
         // 4. สร้าง Products
         console.log('📦 กำลังสร้างสินค้า 156 ชิ้น...');
-        for (let i = 0; i < 156; i++) {
+        for (let i = 0; i < 156; i++) { 
             const cat = faker.helpers.arrayElement(categoryIds);
             const brand = faker.helpers.arrayElement(BRANDS);
             const productName = `${brand} ${faker.commerce.productName()} ${faker.helpers.arrayElement(['Pro', 'Ultra', 'RGB', 'Elite'])}`;
@@ -70,18 +90,16 @@ async function seedGamingData() {
                     cat.id,
                     productName,
                     faker.commerce.productDescription(),
-                    faker.commerce.price({ min: 150, max: 45000 }),
+                    faker.commerce.price({ min: 150, max: 45000 }), 
                     faker.number.int({ min: 5, max: 200 }),
                     `https://source.unsplash.com/random/500x500/?gaming,tech,${cat.key}&sig=${i}`,
                     faker.number.float({ min: 3.5, max: 5, fractionDigits: 1 })
                 ]
             );
         }
-        console.log('📦 สร้างสินค้าเรียบร้อย');
+        console.log('\n🎉 ดำเนินการ Seed ข้อมูลเสร็จสิ้น! (TypeScript Version)');
 
-        console.log('\n🎉 ดำเนินการ Seed ข้อมูลเสร็จสิ้น! ข้อมูลพร้อมใช้งานแล้วครับ');
-
-    } catch (error) {
+    } catch (error: any) {
         console.error('❌ เกิดข้อผิดพลาด:', error.message);
     } finally {
         if (connection) await connection.end();

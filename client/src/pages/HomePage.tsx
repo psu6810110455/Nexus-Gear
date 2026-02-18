@@ -39,7 +39,6 @@ function HomePage() {
   }, []);
 
   const handleEnterSite = () => {
-    // ✅ บันทึกว่าเข้าเว็บแล้ว จะได้ไม่ถามอีก
     sessionStorage.setItem('visitedNexusGear', 'true');
     setShowWelcome(false);
   };
@@ -91,7 +90,6 @@ function HomePage() {
                 โทรศัพท์เกมมิ่ง
             </span> 
             <br/>
-            {/* ✅ เปลี่ยน "อุปกรณ์เกมมิ่ง" เป็นสีแดงและมี Glow ตามคำขอ */}
             <span className="text-red-600 drop-shadow-[0_0_15px_rgba(220,38,38,0.9)]">
                 อุปกรณ์เกมมิ่ง
             </span>

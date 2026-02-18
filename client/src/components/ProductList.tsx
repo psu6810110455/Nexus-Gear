@@ -91,7 +91,6 @@ function ProductList() {
       {/* Navbar */}
       <nav className="bg-[#0f0f12] border-b border-white/10 py-4 px-6 sticky top-0 z-50 shadow-md">
         <div className="container mx-auto flex justify-between items-center">
-            {/* ✅ แก้ไข onClick ตรงนี้ให้ใช้ navigate('/') แทน scrollTo */}
             <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/')}>
                  <img src={logoImg} alt="Nexus Gear Logo" className="h-10 w-auto object-contain group-hover:brightness-110 transition drop-shadow-[0_0_8px_rgba(220,38,38,0.6)]" />
                  <span className="text-xl md:text-2xl font-bold tracking-wide text-white uppercase font-sans">
@@ -99,7 +98,6 @@ function ProductList() {
                  </span>
             </div>
             <div className="flex items-center gap-6 md:gap-8 text-sm font-medium text-gray-400">
-                {/* ✅ แก้ปุ่มหน้าแรก ให้กลับ Home */}
                 <button onClick={() => navigate('/')} className="text-white font-bold transition">หน้าแรก</button>
                 <button className="hover:text-white transition hidden md:block">ตะกร้า</button>
                 <button className="hover:text-white transition hidden md:block">โปรไฟล์</button>

@@ -1,15 +1,15 @@
 import { Link, useNavigate } from 'react-router-dom';
 import logoImg from '../assets/logo.png';
+import { useAuth } from '../context/AuthContext'; // 🎯 นำเข้า Hook สำหรับเช็คสถานะ
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const isLoggedIn = !!localStorage.getItem('token'); 
+  const { isLoggedIn, logout } = useAuth(); // 🎯 ดึงสถานะและฟังก์ชันออกจากระบบมาใช้
 
   const handleLogout = () => {
     if (confirm("คุณต้องการออกจากระบบหรือไม่?")) {
-      localStorage.removeItem('token');
-      // รีเฟรชหน้าจอ 1 ครั้งเพื่อให้ปุ่มเปลี่ยนกลับเป็น Login
-      window.location.href = "/login"; 
+      logout(); // 🎯 สั่งเคลียร์ Token ผ่าน Context
+      navigate('/login'); // เปลี่ยนหน้ากลับไปหน้าล็อกอินแบบนุ่มนวล
     }
   };
 
@@ -33,14 +33,18 @@ const Navbar = () => {
       </div>
 
       {/* 3. ปุ่มขวา (Login/Logout) */}
-      <div className="flex gap-4">
+      <div className="flex gap-4 items-center">
         {isLoggedIn ? (
-          <button 
-            onClick={handleLogout}
-            className="text-white hover:text-red-500 transition text-sm"
-          >
-            ออกจากระบบ
-          </button>
+          <>
+            <Link to="/cart" className="text-white hover:text-red-500 transition text-sm">ตะกร้า</Link>
+            <Link to="/profile" className="text-white hover:text-red-500 transition text-sm">โปรไฟล์</Link>
+            <button 
+              onClick={handleLogout}
+              className="text-white hover:bg-red-600/20 border border-transparent hover:border-red-600 transition text-sm px-3 py-1.5 rounded ml-2"
+            >
+              ออกจากระบบ
+            </button>
+          </>
         ) : (
           <>
             <Link to="/login" className="text-white hover:text-red-500 transition text-sm flex items-center">

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; 
 import axios from 'axios';
-import logoImg from '../assets/logo.png'; 
 
 const MOCK_PRODUCTS = [
     { id: 1, name: 'ROG Phone 7', price: 34990, imageUrl: 'https://dlcdnwebimgs.asus.com/gain/44268636-6202-4048-96bd-276632057342/w800' },
@@ -15,17 +14,13 @@ const MOCK_PRODUCTS = [
 ];
 
 function HomePage() {
-  // ✅ เริ่มต้นเป็น false ก่อน เพื่อรอเช็ค sessionStorage
   const [showWelcome, setShowWelcome] = useState(false);
   const [products, setProducts] = useState<any[]>(MOCK_PRODUCTS);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // ✅ เช็คว่าเคยเข้าเว็บมารึยัง (sessionStorage)
     const hasVisited = sessionStorage.getItem('visitedNexusGear');
-    
     if (!hasVisited) {
-        // ถ้ายังไม่เคยเข้า ให้โชว์ Popup
         setShowWelcome(true);
     }
 
@@ -72,19 +67,8 @@ function HomePage() {
         </div>
       )}
 
-      {/* --- NAVBAR --- */}
-      <nav className="w-full flex justify-between items-center px-6 py-6 max-w-6xl z-20">
-        <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-            <img src={logoImg} alt="Logo" className="h-8 w-auto drop-shadow-[0_0_8px_rgba(255,0,0,0.8)]" />
-            <span className="text-lg font-bold tracking-widest text-white">NEXUS GEAR</span>
-        </div>
-        <div className="flex gap-4 text-xs font-bold text-gray-400">
-             <button className="bg-white text-black px-4 py-1.5 rounded hover:bg-gray-200 transition">เข้าสู่ระบบ</button>
-        </div>
-      </nav>
-
       {/* --- HERO SECTION --- */}
-      <div className="text-center mt-6 mb-8 relative z-10">
+      <div className="text-center mt-12 mb-8 relative z-10">
          <h1 className="text-3xl md:text-5xl font-black leading-tight uppercase tracking-tight drop-shadow-xl">
             <span className="text-red-600 drop-shadow-[0_0_15px_rgba(220,38,38,0.9)]">
                 โทรศัพท์เกมมิ่ง

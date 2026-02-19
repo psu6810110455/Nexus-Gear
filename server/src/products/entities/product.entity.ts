@@ -28,4 +28,7 @@ export class Product {
 
   @Column({ name: 'category_id', nullable: true, insert: false, update: false })
   categoryId: number;
+
+  @Column({ name: 'rating_average', type: 'float', default: 0, nullable: true })
+  rating_average: number;
 }

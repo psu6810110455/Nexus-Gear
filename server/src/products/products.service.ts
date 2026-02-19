@@ -33,9 +33,13 @@ export class ProductsService {
     return this.productsRepository.save(product);
   }
 
-  findAll() {
-    // ดึงข้อมูล Product พร้อม Category
-    return this.productsRepository.find({ relations: ['category'] });
+  async findAll() {
+    const products = await this.productsRepository.find({ relations: ['category'] });
+    
+    // 🚨 เพิ่ม console.log ตรงนี้ เพื่อแอบดูข้อมูลก่อนส่งกลับไปหา React
+    console.log("📦 ข้อมูลที่ดึงได้จาก DB: ", products[0]); 
+    
+    return products;
   }
 
   async findOne(id: number) {

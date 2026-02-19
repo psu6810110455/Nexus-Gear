@@ -16,7 +16,6 @@ function ProductList() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   
-  // กำหนด Default ว่ามีหมวดหมู่อะไรบ้าง
   const [categories, setCategories] = useState<string[]>(['All']); 
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [minPrice, setMinPrice] = useState('');      
@@ -34,36 +33,50 @@ function ProductList() {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/products');
+      const token = localStorage.getItem('token');
+      console.log("🔑 Token ที่ส่งไป:", token ? "มี Token" : "ไม่มี Token");
+
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const response = await axios.get('http://localhost:3000/products', { headers });
+      
       const data = response.data;
+      console.log("📦 ข้อมูลสินค้าที่ได้จาก API:", data); // ดูหน้าตาข้อมูลที่ Backend ส่งมา
+
+      if (!Array.isArray(data)) {
+        console.error("🚨 ข้อมูลไม่ใช่ Array:", data);
+        setProducts([]);
+        setLoading(false);
+        return;
+      }
+
       setProducts(data);
 
-      // 🎯 ดึงชื่อหมวดหมู่มาจาก Database แบบอัตโนมัติ
       const counts: Record<string, number> = { 'All': data.length };
-      const categorySet = new Set<string>(['All']); // เริ่มต้นด้วย 'All' เสมอ
+      const categorySet = new Set<string>(['All']);
 
-      // นับจำนวนสินค้าในแต่ละหมวดหมู่
       data.forEach((p: Product) => {
         let catName = 'Uncategorized';
-        
-        // เช็คว่า Backend ส่งชื่อหมวดหมู่มาให้ไหม
-        if (typeof p.category === 'object' && p.category !== null && 'name' in p.category) {
+        // เช็คว่า backend ส่ง category มาแบบไหน
+        if (p.category && typeof p.category === 'object' && 'name' in p.category) {
             catName = p.category.name;
         } else if (typeof p.category === 'string') {
             catName = p.category;
+        } else {
+            console.log("⚠️ สินค้านี้ไม่มี Category หรือส่งมาผิดรูปแบบ:", p);
         }
         
         categorySet.add(catName);
         counts[catName] = (counts[catName] || 0) + 1;
       });
 
-      // อัปเดต State 
+      console.log("🏷️ หมวดหมู่ที่สกัดได้:", Array.from(categorySet));
+
       setCategories(Array.from(categorySet));
       setCategoryCounts(counts);
       setLoading(false);
 
-    } catch (error) {
-      console.error("Error fetching products:", error);
+    } catch (error: any) {
+      console.error("❌ Error ดึงข้อมูล:", error.response?.status, error.response?.data || error.message);
       setLoading(false);
     }
   };

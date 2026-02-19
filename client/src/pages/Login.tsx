@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom'; 
+import { Link, useNavigate } from 'react-router-dom'; 
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext'; // 🎯 นำเข้า Hook
 import './Login.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  
+  const navigate = useNavigate(); // 🎯 ใช้ navigate แทนการโหลดหน้าใหม่
+  const { login } = useAuth(); // 🎯 ดึงฟังก์ชัน login จาก Context กลาง
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,11 +22,11 @@ const Login = () => {
 
       const { access_token } = response.data;
       
-      // 1. เก็บ Token
-      localStorage.setItem('token', access_token);
+      // 🎯 ส่ง Token ไปเก็บใน Context และเปลี่ยนสถานะทันที
+      login(access_token);
       
       alert('ยินดีต้อนรับกลับสู่ Nexus Gear!');
-      window.location.href = "/"; 
+      navigate('/'); // 🎯 เปลี่ยนไปหน้าแรกทันทีโดยที่เว็บไม่ต้องกระพริบโหลดใหม่
       
     } catch (error: any) {
       const message = error.response?.data?.message || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
@@ -66,7 +70,6 @@ const Login = () => {
                   required 
                 />
                 <button type="button" className="btn-icon" onClick={() => setShowPassword(!showPassword)}>
-                   {/* ตรงนี้ถ้าคุณไม่มี Icon Component ให้ใส่ text ไปก่อนได้ครับ */}
                    {showPassword ? "Hide" : "Show"} 
                 </button>
               </div>

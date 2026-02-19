@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import logoImg from '../assets/logo.png';
 
 interface Product {
   id: number;
@@ -39,11 +38,15 @@ const ProductDetail: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const productRes = await axios.get(`http://localhost:3000/products/${id}`);
+        // ดึง Token เผื่อ API ต้องการ Auth
+        const token = localStorage.getItem('token');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+        const productRes = await axios.get(`http://localhost:3000/products/${id}`, { headers });
         const currentProduct = productRes.data;
         setProduct(currentProduct);
 
-        const allProductsRes = await axios.get('http://localhost:3000/products');
+        const allProductsRes = await axios.get('http://localhost:3000/products', { headers });
         const related = allProductsRes.data.filter((p: Product) => 
           p.category?.name === currentProduct.category?.name && p.id !== currentProduct.id
         ).slice(0, 4);
@@ -65,44 +68,6 @@ const ProductDetail: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#0f0f12] text-white font-sans pb-20">
-      
-      {/* === Navbar (แก้ไขใหม่ ใส่ข้อความแล้ว) === */}
-      <nav className="bg-[#0f0f12] border-b border-white/10 py-4 px-6 sticky top-0 z-50 shadow-md">
-        <div className="container mx-auto flex justify-between items-center">
-            
-            {/* ✅ ส่วน Logo + ข้อความ */}
-            <div 
-                className="flex items-center gap-3 cursor-pointer group" 
-                onClick={() => navigate('/')} 
-                title="หน้าแรก"
-            >
-                 {/* รูปโลโก้ */}
-                 <img 
-                    src={logoImg} 
-                    alt="Nexus Gear Logo" 
-                    className="h-10 w-auto object-contain group-hover:brightness-110 transition drop-shadow-[0_0_8px_rgba(220,38,38,0.6)]" 
-                 />
-                 
-                 {/* ✅ เพิ่มข้อความ Nexus Gear กลับมาแล้ว */}
-                 <span className="text-xl md:text-2xl font-bold tracking-wide text-white uppercase font-sans">
-                    NEXUS <span className="text-red-600">GEAR</span>
-                 </span>
-            </div>
-
-            {/* เมนูขวา */}
-            <div className="flex items-center gap-6 md:gap-8 text-sm font-medium text-gray-400">
-                <button onClick={() => navigate('/')} className="hover:text-white transition hidden md:block">หน้าแรก</button>
-                <button className="hover:text-white transition hidden md:block">ตะกร้า</button>
-                <button className="hover:text-white transition hidden md:block">โปรไฟล์</button>
-                <button className="bg-white text-black px-5 py-2 rounded hover:bg-gray-200 transition font-bold">
-                    เข้าสู่ระบบ
-                </button>
-            </div>
-        </div>
-      </nav>
-
-      {/* ... (ส่วนเนื้อหาข้างล่างเหมือนเดิมทุกอย่าง) ... */}
-      
       <div className="container mx-auto px-4 mt-6 max-w-6xl">
         <div className="mb-6">
             <button 

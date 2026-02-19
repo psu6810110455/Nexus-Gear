@@ -262,7 +262,9 @@ const ProductDetail: React.FC = () => {
                         </div>
                         <div className="p-4">
                             <h4 className="font-bold text-sm text-white line-clamp-1 group-hover:text-red-500 transition">{relProduct.name}</h4>
-                            <p className="text-gray-500 text-xs mt-1 mb-2">{relProduct.category?.name}</p>
+                                <p className="text-gray-500 text-xs mt-1 mb-2">
+                                    {typeof relProduct.category === 'object' ? relProduct.category?.name : relProduct.category}
+                                </p>
                             <div className="flex justify-between items-center">
                                 <p className="text-red-500 font-bold">฿{Number(relProduct.price).toLocaleString()}</p>
                                 <button className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-red-600 text-white transition">

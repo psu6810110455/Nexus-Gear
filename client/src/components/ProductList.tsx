@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-// import logoImg from '../assets/logo.png'; // ไม่ต้องใช้แล้วเพราะเราย้ายไป Navbar ส่วนกลาง
 
 interface Product {
   id: number;
@@ -87,9 +86,6 @@ function ProductList() {
 
   return (
     <div className="min-h-screen bg-[#0f0f12] text-white font-sans pb-20">
-      
-      {/* ลบ Navbar เดิมออก เพราะเรามี Navbar ส่วนกลางที่ App.tsx แล้ว */}
-      
       <div className="container mx-auto px-6 py-8">
         
         {/* Search Bar */}
@@ -197,9 +193,13 @@ function ProductList() {
                             </div>
 
                             <div className="p-5 flex flex-col flex-grow">
+                                {/* ✅ แก้ไข Error การแสดงหมวดหมู่ตรงนี้แล้วครับ */}
                                 <p className="text-gray-500 text-xs mb-1">
-                                    {typeof product.category === 'object' && product.category?.name ? product.category.name : (product.category as string || 'General')}
+                                    {typeof product.category === 'object' 
+                                        ? (product.category?.name || 'General') 
+                                        : (product.category || 'General')}
                                 </p>
+                                
                                 <h3 className="font-bold text-lg text-white mb-2 line-clamp-2 leading-snug group-hover:text-red-500 transition">
                                     {product.name}
                                 </h3>
@@ -210,11 +210,10 @@ function ProductList() {
                                         <p className="text-xl font-bold text-red-500">฿{Number(product.price).toLocaleString()}</p>
                                     </div>
                                     
-                                    {/* ✅ ปรับปรุงปุ่มซื้อเลย: เพิ่ม onClick และ stopPropagation */}
                                     <button 
                                         onClick={(e) => {
-                                            e.stopPropagation(); // หยุดไม่ให้คลิกทะลุไปโดน Card (เพราะ Card ก็มี onClick)
-                                            navigate(`/products/${product.id}`); // ให้วิ่งไปหน้า Detail เหมือนกัน (หรือเปลี่ยนเป็นใส่ตะกร้าในอนาคต)
+                                            e.stopPropagation(); 
+                                            navigate(`/products/${product.id}`); 
                                         }}
                                         className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-4 py-2 rounded transition shadow-lg shadow-red-900/20 active:scale-95 z-10"
                                     >

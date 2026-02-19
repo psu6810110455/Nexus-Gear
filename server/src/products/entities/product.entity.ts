@@ -26,7 +26,7 @@ export class Product {
   @JoinColumn({ name: 'category_id' })
   category: Category;
 
-  @Column({ name: 'category_id', nullable: true, insert: false, update: false })
+  @Column({ name: 'category_id', nullable: true })
   categoryId: number;
 
   @Column({ name: 'rating_average', type: 'float', default: 0, nullable: true })

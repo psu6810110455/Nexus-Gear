@@ -18,15 +18,11 @@ export class ProductsService {
   async create(createProductDto: CreateProductDto) {
     const { categoryId, ...productData } = createProductDto;
 
-    // สร้าง object product
     const product = this.productsRepository.create(productData);
 
-    // ถ้ามีการส่ง categoryId มา ให้หาและใส่เข้าไป
     if (categoryId) {
-      const category = await this.categoriesRepository.findOne({ where: { id: categoryId } });
-      if (!category) {
-        throw new NotFoundException(`Category #${categoryId} not found`);
-      }
+      const category = await this.categoriesRepository.findOne({ where: { id: Number(categoryId) } });
+      if (!category) throw new NotFoundException(`Category #${categoryId} not found`);
       product.category = category;
     }
 
@@ -34,12 +30,7 @@ export class ProductsService {
   }
 
   async findAll() {
-    const products = await this.productsRepository.find({ relations: ['category'] });
-    
-    // 🚨 เพิ่ม console.log ตรงนี้ เพื่อแอบดูข้อมูลก่อนส่งกลับไปหา React
-    console.log("📦 ข้อมูลที่ดึงได้จาก DB: ", products[0]); 
-    
-    return products;
+    return this.productsRepository.find({ relations: ['category'] });
   }
 
   async findOne(id: number) {
@@ -51,8 +42,26 @@ export class ProductsService {
     return product;
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return this.productsRepository.update(id, updateProductDto);
+  async update(id: number, updateProductDto: UpdateProductDto) {
+    const { categoryId, ...productData } = updateProductDto;
+
+    const product = await this.productsRepository.findOne({
+      where: { id },
+      relations: ['category'],
+    });
+    if (!product) throw new NotFoundException(`Product #${id} not found`);
+
+    Object.assign(product, productData);
+
+    if (categoryId) {
+      const category = await this.categoriesRepository.findOne({ where: { id: Number(categoryId) } });
+      if (!category) throw new NotFoundException(`Category #${categoryId} not found`);
+      product.category = category;
+    } else if (categoryId === null) {
+      product.category = null as any;
+    }
+
+    return this.productsRepository.save(product);
   }
 
   remove(id: number) {

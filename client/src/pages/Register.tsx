@@ -62,15 +62,6 @@ const Register = () => {
 
   return (
     <div className="register-page-wrapper">
-      <div className="top-bar">
-        <div className="top-bar-content">
-          <div className="brand-group">
-            <div className="logo-placeholder"></div>
-            <h2 className="brand-name">Nexus Gear</h2>
-          </div>
-        </div>
-      </div>
-
       <div className="register-container">
         <div className="bg-glow"></div>
         <div className="register-card">

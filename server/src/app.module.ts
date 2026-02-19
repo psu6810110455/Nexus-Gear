@@ -7,6 +7,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { CartModule } from './cart/cart.module';
 import { DatabaseService } from './database/database.service';
+import { CategoriesModule } from './categories/categories.module';
 
 @Global()
 @Module({
@@ -25,6 +26,7 @@ import { DatabaseService } from './database/database.service';
     UsersModule,
     AuthModule,
     CartModule,
+    CategoriesModule,
   ],
   controllers: [AppController],
   providers: [

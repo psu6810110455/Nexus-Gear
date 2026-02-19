@@ -5,7 +5,7 @@
 .login-page-wrapper {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: 100vh; /* หากทดสอบแล้วพบว่าหน้าจอมีแถบเลื่อนขึ้นลง ให้เปลี่ยนเป็น height: 100%; ครับ */
   width: 100vw; /* บังคับกว้างเต็มหน้าจอ */
   background-color: #050000;
   margin: 0;
@@ -13,31 +13,12 @@
   overflow-x: hidden;
 }
 
-/* แถบ บน-ล่าง */
-.top-bar { 
-  height: 80px; 
-  background: #000; 
-  display: flex; 
-  align-items: center; 
-  padding: 0 40px; 
-  border-bottom: 1px solid #1a1a1a; 
-  width: 100%; /* เต็มจอตามตัวพ่อ */
-  z-index: 100; 
-}
-
+/* แถบ ด้านล่าง */
 .bottom-bar { 
   height: 60px; 
   background: #000; 
   border-top: 1px solid #1a1a1a; 
   width: 100%; /* เต็มจอตามตัวพ่อ */
-}
-
-.brand-name { 
-  font-family: 'Orbitron', sans-serif; 
-  color: #fff; 
-  font-size: 1.8rem; 
-  text-transform: uppercase; 
-  letter-spacing: 2px;
 }
 
 /* ส่วนที่ 2: พื้นที่เนื้อหาและพื้นหลังไล่เฉดสี */

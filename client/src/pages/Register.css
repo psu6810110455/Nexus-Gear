@@ -5,34 +5,8 @@
 .register-page-wrapper {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: 100vh; /* หากมีแถบ Scrollbar งอกมา ให้ลองเปลี่ยนเป็น height: 100%; เหมือนหน้า Login นะครับ */
   background-color: #050000;
-}
-
-/* --- แถบดำบน --- */
-.top-bar {
-  background-color: #000000;
-  height: 80px;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  padding: 0 40px;
-  border-bottom: 1px solid #1a1a1a;
-  z-index: 100;
-}
-
-.brand-group {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.brand-name {
-  font-family: 'Orbitron', sans-serif;
-  color: #ffffff;
-  font-size: 1.8rem;
-  text-transform: uppercase;
-  letter-spacing: 2px;
 }
 
 /* --- แถบดำล่าง --- */

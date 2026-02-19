@@ -1,27 +1,23 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // เพิ่ม useNavigate สำหรับเปลี่ยนหน้า
-import axios from 'axios'; // นำเข้า axios
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import './Register.css';
 
 const Register = () => {
   const navigate = useNavigate();
   
-  // --- 1. เพิ่ม State สำหรับเก็บข้อมูลจากฟอร์ม ---
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
-  // State สำหรับ UI เดิมของคุณ
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // --- 2. ฟังก์ชันจัดการการสมัครสมาชิก ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // เช็คความถูกต้องเบื้องต้น (Validation)
     if (password !== confirmPassword) {
       alert('รหัสผ่านไม่ตรงกันครับ กรุณาตรวจสอบอีกครั้ง');
       return;
@@ -33,24 +29,27 @@ const Register = () => {
     }
 
     try {
-      // ยิงข้อมูลไปที่ NestJS (พอร์ต 3000)
       const response = await axios.post('http://localhost:3000/users/register', {
         username,
         email,
         password,
       });
 
-      // ถ้าสำเร็จ (Status 201)
-      alert(response.data.message || 'สมัครสมาชิกสำเร็จ!');
-      navigate('/login'); // ส่งผู้ใช้ไปหน้า Login ทันที
+      alert(response.data?.message || 'สมัครสมาชิกสำเร็จ!');
+      navigate('/login'); 
     } catch (error: any) {
-      // จัดการ Error เช่น อีเมลซ้ำ
-      const errorMessage = error.response?.data?.message || 'เกิดข้อผิดพลาดในการสมัครสมาชิก';
-      alert(errorMessage);
+      const errorData = error.response?.data?.message;
+      
+      if (Array.isArray(errorData)) {
+        alert("สมัครไม่สำเร็จ (ข้อมูลไม่ถูกต้อง):\n- " + errorData.join('\n- '));
+      } else if (typeof errorData === 'string') {
+        alert("สมัครไม่สำเร็จ:\n" + errorData);
+      } else {
+        alert('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้! กรุณาเช็คว่า Backend รันอยู่หรือไม่');
+      }
     }
   };
 
-  // SVG Icons (คงเดิม)
   const IconInfo = () => (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
   );
@@ -80,7 +79,6 @@ const Register = () => {
             <h1 className="form-title">สร้างบัญชีผู้ใช้</h1>
           </div>
 
-          {/* --- 3. เพิ่ม onSubmit ให้กับ Form --- */}
           <form className="register-form" onSubmit={handleSubmit}>
             <div className="form-group">
               <label>ชื่อผู้ใช้</label>

@@ -1,27 +1,36 @@
-import { Module } from '@nestjs/common';
+import { Module, Global } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 import { ProductsModule } from './products/products.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { CartModule } from './cart/cart.module';
+import { DatabaseService } from './database/database.service';
 
+@Global()
 @Module({
   imports: [
-    // 1. ตั้งค่าการเชื่อมต่อ Database
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: 'localhost',
-      port: 5433,              // Port Docker
+      port: 5433,
       username: 'root',
       password: 'rootpassword',
       database: 'ecommerce_db',
-      autoLoadEntities: true,  // โหลด Entity ทุกตัว (User, Product) อัตโนมัติ
-      synchronize: true,       // true = ให้แก้ตารางใน DB ตามโค้ดอัตโนมัติ (เหมาะกับตอน Dev/Demo)
+      autoLoadEntities: true,
+      synchronize: true,
     }),
-
-    // 2. รวม Feature Modules ทั้งหมด
-    ProductsModule, // ระบบสินค้า
-    UsersModule,    // ระบบจัดการ user
-    AuthModule,     // ระบบ Login/Register
+    ProductsModule,
+    UsersModule,
+    AuthModule,
+    CartModule,
   ],
+  controllers: [AppController],
+  providers: [
+    AppService,
+    DatabaseService,
+  ],
+  exports: [DatabaseService],
 })
 export class AppModule {}

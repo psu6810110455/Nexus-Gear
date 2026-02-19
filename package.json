@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@faker-js/faker": "^10.3.0",
+    "@nestjs/mapped-types": "*",
     "@nestjs/typeorm": "^11.0.0",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.3.1",

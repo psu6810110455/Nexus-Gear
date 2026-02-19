@@ -27,10 +27,15 @@ function HomePage() {
     axios.get('http://localhost:3000/products')
       .then(res => {
          if(res.data && res.data.length > 0) {
-            setProducts(res.data); 
+            // 🎯 สุ่มสินค้า และเลือกมาแสดงเพียง 8 ชิ้นแรก
+            const shuffled = [...res.data].sort(() => 0.5 - Math.random());
+            setProducts(shuffled.slice(0, 8)); 
          }
       })
-      .catch(err => console.log("Using Mock Data"));
+      .catch(err => {
+          console.log("Using Mock Data");
+          setProducts(MOCK_PRODUCTS.slice(0, 8));
+      });
   }, []);
 
   const handleEnterSite = () => {
@@ -83,7 +88,7 @@ function HomePage() {
             onClick={() => navigate('/shop')} 
             className="mt-6 bg-white text-black text-sm font-bold px-8 py-2.5 rounded hover:scale-105 transition shadow-[0_0_15px_rgba(255,255,255,0.4)]"
          >
-            ดูสินค้า
+            ดูสินค้าทั้งหมด
          </button>
       </div>
 
@@ -93,7 +98,7 @@ function HomePage() {
             
             <div className="text-center mb-8">
                 <h2 className="text-red-600 font-extrabold text-lg inline-block border-b-2 border-red-600 pb-1">
-                    โปรโมชั่น
+                    สินค้าแนะนำ
                 </h2>
             </div>
 
@@ -122,6 +127,16 @@ function HomePage() {
                          </div>
                     </div>
                 ))}
+            </div>
+
+            {/* ปุ่มเพิ่มเติมสำหรับไปหน้า Shop */}
+            <div className="text-center mt-12">
+                <button 
+                    onClick={() => navigate('/shop')}
+                    className="text-gray-400 hover:text-red-600 font-bold text-sm transition-colors border border-gray-200 px-6 py-2 rounded-full hover:border-red-600"
+                >
+                    ดูสินค้าทั้งหมด →
+                </button>
             </div>
 
         </div>

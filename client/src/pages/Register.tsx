@@ -30,9 +30,9 @@ const Register = () => {
 
     try {
       const response = await axios.post('http://localhost:3000/users/register', {
-        username,
-        email,
-        password,
+        name: username,
+        email: email,
+        password: password,
       });
 
       alert(response.data?.message || 'สมัครสมาชิกสำเร็จ!');

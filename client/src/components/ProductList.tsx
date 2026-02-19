@@ -15,6 +15,8 @@ function ProductList() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // กำหนด Default ว่ามีหมวดหมู่อะไรบ้าง
   const [categories, setCategories] = useState<string[]>(['All']); 
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [minPrice, setMinPrice] = useState('');      
@@ -36,22 +38,27 @@ function ProductList() {
       const data = response.data;
       setProducts(data);
 
-      const uniqueCategories = new Set<string>(['All']);
+      // 🎯 ดึงชื่อหมวดหมู่มาจาก Database แบบอัตโนมัติ
       const counts: Record<string, number> = { 'All': data.length };
+      const categorySet = new Set<string>(['All']); // เริ่มต้นด้วย 'All' เสมอ
 
+      // นับจำนวนสินค้าในแต่ละหมวดหมู่
       data.forEach((p: Product) => {
         let catName = 'Uncategorized';
+        
+        // เช็คว่า Backend ส่งชื่อหมวดหมู่มาให้ไหม
         if (typeof p.category === 'object' && p.category !== null && 'name' in p.category) {
             catName = p.category.name;
         } else if (typeof p.category === 'string') {
             catName = p.category;
         }
         
-        uniqueCategories.add(catName);
+        categorySet.add(catName);
         counts[catName] = (counts[catName] || 0) + 1;
       });
 
-      setCategories(Array.from(uniqueCategories));
+      // อัปเดต State 
+      setCategories(Array.from(categorySet));
       setCategoryCounts(counts);
       setLoading(false);
 
@@ -107,7 +114,7 @@ function ProductList() {
         <div className="flex flex-col md:flex-row gap-8">
             
             {/* === SIDEBAR FILTER === */}
-            <div className="w-full md:w-1/4 hidden md:block">
+            <div className="w-full md:w-1/4">
                 <div className="bg-[#18181b] p-6 rounded-xl border border-white/5 sticky top-24">
                     <h2 className="text-red-600 font-bold text-lg mb-6 flex items-center gap-2 border-l-4 border-red-600 pl-3">
                         FILTER
@@ -140,7 +147,7 @@ function ProductList() {
                         <div className="flex items-center gap-2 text-sm text-gray-400">
                              <input 
                                 type="number" 
-                                placeholder="0" 
+                                placeholder="Min" 
                                 className="w-full bg-black/50 border border-white/10 rounded px-2 py-1 text-white focus:border-red-500 outline-none"
                                 value={minPrice}
                                 onChange={(e) => setMinPrice(e.target.value)} 
@@ -156,9 +163,9 @@ function ProductList() {
                         </div>
                         <button 
                             onClick={handlePriceFilter}
-                            className="w-full mt-3 bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2 rounded transition active:scale-95"
+                            className="w-full mt-4 bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2 rounded transition active:scale-95"
                         >
-                            ค้นหา
+                            ค้นหาตามราคา
                         </button>
                     </div>
                 </div>
@@ -186,14 +193,13 @@ function ProductList() {
                                 <img 
                                     src={product.imageUrl || product.image_url || 'https://placehold.co/400x400'} 
                                     alt={product.name}
-                                    className="max-h-full max-w-full object-contain group-hover:scale-110 transition duration-500"
+                                    className="max-h-full max-w-full object-contain group-hover:scale-110 transition duration-500 mix-blend-multiply"
                                     onError={(e) => { e.currentTarget.src = 'https://placehold.co/400x400/png?text=Nexus'; }}
                                 />
                                 <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition duration-300"></div>
                             </div>
 
                             <div className="p-5 flex flex-col flex-grow">
-                                {/* ✅ แก้ไข Error การแสดงหมวดหมู่ตรงนี้แล้วครับ */}
                                 <p className="text-gray-500 text-xs mb-1">
                                     {typeof product.category === 'object' 
                                         ? (product.category?.name || 'General') 
@@ -217,7 +223,7 @@ function ProductList() {
                                         }}
                                         className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-4 py-2 rounded transition shadow-lg shadow-red-900/20 active:scale-95 z-10"
                                     >
-                                        ซื้อเลย
+                                        ดูรายละเอียด
                                     </button>
                                 </div>
                             </div>
@@ -229,10 +235,17 @@ function ProductList() {
                     <div className="text-center py-20 text-gray-500">
                         <p className="text-xl">ไม่พบสินค้าในหมวดหมู่นี้</p>
                         <button 
-                            onClick={() => setSelectedCategory('All')}
+                            onClick={() => {
+                                setSelectedCategory('All');
+                                setMinPrice('');
+                                setMaxPrice('');
+                                setAppliedMin(0);
+                                setAppliedMax(Infinity);
+                                setSearchTerm('');
+                            }}
                             className="mt-4 text-red-500 underline hover:text-red-400"
                         >
-                            กลับไปดูสินค้าทั้งหมด
+                            ล้างตัวกรองและดูสินค้าทั้งหมด
                         </button>
                     </div>
                 )}

@@ -30,6 +30,7 @@ export class UsersController {
       if (error.code === 'ER_DUP_ENTRY') {
         throw new ConflictException('อีเมลนี้ถูกใช้งานไปแล้วครับ');
       }
+      console.error("🔥 ERROR ของจริงคือ: ", error);
       throw new InternalServerErrorException('เกิดข้อผิดพลาดบางอย่างในระบบ');
     }
   }

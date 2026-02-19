@@ -14,15 +14,15 @@ export class UsersService {
   ) {}
 
   async register(createUserDto: CreateUserDto): Promise<User> {
-    const { password, email, username } = createUserDto;
-    
+    const { password, email, name } = createUserDto;
+    console.log("📦 ข้อมูลที่ส่งมาถึง Service: ", createUserDto);
     // 1. เข้ารหัสรหัสผ่าน
     const hashedPassword = await bcrypt.hash(password, 10);
     
     // 2. สร้าง Instance แบบระบุตัวตนชัดเจน (ช่วยให้ TS ไม่สับสนครับ)
     const newUser = new User();
     newUser.email = email;
-    newUser.username = username;
+    newUser.name = name;
     newUser.password = hashedPassword;
 
     // 3. บันทึกข้อมูล (ลบ create() ออกไปก่อนเพื่อเช็ค Type ครับ)

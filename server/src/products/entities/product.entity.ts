@@ -26,6 +26,6 @@ export class Product {
   @JoinColumn({ name: 'category_id' })
   category: Category;
 
-  @Column({ name: 'category_id', nullable: true })
+  @Column({ name: 'category_id', nullable: true, insert: false, update: false })
   categoryId: number;
 }

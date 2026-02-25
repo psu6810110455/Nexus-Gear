@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+// ลบ Recharts ตัวเก่าออก เพราะเราย้ายไปทำในหน้าใหม่แล้ว
+
 import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import ProductList from './components/ProductList';
@@ -10,6 +11,8 @@ import ProductDetail from './components/ProductDetail';
 import Register from './pages/Register';
 import Login from './pages/Login';
 import AdminPage from './pages/AdminPage';
+// 1. นำเข้าหน้า Dashboard ตัวใหม่ที่เราเพิ่งสร้าง
+import NexusGearAdminDashboard from './pages/NexusGearAdminDashboard'; 
 import './App.css'
 
 interface CartItem {
@@ -29,7 +32,8 @@ interface SalesData {
 
 function AppContent() {
   const location = useLocation();
-  const isAdminPage = location.pathname.startsWith('/admin');
+  // เช็คว่าถ้าเป็นหน้า /admin หรือ /dashboard ให้ซ่อน Navbar (จะได้แสดงหน้า Dashboard เราเต็มๆ)
+  const isAdminPage = location.pathname.startsWith('/admin') || location.pathname.startsWith('/dashboard');
 
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [salesData, setSalesData] = useState<SalesData[]>([])
@@ -76,7 +80,7 @@ function AppContent() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#0a0a0a' }}>
-      {/* ซ่อน Navbar เมื่ออยู่หน้า Admin */}
+      {/* ซ่อน Navbar เมื่ออยู่หน้า Admin หรือ Dashboard */}
       {!isAdminPage && <Navbar />}
 
       <Routes>
@@ -87,55 +91,15 @@ function AppContent() {
         <Route path="/login" element={<Login />} />
         <Route path="/admin" element={<AdminPage />} />
 
-        {/* Dashboard Route */}
-        <Route path="/dashboard" element={
-          <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-            <h1>🚀 Nexus Gear Dashboard</h1>
-            <div style={{ background: '#fff', padding: '20px', borderRadius: '10px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', marginBottom: '30px' }}>
-              <h2>📊 สรุปยอดขายรายเดือน</h2>
-              <div style={{ width: '100%', height: 300 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={salesData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="sales" fill="#8884d8" name="ยอดขาย (บาท)" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-            <hr style={{ margin: '30px 0' }} />
-            <h2 style={{ textAlign: 'left' }}>🛒 ตะกร้าสินค้าของฉัน</h2>
-            <div style={{ marginBottom: '20px', textAlign: 'left' }}>
-              <button onClick={handleAddToCart} style={{ padding: '10px 20px', fontSize: '16px', cursor: 'pointer', background: '#28a745', color: 'white', border: 'none', borderRadius: '5px' }}>
-                + ลองกดเพิ่มสินค้า (Test Add)
-              </button>
-            </div>
-            {loading ? <p>กำลังโหลด...</p> : (
-              <div>
-                {cartItems.length === 0 ? <p>ไม่มีสินค้าในตะกร้า</p> : (
-                  <div style={{ display: 'grid', gap: '15px' }}>
-                    {cartItems.map((item) => (
-                      <div key={item.cart_item_id} style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f9f9f9' }}>
-                        <div style={{ textAlign: 'left' }}>
-                          <h3>{item.name}</h3>
-                          <p>ราคาต่อชิ้น: {item.price} บาท</p>
-                          <p>จำนวน: <b>{item.quantity}</b> ชิ้น</p>
-                          <p style={{ color: 'green', fontWeight: 'bold' }}>รวม: {parseFloat(item.total_price).toLocaleString()} บาท</p>
-                        </div>
-                        <button onClick={() => handleRemove(item.cart_item_id)} style={{ background: '#dc3545', color: 'white', border: 'none', padding: '10px', borderRadius: '5px', cursor: 'pointer' }}>
-                          ลบสินค้า 🗑️
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        } />
+        {/* 2. เปลี่ยน Route /dashboard ให้เรียกหน้า NexusGearAdminDashboard ของเราแทน! */}
+        <Route 
+            path="/dashboard" 
+            element={
+                <NexusGearAdminDashboard 
+                    setActiveTab={(tab) => console.log('เปลี่ยนไปหน้า:', tab)} 
+                />
+            } 
+        />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

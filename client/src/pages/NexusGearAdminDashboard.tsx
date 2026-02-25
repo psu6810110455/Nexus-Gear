@@ -13,9 +13,16 @@ interface DashboardStats {
   lowStock: number;
 }
 
+// 1. [Commit 6] สร้าง Interface สำหรับข้อมูลกิจกรรมล่าสุด
+interface ActivityItem {
+  user: string;
+  action: string;
+  time: string;
+}
+
 export default function NexusGearAdminDashboard({ setActiveTab }: AdminDashboardProps) { 
   
-  // State สำหรับกล่องสถิติ 4 ใบ
+  // State สำหรับกล่องสถิติ
   const [statsData, setStatsData] = useState<DashboardStats>({
     totalSales: 0,
     totalOrders: 0,
@@ -23,16 +30,20 @@ export default function NexusGearAdminDashboard({ setActiveTab }: AdminDashboard
     lowStock: 0
   });
 
-  // 1. [Commit 5] สร้าง State ใหม่สำหรับเก็บข้อมูล "กราฟยอดขาย" (เริ่มต้นเป็น 0 ทุกวัน)
+  // State สำหรับกราฟ
   const [chartData, setChartData] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
 
-  // สั่งให้ดึงข้อมูลตอนโหลดหน้าเว็บ
+  // 2. [Commit 6] สร้าง State สำหรับเก็บข้อมูลกิจกรรมล่าสุด (เริ่มต้นเป็น Array ว่างๆ)
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
+
+  // สั่งให้ดึงข้อมูลทั้งหมดตอนโหลดหน้าเว็บ
   useEffect(() => {
     fetchDashboardStats();
-    fetchChartData(); // 2. [Commit 5] เรียกใช้ฟังก์ชันดึงข้อมูลกราฟ
+    fetchChartData();
+    fetchRecentActivities(); // 3. [Commit 6] เรียกใช้ฟังก์ชันดึงข้อมูลกิจกรรม
   }, []);
 
-  // ฟังก์ชันดึงข้อมูลกล่องสถิติ
+  // ฟังก์ชันดึงข้อมูลสถิติ
   const fetchDashboardStats = async () => {
     try {
       const response = await axios.get('http://localhost:3000/api/admin/dashboard/stats'); 
@@ -43,18 +54,34 @@ export default function NexusGearAdminDashboard({ setActiveTab }: AdminDashboard
     }
   };
 
-  // 3. [Commit 5] ฟังก์ชันใหม่สำหรับไปดึงข้อมูล "กราฟ" จาก Backend
+  // ฟังก์ชันดึงข้อมูลกราฟ
   const fetchChartData = async () => {
     try {
-      // ⚠️ เปลี่ยน URL ให้ตรงกับ Backend ของคุณ (ตัวอย่าง: ดึงข้อมูลกราฟ 7 วันล่าสุด)
       const response = await axios.get('http://localhost:3000/api/admin/dashboard/chart');
+      if (response.data) setChartData(response.data);
+    } catch (error) {
+      console.error("เกิดข้อผิดพลาดในการดึงข้อมูลกราฟ:", error);
+      setChartData([40, 65, 30, 85, 55, 90, 70]); 
+    }
+  };
+
+  // 4. [Commit 6] ฟังก์ชันใหม่ ดึงข้อมูลกิจกรรมล่าสุดจาก Backend
+  const fetchRecentActivities = async () => {
+    try {
+      // ⚠️ เปลี่ยน URL ให้ตรงกับ Backend ของคุณ
+      const response = await axios.get('http://localhost:3000/api/admin/dashboard/activities');
       if (response.data) {
-        setChartData(response.data); // คาดหวังข้อมูลเป็น Array ตัวเลข เช่น [40, 60, ...]
+        setActivities(response.data);
       }
     } catch (error) {
-      console.error("เกิดข้อผิดพลาดในการดึงข้อมูลกราฟ (รอเชื่อม Backend):", error);
-      // ข้อมูลจำลอง (Mock) กรณี Backend ยังไม่เสร็จ
-      setChartData([40, 65, 30, 85, 55, 90, 70]); 
+      console.error("เกิดข้อผิดพลาดในการดึงข้อมูลกิจกรรม (รอเชื่อม Backend):", error);
+      // ข้อมูลจำลอง (Mock) กรณี Backend ยังไม่เสร็จ (ย้ายจากตัวแปรธรรมดามาไว้ในนี้แทน)
+      setActivities([
+        { user: "Admin 01", action: "ปรับสต็อก ROG Phone 7", time: "5 นาทีที่แล้ว" },
+        { user: "System", action: "ได้รับคำสั่งซื้อใหม่ #ORD-2566-005", time: "12 นาทีที่แล้ว" },
+        { user: "Admin 02", action: "อนุมัติการชำระเงิน #ORD-2566-002", time: "1 ชั่วโมงที่แล้ว" },
+        { user: "System", action: "แจ้งเตือน: Razer Kishi V2 ใกล้หมด", time: "2 ชั่วโมงที่แล้ว" },
+      ]);
     }
   };
 
@@ -63,14 +90,6 @@ export default function NexusGearAdminDashboard({ setActiveTab }: AdminDashboard
     { title: "คำสั่งซื้อ", value: statsData.totalOrders.toLocaleString(), change: "+8.2%", icon: <ShoppingBag />, link: 'orders' },
     { title: "สินค้าในคลัง", value: statsData.totalProducts.toLocaleString(), change: "-2.4%", icon: <Package />, link: 'products' },
     { title: "สินค้าใกล้หมด", value: statsData.lowStock.toString(), change: "Alert", icon: <AlertTriangle />, alert: statsData.lowStock > 0, link: 'stock' },
-  ];
-
-  // --- ข้อมูลจำลองกิจกรรมล่าสุด (รอทำ Commit หน้า) ---
-  const recentActivities = [
-    { user: "Admin 01", action: "ปรับสต็อก ROG Phone 7", time: "5 นาทีที่แล้ว" },
-    { user: "System", action: "ได้รับคำสั่งซื้อใหม่ #ORD-2566-005", time: "12 นาทีที่แล้ว" },
-    { user: "Admin 02", action: "อนุมัติการชำระเงิน #ORD-2566-002", time: "1 ชั่วโมงที่แล้ว" },
-    { user: "System", action: "แจ้งเตือน: Razer Kishi V2 ใกล้หมด", time: "2 ชั่วโมงที่แล้ว" },
   ];
 
   return (
@@ -123,7 +142,6 @@ export default function NexusGearAdminDashboard({ setActiveTab }: AdminDashboard
                 </select>
             </div>
             <div className="flex items-end justify-between h-48 gap-2 px-2">
-                {/* 4. [Commit 5] เปลี่ยนจากการฝังตัวเลขตรงๆ มาเป็นการใช้ State 'chartData' แทน */}
                 {chartData.map((h, i) => (
                     <div key={i} className="w-full bg-[#2E0505] rounded-t-lg relative group overflow-hidden">
                         <div 
@@ -144,7 +162,8 @@ export default function NexusGearAdminDashboard({ setActiveTab }: AdminDashboard
                 <Activity className="text-[#FF0000]" /> กิจกรรมล่าสุด
             </h3>
             <div className="space-y-4">
-                {recentActivities.map((act, i) => (
+                {/* 5. [Commit 6] เปลี่ยนมาวนลูปจาก State 'activities' แทน */}
+                {activities.map((act, i) => (
                     <div key={i} className="flex gap-3 pb-3 border-b border-[#990000]/10 last:border-0 last:pb-0">
                         <div className="w-8 h-8 rounded-full bg-[#2E0505] flex items-center justify-center text-[#FF0000] border border-[#990000]/50 shrink-0">
                             <UserIcon size={14} />

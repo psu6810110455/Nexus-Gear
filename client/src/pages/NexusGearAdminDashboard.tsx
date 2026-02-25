@@ -1,4 +1,3 @@
-// 1. [Commit 4] เพิ่ม useState, useEffect สำหรับจัดการข้อมูล และ axios สำหรับยิง API
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { BarChart3, ShoppingBag, Package, AlertTriangle, ArrowRight, TrendingUp, Activity, User as UserIcon, Clock } from 'lucide-react';
@@ -7,7 +6,6 @@ interface AdminDashboardProps {
   setActiveTab: (tab: string) => void;
 }
 
-// 2. [Commit 4] สร้าง Interface กำหนดรูปร่างของข้อมูลสถิติที่จะได้จาก Database
 interface DashboardStats {
   totalSales: number;
   totalOrders: number;
@@ -17,7 +15,7 @@ interface DashboardStats {
 
 export default function NexusGearAdminDashboard({ setActiveTab }: AdminDashboardProps) { 
   
-  // 3. [Commit 4] สร้างกล่อง State เก็บข้อมูลสถิติ (ตั้งค่าเริ่มต้นเป็น 0 รอไว้ก่อน)
+  // State สำหรับกล่องสถิติ 4 ใบ
   const [statsData, setStatsData] = useState<DashboardStats>({
     totalSales: 0,
     totalOrders: 0,
@@ -25,35 +23,41 @@ export default function NexusGearAdminDashboard({ setActiveTab }: AdminDashboard
     lowStock: 0
   });
 
-  // 4. [Commit 4] สั่งให้ทำงาน "ทันที" ที่โหลดหน้านี้ขึ้นมา เพื่อไปดึงข้อมูลจาก API
+  // 1. [Commit 5] สร้าง State ใหม่สำหรับเก็บข้อมูล "กราฟยอดขาย" (เริ่มต้นเป็น 0 ทุกวัน)
+  const [chartData, setChartData] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
+
+  // สั่งให้ดึงข้อมูลตอนโหลดหน้าเว็บ
   useEffect(() => {
     fetchDashboardStats();
+    fetchChartData(); // 2. [Commit 5] เรียกใช้ฟังก์ชันดึงข้อมูลกราฟ
   }, []);
 
-  // 5. [Commit 4] ฟังก์ชันไปดึงข้อมูลจาก Backend
+  // ฟังก์ชันดึงข้อมูลกล่องสถิติ
   const fetchDashboardStats = async () => {
     try {
-      // ⚠️ คำเตือน: ตรงนี้คือ URL ของ Backend คุณ (คุณต้องแก้ให้ตรงกับ Route ที่คุณสร้างไว้นะครับ)
-      // ตัวอย่าง: http://localhost:3000/api/admin/dashboard/stats
       const response = await axios.get('http://localhost:3000/api/admin/dashboard/stats'); 
-      
-      // ถ้าดึงข้อมูลสำเร็จ ให้อัปเดต State (ถ้า Backend คุณยังไม่เสร็จ โค้ดจะวิ่งไปเข้า catch แทนครับ)
-      if (response.data) {
-        setStatsData(response.data);
-      }
+      if (response.data) setStatsData(response.data);
     } catch (error) {
-      console.error("เกิดข้อผิดพลาดในการดึงข้อมูลสถิติ (รอเชื่อม Backend):", error);
-      // ระหว่างที่ Backend ยังไม่เสร็จ ผมขอใส่ข้อมูลจำลอง (Mock) ให้หน้าเว็บไม่ดูโล่งเกินไปครับ
-      setStatsData({
-        totalSales: 459200,
-        totalOrders: 1245,
-        totalProducts: 156,
-        lowStock: 5
-      });
+      console.error("เกิดข้อผิดพลาดในการดึงข้อมูลสถิติ:", error);
+      setStatsData({ totalSales: 459200, totalOrders: 1245, totalProducts: 156, lowStock: 5 });
     }
   };
 
-  // 6. [Commit 4] แปลงโฉมตัวแปร stats ให้ดึงค่ามาจาก State (statsData) แทนการพิมพ์ตรงๆ
+  // 3. [Commit 5] ฟังก์ชันใหม่สำหรับไปดึงข้อมูล "กราฟ" จาก Backend
+  const fetchChartData = async () => {
+    try {
+      // ⚠️ เปลี่ยน URL ให้ตรงกับ Backend ของคุณ (ตัวอย่าง: ดึงข้อมูลกราฟ 7 วันล่าสุด)
+      const response = await axios.get('http://localhost:3000/api/admin/dashboard/chart');
+      if (response.data) {
+        setChartData(response.data); // คาดหวังข้อมูลเป็น Array ตัวเลข เช่น [40, 60, ...]
+      }
+    } catch (error) {
+      console.error("เกิดข้อผิดพลาดในการดึงข้อมูลกราฟ (รอเชื่อม Backend):", error);
+      // ข้อมูลจำลอง (Mock) กรณี Backend ยังไม่เสร็จ
+      setChartData([40, 65, 30, 85, 55, 90, 70]); 
+    }
+  };
+
   const stats = [
     { title: "ยอดขายรวม", value: `฿${statsData.totalSales.toLocaleString()}`, change: "+12.5%", icon: <BarChart3 />, link: null },
     { title: "คำสั่งซื้อ", value: statsData.totalOrders.toLocaleString(), change: "+8.2%", icon: <ShoppingBag />, link: 'orders' },
@@ -61,7 +65,7 @@ export default function NexusGearAdminDashboard({ setActiveTab }: AdminDashboard
     { title: "สินค้าใกล้หมด", value: statsData.lowStock.toString(), change: "Alert", icon: <AlertTriangle />, alert: statsData.lowStock > 0, link: 'stock' },
   ];
 
-  // --- ส่วนของ Mock Data กิจกรรมล่าสุด (รอทำใน Commit หน้า) ---
+  // --- ข้อมูลจำลองกิจกรรมล่าสุด (รอทำ Commit หน้า) ---
   const recentActivities = [
     { user: "Admin 01", action: "ปรับสต็อก ROG Phone 7", time: "5 นาทีที่แล้ว" },
     { user: "System", action: "ได้รับคำสั่งซื้อใหม่ #ORD-2566-005", time: "12 นาทีที่แล้ว" },
@@ -75,7 +79,7 @@ export default function NexusGearAdminDashboard({ setActiveTab }: AdminDashboard
         DASHBOARD
       </h2>
       
-      {/* --- การ์ด 4 ใบ (ตอนนี้เชื่อมกับ State เรียบร้อยแล้ว) --- */}
+      {/* --- การ์ด 4 ใบ --- */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
           <div 
@@ -119,7 +123,8 @@ export default function NexusGearAdminDashboard({ setActiveTab }: AdminDashboard
                 </select>
             </div>
             <div className="flex items-end justify-between h-48 gap-2 px-2">
-                {[40, 65, 30, 85, 55, 90, 70].map((h, i) => (
+                {/* 4. [Commit 5] เปลี่ยนจากการฝังตัวเลขตรงๆ มาเป็นการใช้ State 'chartData' แทน */}
+                {chartData.map((h, i) => (
                     <div key={i} className="w-full bg-[#2E0505] rounded-t-lg relative group overflow-hidden">
                         <div 
                             style={{ height: `${h}%` }} 

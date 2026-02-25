@@ -16,7 +16,7 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); // หยุด Refresh 
 
     if (password !== confirmPassword) {
       alert('รหัสผ่านไม่ตรงกันครับ กรุณาตรวจสอบอีกครั้ง');
@@ -61,14 +61,15 @@ const Register = () => {
   );
 
   return (
-    <div className="register-page-wrapper">
-      <div className="register-container">
-        <div className="bg-glow"></div>
+    <main className="register-page-wrapper">
+      <section className="register-container">
+        <div className="bg-glow" aria-hidden="true"></div>
+        
         <div className="register-card">
-          <div className="register-header">
+          <header className="register-header">
             <Link to="/" className="btn-back-home">กลับสู่หน้าหลัก</Link>
             <h1 className="form-title">สร้างบัญชีผู้ใช้</h1>
-          </div>
+          </header>
 
           <form className="register-form" onSubmit={handleSubmit}>
             <div className="form-group">
@@ -110,12 +111,12 @@ const Register = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required 
                 />
-                <div className="icon-group">
-                  <div className="icon-info"><IconInfo /></div>
+                <span className="icon-group">
+                  <span className="icon-info"><IconInfo /></span>
                   <button type="button" className="btn-icon" onClick={() => setShowPassword(!showPassword)}>
                     {showPassword ? <IconEyeOff /> : <IconEye />}
                   </button>
-                </div>
+                </span>
               </div>
             </div>
 
@@ -130,12 +131,12 @@ const Register = () => {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required 
                 />
-                <div className="icon-group">
-                  <div className="icon-info"><IconInfo /></div>
+                <span className="icon-group">
+                  <span className="icon-info"><IconInfo /></span>
                   <button type="button" className="btn-icon" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
                     {showConfirmPassword ? <IconEyeOff /> : <IconEye />}
                   </button>
-                </div>
+                </span>
               </div>
             </div>
 
@@ -158,10 +159,10 @@ const Register = () => {
             <p>มีบัญชีอยู่แล้ว? <Link to="/login" className="link-login">เข้าสู่ระบบ</Link></p>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="bottom-bar"></div>
-    </div>
+      <footer className="bottom-bar"></footer>
+    </main>
   );
 };
 

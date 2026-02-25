@@ -48,15 +48,15 @@ const Login = () => {
   );
 
   return (
-    <div className="login-page-wrapper">
-      <div className="login-container">
-        <div className="bg-lines"></div>
+    <main className="login-page-wrapper">
+      <section className="login-container">
+        <div className="bg-lines" aria-hidden="true"></div>
 
         <div className="login-card">
-          <div className="login-header">
+          <header className="login-header">
             <Link to="/" className="btn-back-home">กลับสู่หน้าหลัก</Link>
             <h1 className="form-title">เข้าสู่ระบบ</h1>
-          </div>
+          </header>
 
           {/* --- 3. เพิ่ม onSubmit ให้ฟอร์ม --- */}
           <form className="login-form" onSubmit={handleSubmit}>
@@ -85,12 +85,12 @@ const Login = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required 
                 />
-                <div className="icon-group">
-                  <div className="icon-info"><IconInfo /></div>
+                <span className="icon-group">
+                  <span className="icon-info"><IconInfo /></span>
                   <button type="button" className="btn-icon" onClick={() => setShowPassword(!showPassword)}>
                     {showPassword ? <IconEye /> : <IconEyeOff />}
                   </button>
-                </div>
+                </span>
               </div>
             </div>
 
@@ -109,10 +109,10 @@ const Login = () => {
             </div>
           </form>
         </div>
-      </div>
+      </section>
 
-      <div className="bottom-bar"></div>
-    </div>
+      <footer className="bottom-bar"></footer>
+    </main>
   );
 };
 

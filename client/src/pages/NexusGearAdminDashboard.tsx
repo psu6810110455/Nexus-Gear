@@ -1,22 +1,67 @@
-import React from 'react';
-// 1. [Commit 3] เพิ่มนำเข้า Icon ที่เหลือให้ครบ (Activity, User as UserIcon, Clock)
+// 1. [Commit 4] เพิ่ม useState, useEffect สำหรับจัดการข้อมูล และ axios สำหรับยิง API
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { BarChart3, ShoppingBag, Package, AlertTriangle, ArrowRight, TrendingUp, Activity, User as UserIcon, Clock } from 'lucide-react';
 
 interface AdminDashboardProps {
   setActiveTab: (tab: string) => void;
 }
 
+// 2. [Commit 4] สร้าง Interface กำหนดรูปร่างของข้อมูลสถิติที่จะได้จาก Database
+interface DashboardStats {
+  totalSales: number;
+  totalOrders: number;
+  totalProducts: number;
+  lowStock: number;
+}
+
 export default function NexusGearAdminDashboard({ setActiveTab }: AdminDashboardProps) { 
   
-  // --- ข้อมูลจำลอง (Mock Data) ---
+  // 3. [Commit 4] สร้างกล่อง State เก็บข้อมูลสถิติ (ตั้งค่าเริ่มต้นเป็น 0 รอไว้ก่อน)
+  const [statsData, setStatsData] = useState<DashboardStats>({
+    totalSales: 0,
+    totalOrders: 0,
+    totalProducts: 0,
+    lowStock: 0
+  });
+
+  // 4. [Commit 4] สั่งให้ทำงาน "ทันที" ที่โหลดหน้านี้ขึ้นมา เพื่อไปดึงข้อมูลจาก API
+  useEffect(() => {
+    fetchDashboardStats();
+  }, []);
+
+  // 5. [Commit 4] ฟังก์ชันไปดึงข้อมูลจาก Backend
+  const fetchDashboardStats = async () => {
+    try {
+      // ⚠️ คำเตือน: ตรงนี้คือ URL ของ Backend คุณ (คุณต้องแก้ให้ตรงกับ Route ที่คุณสร้างไว้นะครับ)
+      // ตัวอย่าง: http://localhost:3000/api/admin/dashboard/stats
+      const response = await axios.get('http://localhost:3000/api/admin/dashboard/stats'); 
+      
+      // ถ้าดึงข้อมูลสำเร็จ ให้อัปเดต State (ถ้า Backend คุณยังไม่เสร็จ โค้ดจะวิ่งไปเข้า catch แทนครับ)
+      if (response.data) {
+        setStatsData(response.data);
+      }
+    } catch (error) {
+      console.error("เกิดข้อผิดพลาดในการดึงข้อมูลสถิติ (รอเชื่อม Backend):", error);
+      // ระหว่างที่ Backend ยังไม่เสร็จ ผมขอใส่ข้อมูลจำลอง (Mock) ให้หน้าเว็บไม่ดูโล่งเกินไปครับ
+      setStatsData({
+        totalSales: 459200,
+        totalOrders: 1245,
+        totalProducts: 156,
+        lowStock: 5
+      });
+    }
+  };
+
+  // 6. [Commit 4] แปลงโฉมตัวแปร stats ให้ดึงค่ามาจาก State (statsData) แทนการพิมพ์ตรงๆ
   const stats = [
-    { title: "ยอดขายรวม", value: "฿459,200", change: "+12.5%", icon: <BarChart3 />, link: null },
-    { title: "คำสั่งซื้อ", value: "1,245", change: "+8.2%", icon: <ShoppingBag />, link: 'orders' },
-    { title: "สินค้าในคลัง", value: "156", change: "-2.4%", icon: <Package />, link: 'products' },
-    { title: "สินค้าใกล้หมด", value: "5", change: "Alert", icon: <AlertTriangle />, alert: true, link: 'stock' },
+    { title: "ยอดขายรวม", value: `฿${statsData.totalSales.toLocaleString()}`, change: "+12.5%", icon: <BarChart3 />, link: null },
+    { title: "คำสั่งซื้อ", value: statsData.totalOrders.toLocaleString(), change: "+8.2%", icon: <ShoppingBag />, link: 'orders' },
+    { title: "สินค้าในคลัง", value: statsData.totalProducts.toLocaleString(), change: "-2.4%", icon: <Package />, link: 'products' },
+    { title: "สินค้าใกล้หมด", value: statsData.lowStock.toString(), change: "Alert", icon: <AlertTriangle />, alert: statsData.lowStock > 0, link: 'stock' },
   ];
 
-  // [Commit 3] เพิ่มข้อมูลจำลองสำหรับ "กิจกรรมล่าสุด"
+  // --- ส่วนของ Mock Data กิจกรรมล่าสุด (รอทำใน Commit หน้า) ---
   const recentActivities = [
     { user: "Admin 01", action: "ปรับสต็อก ROG Phone 7", time: "5 นาทีที่แล้ว" },
     { user: "System", action: "ได้รับคำสั่งซื้อใหม่ #ORD-2566-005", time: "12 นาทีที่แล้ว" },
@@ -26,12 +71,11 @@ export default function NexusGearAdminDashboard({ setActiveTab }: AdminDashboard
 
   return (
     <div className="space-y-6 animate-in fade-in zoom-in duration-500 pb-10">
-      
       <h2 className="text-3xl font-['Orbitron'] font-bold text-[#F2F4F6] mb-6 drop-shadow-[0_0_10px_rgba(255,0,0,0.3)]">
         DASHBOARD
       </h2>
       
-      {/* --- [Commit 1] การ์ด 4 ใบ --- */}
+      {/* --- การ์ด 4 ใบ (ตอนนี้เชื่อมกับ State เรียบร้อยแล้ว) --- */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
           <div 
@@ -63,8 +107,7 @@ export default function NexusGearAdminDashboard({ setActiveTab }: AdminDashboard
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* --- [Commit 2] กราฟยอดขาย --- */}
+        {/* --- กราฟยอดขาย --- */}
         <div className="lg:col-span-2 bg-[#000000]/60 border border-[#990000]/30 rounded-2xl p-6 backdrop-blur-md">
             <div className="flex justify-between items-center mb-6">
                 <h3 className="text-xl font-bold text-[#F2F4F6] font-['Kanit'] flex items-center gap-2">
@@ -90,7 +133,7 @@ export default function NexusGearAdminDashboard({ setActiveTab }: AdminDashboard
             </div>
         </div>
 
-        {/* --- [Commit 3] ฟีเจอร์ใหม่: กิจกรรมล่าสุด (Recent Activity) --- */}
+        {/* --- กิจกรรมล่าสุด --- */}
         <div className="lg:col-span-1 bg-[#000000]/60 border border-[#990000]/30 rounded-2xl p-6 backdrop-blur-md">
             <h3 className="text-xl font-bold text-[#F2F4F6] font-['Kanit'] mb-4 flex items-center gap-2">
                 <Activity className="text-[#FF0000]" /> กิจกรรมล่าสุด
@@ -112,10 +155,9 @@ export default function NexusGearAdminDashboard({ setActiveTab }: AdminDashboard
                 ดูประวัติทั้งหมด
             </button>
         </div>
-
       </div>
 
-      {/* --- [Commit 3] ฟีเจอร์ใหม่: แบนเนอร์แจ้งเตือนด่วน --- */}
+      {/* --- แบนเนอร์แจ้งเตือนด่วน --- */}
       <div className="bg-gradient-to-r from-[#2E0505] to-transparent border border-[#990000]/50 rounded-2xl p-8 flex justify-between items-center shadow-[0_0_20px_rgba(153,0,0,0.2)]">
         <div>
             <h3 className="text-2xl font-bold text-[#F2F4F6] mb-2 font-['Kanit']">ยินดีต้อนรับกลับ, Admin!</h3>
@@ -128,7 +170,6 @@ export default function NexusGearAdminDashboard({ setActiveTab }: AdminDashboard
             จัดการคำสั่งซื้อทันที
         </button>
       </div>
-
     </div>
   );
 }

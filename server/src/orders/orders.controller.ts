@@ -28,4 +28,9 @@ export class OrdersController {
     console.log('Body ที่รับมา:', updateOrderStatusDto);
     return this.ordersService.updateStatus(+id, updateOrderStatusDto.status);
   }
+
+  @Get('user/:userId')
+  findByUserId(@Param('userId') userId: string) {
+    return this.ordersService.findByUserId(+userId);
+  }
 }

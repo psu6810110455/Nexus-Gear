@@ -6,6 +6,7 @@ import { OrderItem } from './entities/order-item.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { Product } from '../products/entities/product.entity';
 import { User } from '../users/entities/user.entity';
+
 @Injectable()
 export class OrdersService {
   constructor(
@@ -69,6 +70,16 @@ export class OrdersService {
 
     order.status = status;
     return this.ordersRepository.save(order);
+  }
+
+  async findByUserId(userId: number): Promise<Order[]> {
+    return this.ordersRepository.find({
+      where: { user: { id: userId } }, // ค้นหาเฉพาะของ user คนนี้
+      relations: ['items', 'items.product', 'user'], // ดึงข้อมูลสินค้าที่สั่งมาด้วย
+      order: {
+        created_at: 'DESC', // เรียงจากออเดอร์ล่าสุด
+      },
+    });
   }
 
   // 2. ฟังก์ชันเสกข้อมูล (Seed)

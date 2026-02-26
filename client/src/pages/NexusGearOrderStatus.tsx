@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Wallet, Package, Truck, Star } from 'lucide-react';
-import { getUserOrders } from '../services/api';
+import { Wallet, Package, Truck, Star, CheckCircle } from 'lucide-react'; // ยุบรวม Import ที่ซ้ำกัน
+import { getUserOrders, submitOrderRating } from '../services/api';
 import CustomerOrderModal from '../components/CustomerOrderModal';
-import { CheckCircle } from 'lucide-react';
-import { submitOrderRating } from '../services/api'; 
 
-// 1. กำหนด Type ให้ชัดเจน (ไม่ต้องใช้ any แล้ว)
+// 1. กำหนด Type ให้ชัดเจน
 interface OrderItem {
   id: number;
   quantity: number;
@@ -19,7 +17,7 @@ interface OrderItem {
 interface Order {
   id: number;
   total_price: string;
-  status: 'pending' | 'paid' | 'shipped' | 'completed' | 'cancelled';
+  status: 'pending' | 'paid' | 'to_ship' | 'shipped' | 'completed' | 'cancelled';
   created_at: string;
   shipping_address: string;
   items: OrderItem[];
@@ -36,7 +34,10 @@ const NexusGearOrderStatus = () => {
   const currentUserId = 1;
 
   useEffect(() => {
-    fetchMyOrders();
+    // ใส่ setTimeout เล็กน้อยเพื่อให้เห็น Skeleton Loading สวยๆ (เอาออกได้ถ้าไม่ต้องการ)
+    setTimeout(() => {
+      fetchMyOrders();
+    }, 800);
   }, []);
 
   const fetchMyOrders = async () => {
@@ -60,11 +61,9 @@ const NexusGearOrderStatus = () => {
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, is_rated: true } : o));
       setSelectedOrder(null);
       
-      // 3. โชว์ Toast แจ้งเตือนแบบสวยๆ แทน alert()
+      // 3. โชว์ Toast แจ้งเตือนแบบสวยๆ
       setToastMessage('ขอบคุณสำหรับการรีวิว! คะแนนของคุณถูกบันทึกเรียบร้อยแล้ว ⭐️');
-      setTimeout(() => {
-        setToastMessage(null);
-      }, 3500);
+      setTimeout(() => setToastMessage(null), 3500);
 
     } catch (error) {
       console.error('Failed to submit rating:', error);
@@ -86,7 +85,7 @@ const NexusGearOrderStatus = () => {
     }
   };
 
-  // 3. ฟังก์ชันแปลงวันที่ให้เป็นแบบไทย (เช่น 15 ม.ค. 2569)
+  // 3. ฟังก์ชันแปลงวันที่ให้เป็นแบบไทย
   const formatThaiDate = (dateString: string) => {
     const date = new Date(dateString);
     const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
@@ -97,14 +96,35 @@ const NexusGearOrderStatus = () => {
   const tabs = [
     { id: 'all', label: 'ทั้งหมด', icon: undefined, badge: 0 },
     { id: 'pending', label: 'ที่ต้องชำระ', icon: Wallet, badge: orders.filter(o => o.status === 'pending').length },
-    { id: 'paid', label: 'ที่ต้องจัดส่ง', icon: Package, badge: orders.filter(o => o.status === 'paid').length },
+    { id: 'paid', label: 'กำลังเตรียม', icon: Package, badge: orders.filter(o => o.status === 'paid' || o.status === 'to_ship').length },
     { id: 'shipped', label: 'ที่ต้องได้รับ', icon: Truck, badge: orders.filter(o => o.status === 'shipped').length },
-    { id: 'completed', label: 'ให้คะแนน', icon: Star, badge: 0 },
+    { id: 'completed', label: 'สำเร็จ', icon: Star, badge: orders.filter(o => o.status === 'completed').length }, // 👈 อัปเดตตัวเลขให้แสดงจริง
   ];
+
+  // 💀 Skeleton Component
+  const OrderCardSkeleton = () => (
+    <div className="bg-[#121212] rounded-xl p-6 border border-zinc-800/80 animate-pulse">
+      <div className="flex justify-between items-start mb-6">
+        <div>
+          <div className="h-6 w-24 bg-zinc-800 rounded-md mb-2"></div>
+          <div className="h-4 w-32 bg-zinc-800/50 rounded-md"></div>
+        </div>
+        <div className="h-6 w-20 bg-zinc-800 rounded-full"></div>
+      </div>
+      <div className="flex justify-between items-end mb-6">
+        <div className="h-4 w-16 bg-zinc-800 rounded-md"></div>
+        <div className="h-8 w-28 bg-zinc-800 rounded-md"></div>
+      </div>
+      <div className="h-12 w-full bg-zinc-800/50 rounded-lg"></div>
+    </div>
+  );
 
   const filteredOrders = activeTab === 'all' 
     ? orders 
-    : orders.filter(order => order.status === activeTab);
+    // กรณีที่กดแท็บ "กำลังเตรียม" ให้โชว์ทั้ง paid และ to_ship
+    : activeTab === 'paid' 
+      ? orders.filter(order => order.status === 'paid' || order.status === 'to_ship')
+      : orders.filter(order => order.status === activeTab);
 
   return (
     <section className="w-full min-h-screen bg-[#050505] text-white p-6 md:p-10 font-sans animate-fade-in">
@@ -155,64 +175,65 @@ const NexusGearOrderStatus = () => {
         </nav>
 
         {/* 5. Order Cards List */}
-        <div className="space-y-4">
-          {loading ? (
-            <div className="text-center text-zinc-500 py-20 animate-pulse">กำลังโหลดข้อมูลการสั่งซื้อ...</div>
-          ) : filteredOrders.length === 0 ? (
-            <div className="text-center bg-[#121212] border border-zinc-800 rounded-xl py-20 text-zinc-500">
-              <Package size={48} className="mx-auto mb-4 opacity-20" />
-              <p>ยังไม่มีคำสั่งซื้อในสถานะนี้</p>
-            </div>
-          ) : (
-            filteredOrders.map((order) => {
-              const statusDisplay = getStatusDisplay(order.status);
-              // คำนวณจำนวนชิ้นรวมในออเดอร์นี้
-              const totalItems = order.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
-
-              return (
-                <div key={order.id} className="bg-[#121212] border border-zinc-800/80 rounded-xl overflow-hidden hover:border-zinc-700 transition-colors shadow-lg">
-                  <div className="p-5">
-                    {/* Card Header */}
-                    <div className="flex justify-between items-start mb-6">
-                      <div>
-                        <h3 className="text-white font-bold text-lg tracking-wider">
-                          #ORD{String(order.id).padStart(3, '0')}
-                        </h3>
-                        <p className="text-zinc-500 text-sm mt-1">{formatThaiDate(order.created_at)}</p>
-                      </div>
-                      <span className={`px-3 py-1 text-xs font-bold rounded-full border ${statusDisplay.className}`}>
-                        {statusDisplay.text}
-                      </span>
-                    </div>
-
-                    {/* Card Body (Summary) */}
-                    <div className="flex justify-between items-end mb-6">
-                      <div className="text-zinc-400 text-sm">
-                        {totalItems} รายการ
-                      </div>
-                      <div className="text-2xl font-bold text-red-500 tracking-tight">
-                        ฿{Number(order.total_price).toLocaleString()}
-                      </div>
-                    </div>
-
-                    {/* Card Action */}
-                    <button 
-                        onClick={() => setSelectedOrder(order)} 
-                        className={`w-full py-3 border rounded-lg font-bold transition-all duration-300 ${
-                            order.status === 'completed' && !order.is_rated
-                            ? 'bg-[#1a150f] hover:bg-yellow-600 border-yellow-900/50 hover:border-yellow-500 text-yellow-500 hover:text-white'
-                            : 'bg-[#1a0f0f] hover:bg-red-600 border-red-900/50 hover:border-red-500 text-red-500 hover:text-white'
-                        }`}
-                        >
-                        {order.status === 'completed' && !order.is_rated ? 'ให้คะแนนสินค้า' : 'ดูรายละเอียด'}
-                    </button>
-                  </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {loading ? (
+                // วนลูปโชว์ Skeleton 4 ใบ
+                [1, 2, 3, 4].map((n) => <OrderCardSkeleton key={n} />)
+            ) : filteredOrders.length === 0 ? (
+                <div className="col-span-full py-20 text-center bg-[#0f0f0f] rounded-2xl border border-white/5 flex flex-col items-center">
+                  <Package size={48} className="text-zinc-700 mb-4" />
+                  <p className="text-zinc-400 text-lg">ยังไม่มีคำสั่งซื้อในสถานะนี้</p>
                 </div>
-              );
-            })
-          )}
+            ) : (
+                filteredOrders.map((order) => {
+                  const statusDisplay = getStatusDisplay(order.status);
+                  const totalItems = order.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+
+                  return (
+                    <div key={order.id} className="bg-[#121212] border border-zinc-800/80 rounded-xl overflow-hidden hover:border-zinc-700 transition-colors shadow-lg">
+                      <div className="p-5">
+                        {/* Card Header */}
+                        <div className="flex justify-between items-start mb-6">
+                          <div>
+                            <h3 className="text-white font-bold text-lg tracking-wider">
+                              #ORD{String(order.id).padStart(3, '0')}
+                            </h3>
+                            <p className="text-zinc-500 text-sm mt-1">{formatThaiDate(order.created_at)}</p>
+                          </div>
+                          <span className={`px-3 py-1 text-xs font-bold rounded-full border ${statusDisplay.className}`}>
+                            {statusDisplay.text}
+                          </span>
+                        </div>
+
+                        {/* Card Body (Summary) */}
+                        <div className="flex justify-between items-end mb-6">
+                          <div className="text-zinc-400 text-sm">
+                            {totalItems} รายการ
+                          </div>
+                          <div className="text-2xl font-bold text-red-500 tracking-tight">
+                            ฿{Number(order.total_price).toLocaleString()}
+                          </div>
+                        </div>
+
+                        {/* Card Action */}
+                        <button 
+                            onClick={() => setSelectedOrder(order)} 
+                            className={`w-full py-3 border rounded-lg font-bold transition-all duration-300 ${
+                                order.status === 'completed' && !order.is_rated
+                                ? 'bg-[#1a150f] hover:bg-yellow-600 border-yellow-900/50 hover:border-yellow-500 text-yellow-500 hover:text-white'
+                                : 'bg-[#1a0f0f] hover:bg-red-600 border-red-900/50 hover:border-red-500 text-red-500 hover:text-white'
+                            }`}
+                            >
+                            {order.status === 'completed' && !order.is_rated ? 'ให้คะแนนสินค้า' : 'ดูรายละเอียด'}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+            )}
         </div>
       </div>
+
       <CustomerOrderModal 
         isOpen={selectedOrder !== null} 
         onClose={() => setSelectedOrder(null)} 
@@ -221,7 +242,7 @@ const NexusGearOrderStatus = () => {
       />
 
       {toastMessage && (
-          <div className="fixed bottom-10 right-10 bg-[#121212] border border-red-500/50 text-red-400 px-6 py-4 rounded-xl shadow-[0_10px_40px_-10px_rgba(220,38,38,0.3)] flex items-center gap-3 z-50 animate-fade-in">
+          <div className="fixed top-20 right-20 bg-[#121212] border border-red-500/50 text-red-400 px-6 py-4 rounded-xl shadow-[0_10px_40px_-10px_rgba(220,38,38,0.3)] flex items-center gap-3 z-[100] animate-fade-in">
             <CheckCircle size={24} className="text-red-500" />
             <span className="font-bold tracking-wide">{toastMessage}</span>
           </div>

@@ -11,6 +11,14 @@ interface OrderDetailModalProps {
 const OrderDetailModal = ({ isOpen, onClose, order, onUpdateStatus }: OrderDetailModalProps) => {
   if (!isOpen || !order) return null;
 
+  const getThaiStatus = (status: string) => {
+      const thStatus: Record<string, string> = {
+        pending: 'รอชำระเงิน', paid: 'ชำระเงินแล้ว', to_ship: 'เตรียมจัดส่ง',
+        shipped: 'จัดส่งแล้ว', completed: 'สำเร็จ', cancelled: 'ยกเลิก'
+      };
+      return thStatus[status] || status;
+  };
+
   // ฟังก์ชันคำนวณสถานะเพื่อแสดงปุ่ม Action ที่เหมาะสม
   const renderActionButtons = () => {
     switch (order.status) {
@@ -21,7 +29,7 @@ const OrderDetailModal = ({ isOpen, onClose, order, onUpdateStatus }: OrderDetai
             className="w-full py-3 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-lg transition-all shadow-lg hover:shadow-orange-900/50 flex items-center justify-center gap-2"
           >
             <CheckCircle size={20} />
-            ยืนยันการโอนเงิน (Mark as Paid)
+            ยืนยันการโอนเงิน
           </button>
         );
       case 'paid':
@@ -30,7 +38,7 @@ const OrderDetailModal = ({ isOpen, onClose, order, onUpdateStatus }: OrderDetai
             onClick={() => onUpdateStatus(order.id, 'to_ship')}
             className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition-all shadow-lg hover:shadow-blue-900/50"
           >
-            เตรียมจัดส่ง (Prepare to Ship)
+            เตรียมจัดส่ง
           </button>
         );
       case 'to_ship':
@@ -39,7 +47,7 @@ const OrderDetailModal = ({ isOpen, onClose, order, onUpdateStatus }: OrderDetai
             onClick={() => onUpdateStatus(order.id, 'shipped')}
             className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg transition-all shadow-lg hover:shadow-indigo-900/50"
           >
-            ยืนยันการส่งของ (Ship Order)
+            ยืนยันการส่งของ
           </button>
         );
       case 'shipped':
@@ -48,7 +56,7 @@ const OrderDetailModal = ({ isOpen, onClose, order, onUpdateStatus }: OrderDetai
             onClick={() => onUpdateStatus(order.id, 'completed')}
             className="w-full py-3 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg transition-all shadow-lg hover:shadow-green-900/50"
           >
-             สำเร็จ (Complete Order)
+             สำเร็จ
           </button>
         );
       default:
@@ -67,12 +75,12 @@ const OrderDetailModal = ({ isOpen, onClose, order, onUpdateStatus }: OrderDetai
         <div className="p-6 border-b border-white/10 flex justify-between items-center bg-gradient-to-r from-red-900/20 to-transparent">
           <div>
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-white tracking-wider">ORDER DETAILS</h2>
-              <span className="px-3 py-1 bg-yellow-500/20 text-yellow-500 text-xs font-bold rounded-full border border-yellow-500/20 uppercase">
-                {order.status.replace('_', ' ')}
+              <h2 className="text-2xl font-bold text-white tracking-wider">รายละเอียดคำสั่งซื้อ</h2>
+              <span className="px-3 py-1 bg-green-500/20 text-green-500 text-xs font-bold rounded-full border border-green-500/20 uppercase">
+                {getThaiStatus(order.status)}
               </span>
             </div>
-            <p className="text-zinc-400 text-sm mt-1">ID: ORD-{new Date().getFullYear() + 543}-{String(order.id).padStart(3, '0')}</p>
+            <p className="text-zinc-400 text-sm mt-1">รหัสคำสั่งซื้อ: ORD-{new Date().getFullYear() + 543}-{String(order.id).padStart(3, '0')}</p>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors text-zinc-400 hover:text-white">
             <X size={24} />
@@ -123,12 +131,12 @@ const OrderDetailModal = ({ isOpen, onClose, order, onUpdateStatus }: OrderDetai
             {/* Slip / Payment Proof */}
             <div className="bg-zinc-900/50 p-4 rounded-xl border border-zinc-800 flex-1 flex flex-col">
               <div className="flex items-center gap-2 text-red-500 mb-3 font-bold text-sm uppercase">
-                <FileText size={16} /> หลักฐานการโอนเงิน (Slip)
+                <FileText size={16} /> หลักฐานการโอนเงิน
               </div>
               <div className="flex-1 bg-black/40 rounded-lg border-2 border-dashed border-zinc-800 flex flex-col items-center justify-center text-zinc-600 p-8 min-h-[200px]">
                 <CreditCard size={40} className="mb-2 opacity-50" />
-                <span className="text-sm">No slip attached</span>
-                <span className="text-xs text-zinc-700">(User mock data)</span>
+                <span className="text-sm">ยังไม่มีหลักฐานการชำระเงิน</span>
+                <span className="text-xs text-zinc-700">(ยังไม่มีข้อมูล)</span>
               </div>
             </div>
 

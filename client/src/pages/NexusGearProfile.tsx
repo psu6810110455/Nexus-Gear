@@ -126,6 +126,12 @@ export default function NexusGearProfile() {
     );
   };
 
+  // ─── Commit 2: Profile Info + Change Password ───
+  const handleUpdatePassword = (): void => {
+    setShowPasswordModal(false);
+    triggerSuccess('SUCCESS!', 'เปลี่ยนรหัสผ่านเรียบร้อยแล้ว');
+  };
+
   return (
     <div className="min-h-screen bg-[#000000] text-[#F2F4F6] font-['Kanit'] relative overflow-x-hidden selection:bg-[#990000] selection:text-white pb-10">
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&family=Orbitron:wght@400;700;900&display=swap');`}</style>
@@ -182,7 +188,56 @@ export default function NexusGearProfile() {
 
             {/* Main Content */}
             <div className="lg:col-span-3">
-              {/* TODO: Tab Info — Commit 2 */}
+
+              {/* ─── Tab Info ─── */}
+              {activeTab === 'info' && (
+                <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-8 shadow-2xl">
+                  <div className="flex justify-between items-center mb-8">
+                    <h3 className="text-2xl font-bold flex items-center gap-3 font-['Orbitron']">
+                      <span className="w-1.5 h-8 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></span> PROFILE INFO
+                    </h3>
+                    {!isEditing ? (
+                      <button onClick={() => setIsEditing(true)} className="flex gap-2 bg-[#2E0505] border border-[#990000] text-[#FF0000] px-4 py-2 rounded-lg hover:bg-[#990000] hover:text-white transition">
+                        <Edit2 className="w-4 h-4" /> แก้ไข
+                      </button>
+                    ) : (
+                      <div className="flex gap-2">
+                        <button onClick={() => setIsEditing(false)} className="bg-[#FF0000] text-white px-4 py-2 rounded-lg hover:bg-[#990000] transition"><Save className="w-4 h-4" /> บันทึก</button>
+                        <button onClick={() => setIsEditing(false)} className="bg-[#2E0505] border border-[#990000] text-[#F2F4F6] px-4 py-2 rounded-lg hover:bg-[#000000] transition"><X className="w-4 h-4" /> ยกเลิก</button>
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-6">
+                    {(
+                      [
+                        { l: 'ชื่อ-นามสกุล', v: userData.name, k: 'name' as keyof UserData, icon: User },
+                        { l: 'อีเมล', v: userData.email, k: 'email' as keyof UserData, icon: Mail },
+                        { l: 'เบอร์โทร', v: userData.phone, k: 'phone' as keyof UserData, icon: Phone }
+                      ] as { l: string; v: string; k: keyof UserData; icon: React.ElementType }[]
+                    ).map(f => (
+                      <div key={f.k}>
+                        <label className="block text-xs font-['Orbitron'] text-[#FF0000] mb-2">{f.l}</label>
+                        <div className="relative">
+                          <f.icon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#F2F4F6]/30" />
+                          <input
+                            disabled={!isEditing}
+                            value={f.v}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUserData({ ...userData, [f.k]: e.target.value })}
+                            className="w-full bg-[#000000] border border-[#990000]/30 rounded-xl px-4 py-3 pl-12 text-[#F2F4F6] focus:outline-none focus:border-[#FF0000] disabled:opacity-50"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                    <div className="pt-6 border-t border-[#990000]/20">
+                      <label className="block text-xs font-['Orbitron'] text-[#FF0000] mb-2">SECURITY</label>
+                      <button onClick={() => setShowPasswordModal(true)} className="flex items-center gap-2 text-sm text-[#F2F4F6]/70 hover:text-[#FF0000] transition-colors border border-[#F2F4F6]/10 px-4 py-3 rounded-xl w-full hover:border-[#FF0000]/50">
+                        <Lock className="w-4 h-4" /> เปลี่ยนรหัสผ่าน (Change Password)
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* TODO: Tab Addresses — Commit 3 */}
               {/* TODO: Tab Orders — Commit 4 */}
             </div>
@@ -191,7 +246,44 @@ export default function NexusGearProfile() {
         </div>
       </div>
 
-      {/* TODO: Modals — Commit 2, 3, 4, 5 */}
+      {/* ─── Modal: Change Password ─── */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in zoom-in-95">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowPasswordModal(false)}></div>
+          <div className="relative bg-[#0a0a0a] border border-[#FF0000]/50 w-full max-w-md rounded-3xl p-8 shadow-[0_0_50px_rgba(153,0,0,0.5)]">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-black font-['Orbitron'] text-[#F2F4F6]">CHANGE PASSWORD</h3>
+              <button onClick={() => setShowPasswordModal(false)}><X className="text-[#F2F4F6] hover:text-[#FF0000]" /></button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-['Orbitron'] text-[#FF0000] mb-2 uppercase">Current Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#F2F4F6]/30" />
+                  <input type="password" placeholder="••••••" className="w-full bg-[#000000] border border-[#990000]/30 rounded-xl px-4 py-3 pl-10 text-[#F2F4F6] focus:border-[#FF0000] outline-none" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-['Orbitron'] text-[#FF0000] mb-2 uppercase">New Password</label>
+                <div className="relative">
+                  <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#F2F4F6]/30" />
+                  <input type="password" placeholder="New password" className="w-full bg-[#000000] border border-[#990000]/30 rounded-xl px-4 py-3 pl-10 text-[#F2F4F6] focus:border-[#FF0000] outline-none" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-['Orbitron'] text-[#FF0000] mb-2 uppercase">Confirm Password</label>
+                <div className="relative">
+                  <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#F2F4F6]/30" />
+                  <input type="password" placeholder="Confirm new password" className="w-full bg-[#000000] border border-[#990000]/30 rounded-xl px-4 py-3 pl-10 text-[#F2F4F6] focus:border-[#FF0000] outline-none" />
+                </div>
+              </div>
+              <button onClick={handleUpdatePassword} className="w-full bg-[#FF0000] hover:bg-[#990000] text-white py-3 rounded-xl font-['Orbitron'] font-bold tracking-widest mt-4 shadow-[0_0_15px_rgba(255,0,0,0.3)]">UPDATE PASSWORD</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TODO: Modals — Commit 3, 4, 5 */}
     </div>
   );
 }

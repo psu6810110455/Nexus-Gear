@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Wallet, Package, Truck, Star } from 'lucide-react';
 import { getUserOrders } from '../services/api';
+import CustomerOrderModal from '../components/CustomerOrderModal';
 
 // 1. กำหนด Type ให้ชัดเจน (ไม่ต้องใช้ any แล้ว)
 interface OrderItem {
@@ -18,13 +19,16 @@ interface Order {
   total_price: string;
   status: 'pending' | 'paid' | 'shipped' | 'completed' | 'cancelled';
   created_at: string;
+  shipping_address: string;
   items: OrderItem[];
+  is_rated?: boolean;
 }
 
 const NexusGearOrderStatus = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   const currentUserId = 1;
 
@@ -42,6 +46,16 @@ const NexusGearOrderStatus = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRatingSubmit = (orderId: number, ratings: Record<number, number>) => {
+  // TODO: อนาคตเราจะเรียก axios ยิง API ไปบันทึกใน Database ตรงนี้
+  console.log('บันทึกคะแนน:', { orderId, ratings });
+
+  // จำลองการอัปเดตสถานะหน้าเว็บว่า "ให้คะแนนแล้ว"
+  setOrders(prev => prev.map(o => o.id === orderId ? { ...o, is_rated: true } : o));
+  setSelectedOrder(null);
+  alert('ขอบคุณสำหรับการให้คะแนนสินค้า! ⭐️');
   };
 
   // 2. ฟังก์ชันช่วยตกแต่ง Status ให้สวยงาม
@@ -69,7 +83,7 @@ const NexusGearOrderStatus = () => {
     { id: 'all', label: 'ทั้งหมด', icon: undefined, badge: 0 },
     { id: 'pending', label: 'ที่ต้องชำระ', icon: Wallet, badge: orders.filter(o => o.status === 'pending').length },
     { id: 'paid', label: 'ที่ต้องจัดส่ง', icon: Package, badge: orders.filter(o => o.status === 'paid').length },
-    { id: 'shipped', label: 'ที่ต้องรับ', icon: Truck, badge: orders.filter(o => o.status === 'shipped').length },
+    { id: 'shipped', label: 'ที่ต้องได้รับ', icon: Truck, badge: orders.filter(o => o.status === 'shipped').length },
     { id: 'completed', label: 'ให้คะแนน', icon: Star, badge: 0 },
   ];
 
@@ -168,9 +182,14 @@ const NexusGearOrderStatus = () => {
 
                     {/* Card Action */}
                     <button 
-                      className="w-full py-3 bg-[#1a0f0f] hover:bg-red-600 border border-red-900/50 hover:border-red-500 text-red-500 hover:text-white rounded-lg font-bold transition-all duration-300"
-                    >
-                      ดูรายละเอียด
+                        onClick={() => setSelectedOrder(order)} 
+                        className={`w-full py-3 border rounded-lg font-bold transition-all duration-300 ${
+                            order.status === 'completed' && !order.is_rated
+                            ? 'bg-[#1a150f] hover:bg-yellow-600 border-yellow-900/50 hover:border-yellow-500 text-yellow-500 hover:text-white'
+                            : 'bg-[#1a0f0f] hover:bg-red-600 border-red-900/50 hover:border-red-500 text-red-500 hover:text-white'
+                        }`}
+                        >
+                        {order.status === 'completed' && !order.is_rated ? 'ให้คะแนนสินค้า' : 'ดูรายละเอียด'}
                     </button>
                   </div>
                 </div>
@@ -178,8 +197,13 @@ const NexusGearOrderStatus = () => {
             })
           )}
         </div>
-
       </div>
+      <CustomerOrderModal 
+        isOpen={selectedOrder !== null} 
+        onClose={() => setSelectedOrder(null)} 
+        order={selectedOrder} 
+        onSubmitRating={handleRatingSubmit}
+      />
     </section>
   );
 };

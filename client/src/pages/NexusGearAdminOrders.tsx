@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Search, Eye, CheckCircle } from 'lucide-react';
+import { Search, Eye, CheckCircle, PackageOpen } from 'lucide-react'; // 👈 เพิ่ม PackageOpen มาแต่งหน้า Empty
 import { getOrders, updateOrderStatus, type Order } from '../services/api';
 import OrderDetailModal from '../components/OrderDetailModal';
 
@@ -7,7 +7,7 @@ const OrderManagement = () => {
   // State Management
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedStatus, setSelectedStatus] = useState('All');
+  const [activeTab, setActiveTab] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -21,13 +21,13 @@ const OrderManagement = () => {
 
   const fetchOrders = async () => {
     try {
-      setLoading(true); // เริ่มโหลด
+      setLoading(true); 
       const data = await getOrders();
       setOrders(data);
     } catch (error) {
-      console.error('Failed to load orders:', error); // เหลือไว้แค่ Error Log พอ
+      console.error('Failed to load orders:', error); 
     } finally {
-      setLoading(false); // โหลดเสร็จแล้ว
+      setLoading(false); 
     }
   };
 
@@ -57,14 +57,12 @@ const OrderManagement = () => {
       const thaiStatus = getThaiStatus(newStatus);
       setToastMessage(`อัปเดตสถานะเป็น "${thaiStatus}" สำเร็จเรียบร้อย! ✅`);
       
-      // ให้ Popup หายไปเองใน 3 วินาที
       setTimeout(() => {
         setToastMessage(null);
       }, 3000);
 
     } catch (error) {
       console.error('Error updating order status:', error);
-      // เปลี่ยน error แจ้งเตือนด้วยก็ได้ครับ
       setToastMessage('เกิดข้อผิดพลาดในการอัปเดตสถานะ ❌');
       setTimeout(() => setToastMessage(null), 3000);
     }
@@ -74,7 +72,6 @@ const OrderManagement = () => {
   const handleOpenModal = (order: Order) => {
     setSelectedOrder(order);
   };
-
 
   // Constants & Helpers
   const tabs = [
@@ -101,12 +98,13 @@ const OrderManagement = () => {
 
   // Filter Logic
   const filteredOrders = orders.filter(order => {
-    const matchesStatus = selectedStatus === 'All' || order.status === selectedStatus;
+    const matchesTab = activeTab === 'All' || order.status === activeTab;
     const searchLower = searchTerm.toLowerCase();
-    const orderIdString = String(order.id);
-    const username = order.user?.username?.toLowerCase() || '';
-    
-    return matchesStatus && (orderIdString.includes(searchLower) || username.includes(searchLower));
+    const orderIdStr = `ORD-${String(order.id).padStart(3, '0')}`.toLowerCase();
+    const customerName = (order.user?.username || 'ไม่ระบุชื่อ').toLowerCase();
+    const matchesSearch = orderIdStr.includes(searchLower) || customerName.includes(searchLower);
+
+    return matchesTab && matchesSearch;
   });
 
   // Skeleton UI Component
@@ -146,49 +144,68 @@ const OrderManagement = () => {
           <p className="text-zinc-400 text-sm mt-1">จัดการและตรวจสอบสถานะคำสั่งซื้อทั้งหมด</p>
         </div>
         
-        <div className="relative group">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-red-500 transition-colors" size={18} />
-          <input 
-            type="text" 
-            placeholder="ค้นหา Order ID หรือ ชื่อลูกค้า..." 
+        <div className="relative w-full md:w-96 group">
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+            <Search size={18} className="text-zinc-500 group-focus-within:text-red-500 transition-colors duration-300" />
+          </div>
+          
+          <input
+            type="text"
+            placeholder="ค้นหารหัสคำสั่งซื้อ หรือ ชื่อลูกค้า..."
+            className="w-full bg-[#121212] border border-zinc-800 text-white text-sm rounded-xl pl-10 pr-4 py-2.5 
+                      focus:outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/50 
+                      transition-all duration-300 placeholder-zinc-600 shadow-inner"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-zinc-900 border border-zinc-800 text-white pl-10 pr-4 py-2 rounded-lg w-64 focus:outline-none focus:border-red-500 transition-all placeholder:text-zinc-600 shadow-sm focus:shadow-red-900/20"
           />
         </div>
       </div>
 
       {/* Tabs Section */}
-      <div className="flex gap-2 overflow-x-auto pb-2 border-b border-zinc-800 scrollbar-hide">
-        {tabs.map((tab) => (
-          <button 
-            key={tab.value}
-            onClick={() => setSelectedStatus(tab.value)}
-            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-all whitespace-nowrap ${
-              selectedStatus === tab.value 
-                ? 'text-red-500 border-b-2 border-red-500 bg-gradient-to-t from-red-500/10 to-transparent' 
-                : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
-            }`}
-          >
-            {tab.label}
-            <span className={`ml-2 text-xs py-0.5 px-2 rounded-full ${selectedStatus === tab.value ? 'bg-red-500/20 text-red-400' : 'bg-zinc-800 text-zinc-500'}`}>
-              {tab.value === 'All' ? orders.length : orders.filter(o => o.status === tab.value).length}
-            </span>
-          </button>
-        ))}
-      </div>
+        <div className="flex items-center gap-2 border-b border-zinc-800/50 mb-6 overflow-x-auto scrollbar-hide">
+          {tabs.map((tab) => {
+            const count = tab.value === 'All' 
+              ? orders.length 
+              : orders.filter(o => o.status === tab.value).length;
+
+            const isActive = activeTab === tab.value;
+
+            return (
+              <button
+                key={tab.value}
+                onClick={() => setActiveTab(tab.value)}
+                className={`relative px-4 py-3 text-sm font-bold transition-all duration-300 flex items-center gap-2 group whitespace-nowrap ${
+                  isActive ? 'text-red-500' : 'text-zinc-500 hover:text-zinc-300'
+                }`}
+              >
+                {tab.label}
+                
+                {/* Badge ตัวเลข */}
+                <span className={`px-2 py-0.5 rounded-full text-xs font-medium transition-all duration-300 ${
+                  isActive ? 'bg-red-500/20 text-red-500' : 'bg-zinc-800/50 text-zinc-500 group-hover:bg-zinc-700 group-hover:text-zinc-300'
+                }`}>
+                  {count}
+                </span>
+
+                {isActive && (
+                  <div className="absolute bottom-0 left-0 w-full h-[2px] bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)] rounded-t-full animate-fade-in" />
+                )}
+              </button>
+            );
+          })}
+        </div>
 
       {/* Table Section */}
-      <div className="bg-zinc-900/50 rounded-xl border border-zinc-800 overflow-hidden backdrop-blur-sm shadow-xl">
+      <div className="bg-[#0c0c0c] rounded-2xl border border-zinc-800/80 overflow-hidden shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)]">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-black/40 text-zinc-400 text-xs uppercase tracking-wider border-b border-zinc-800">
-                <th className="p-4 font-medium">Order Details</th>
-                <th className="p-4 font-medium">Total Amount</th>
-                <th className="p-4 font-medium">Status</th>
-                <th className="p-4 font-medium">Shipping</th>
-                <th className="p-4 font-medium text-right">Actions</th>
+              <tr className="bg-gradient-to-r from-zinc-900/50 to-transparent text-zinc-400 text-xs uppercase tracking-wider border-b border-zinc-800/80">
+                <th className="p-5 font-medium">Order Details</th>
+                <th className="p-5 font-medium">Total Amount</th>
+                <th className="p-5 font-medium">Status</th>
+                <th className="p-5 font-medium">Shipping</th>
+                <th className="p-5 font-medium text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800/50">
@@ -196,38 +213,47 @@ const OrderManagement = () => {
                 <TableSkeleton />
               ) : filteredOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-12 text-center text-zinc-500 flex flex-col items-center justify-center gap-3">
-                    <div className="w-16 h-16 bg-zinc-800/50 rounded-full flex items-center justify-center mb-2">
-                      <Search size={32} className="opacity-40" />
+                  <td colSpan={5} className="p-16 text-center text-zinc-500">
+                    {/* Empty State ลุคใหม่ */}
+                    <div className="flex flex-col items-center justify-center gap-3 animate-fade-in">
+                      <div className="w-20 h-20 bg-zinc-800/30 rounded-full flex items-center justify-center mb-2 border border-zinc-800/50">
+                        <PackageOpen size={36} className="text-zinc-600" />
+                      </div>
+                      <span className="text-lg font-bold text-zinc-400">ไม่พบรายการคำสั่งซื้อ</span>
+                      <span className="text-sm opacity-60">ลองเปลี่ยนคำค้นหาหรือสถานะตัวกรองใหม่อีกครั้ง</span>
                     </div>
-                    <span className="text-lg font-medium text-zinc-400">ไม่พบรายการคำสั่งซื้อ</span>
-                    <span className="text-sm opacity-60">ลองเปลี่ยนคำค้นหาหรือสถานะตัวกรอง</span>
                   </td>
                 </tr>
               ) : (
                 filteredOrders.map((order) => (
-                  <tr key={order.id} className="hover:bg-white/5 transition-colors group">
-                    <td className="p-4">
+                  // 👇 ใส่ class group ไว้ที่ <tr> เพื่อให้ทำ Hover Effect ได้ทั้งแถว
+                  <tr key={order.id} className="hover:bg-[#141414] transition-all duration-300 group">
+                    <td className="p-5">
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-800 flex items-center justify-center text-zinc-300 font-bold shadow-inner border border-white/5">
+                        {/* Avatar เรืองแสงเวลา Hover */}
+                        <div className="w-11 h-11 rounded-full bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center text-zinc-400 font-bold shadow-inner border border-zinc-700/50 group-hover:border-red-500/50 group-hover:text-red-400 group-hover:shadow-[0_0_15px_rgba(239,68,68,0.2)] transition-all duration-300">
                           {order.user?.username ? order.user.username.charAt(0).toUpperCase() : '?'}
                         </div>
                         <div>
-                          <div className="text-white font-medium flex items-center gap-2">
+                          {/* รหัส Order สว่างขึ้นเวลา Hover */}
+                          <div className="text-white font-bold flex items-center gap-2 group-hover:text-red-50 transition-colors duration-300">
                             ORD-{new Date().getFullYear() + 543}-{String(order.id).padStart(3, '0')}
                           </div>
-                          <div className="text-zinc-500 text-xs mt-0.5">{order.user?.username || 'Guest'}</div>
+                          <div className="text-zinc-500 text-xs mt-1 font-medium">{order.user?.username || 'Guest'}</div>
                           <div className="text-zinc-600 text-[10px] mt-0.5">{new Date(order.created_at).toLocaleString('th-TH')}</div>
                         </div>
                       </div>
                     </td>
 
-                    <td className="p-4">
-                      <span className="text-white font-bold text-lg tracking-tight">฿{Number(order.total_price).toLocaleString()}</span>
+                    <td className="p-5">
+                      {/* ราคาเปลี่ยนสีนิดนึงเวลา Hover */}
+                      <span className="text-white font-bold text-lg tracking-tight group-hover:text-red-100 transition-colors">
+                        ฿{Number(order.total_price).toLocaleString()}
+                      </span>
                     </td>
 
-                    <td className="p-4">
-                      <span className={`px-3 py-1 rounded-full text-[10px] font-bold border ${getStatusColor(order.status)} uppercase tracking-wider shadow-sm`}>
+                    <td className="p-5">
+                      <span className={`px-3.5 py-1.5 rounded-full text-[11px] font-bold border ${getStatusColor(order.status)} uppercase tracking-wider shadow-sm transition-all`}>
                         {order.status === 'pending' ? 'รอชำระเงิน' :
                           order.status === 'paid' ? 'ชำระเงินแล้ว' :
                           order.status === 'to_ship' ? 'เตรียมจัดส่ง' :
@@ -237,15 +263,16 @@ const OrderManagement = () => {
                       </span>
                     </td>
 
-                    <td className="p-4">
-                      <div className="text-zinc-300 text-sm font-medium">Kerry Express</div>
-                      <div className="text-zinc-500 text-xs">Standard Delivery</div>
+                    <td className="p-5">
+                      <div className="text-zinc-300 text-sm font-medium group-hover:text-white transition-colors">Kerry Express</div>
+                      <div className="text-zinc-500 text-xs mt-0.5">Standard Delivery</div>
                     </td>
 
-                    <td className="p-4 text-right">
+                    <td className="p-5 text-right">
+                      {/* 👇 ปุ่ม Action ทรงใหม่ เด้งรับนิ้วมือเวลากด */}
                       <button 
                         onClick={() => handleOpenModal(order)}
-                        className="p-2 bg-zinc-800/80 hover:bg-red-600 text-zinc-400 hover:text-white rounded-lg transition-all shadow-lg hover:shadow-red-900/50 border border-transparent hover:border-red-400/30 group-hover:bg-zinc-800"
+                        className="p-2.5 bg-zinc-800/40 border border-zinc-700/50 text-zinc-400 hover:bg-red-500/20 hover:border-red-500/50 hover:text-red-400 rounded-xl transition-all duration-300 transform hover:scale-110 active:scale-95 shadow-sm hover:shadow-[0_0_15px_rgba(239,68,68,0.3)]"
                         title="ดูรายละเอียด"
                       >
                         <Eye size={18} />

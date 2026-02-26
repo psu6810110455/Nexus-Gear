@@ -48,4 +48,10 @@ export const getUserOrders = async (userId: number) => {
   return response.data;
 };
 
+
+export const submitOrderRating = async (orderId: number, ratings: Record<number, number>) => {
+  const response = await api.post(`/orders/${orderId}/rate`, { ratings });
+  return response.data;
+};
+
 export default api;

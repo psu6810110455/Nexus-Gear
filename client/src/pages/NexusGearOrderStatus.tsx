@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Wallet, Package, Truck, Star } from 'lucide-react';
 import { getUserOrders } from '../services/api';
 import CustomerOrderModal from '../components/CustomerOrderModal';
+import { CheckCircle } from 'lucide-react';
+import { submitOrderRating } from '../services/api'; 
 
 // 1. กำหนด Type ให้ชัดเจน (ไม่ต้องใช้ any แล้ว)
 interface OrderItem {
@@ -29,6 +31,7 @@ const NexusGearOrderStatus = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const currentUserId = 1;
 
@@ -48,14 +51,26 @@ const NexusGearOrderStatus = () => {
     }
   };
 
-  const handleRatingSubmit = (orderId: number, ratings: Record<number, number>) => {
-  // TODO: อนาคตเราจะเรียก axios ยิง API ไปบันทึกใน Database ตรงนี้
-  console.log('บันทึกคะแนน:', { orderId, ratings });
+  const handleRatingSubmit = async (orderId: number, ratings: Record<number, number>) => {
+    try {
+      // 1. ส่งข้อมูลไปหา Backend
+      await submitOrderRating(orderId, ratings);
+      
+      // 2. อัปเดต UI ว่าออเดอร์นี้ถูกให้คะแนนแล้ว
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, is_rated: true } : o));
+      setSelectedOrder(null);
+      
+      // 3. โชว์ Toast แจ้งเตือนแบบสวยๆ แทน alert()
+      setToastMessage('ขอบคุณสำหรับการรีวิว! คะแนนของคุณถูกบันทึกเรียบร้อยแล้ว ⭐️');
+      setTimeout(() => {
+        setToastMessage(null);
+      }, 3500);
 
-  // จำลองการอัปเดตสถานะหน้าเว็บว่า "ให้คะแนนแล้ว"
-  setOrders(prev => prev.map(o => o.id === orderId ? { ...o, is_rated: true } : o));
-  setSelectedOrder(null);
-  alert('ขอบคุณสำหรับการให้คะแนนสินค้า! ⭐️');
+    } catch (error) {
+      console.error('Failed to submit rating:', error);
+      setToastMessage('เกิดข้อผิดพลาดในการบันทึกคะแนน กรุณาลองใหม่อีกครั้ง ❌');
+      setTimeout(() => setToastMessage(null), 3500);
+    }
   };
 
   // 2. ฟังก์ชันช่วยตกแต่ง Status ให้สวยงาม
@@ -204,6 +219,13 @@ const NexusGearOrderStatus = () => {
         order={selectedOrder} 
         onSubmitRating={handleRatingSubmit}
       />
+
+      {toastMessage && (
+          <div className="fixed bottom-10 right-10 bg-[#121212] border border-red-500/50 text-red-400 px-6 py-4 rounded-xl shadow-[0_10px_40px_-10px_rgba(220,38,38,0.3)] flex items-center gap-3 z-50 animate-fade-in">
+            <CheckCircle size={24} className="text-red-500" />
+            <span className="font-bold tracking-wide">{toastMessage}</span>
+          </div>
+      )}
     </section>
   );
 };

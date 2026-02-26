@@ -58,21 +58,21 @@ const OrderManagement = () => {
 
   // Constants & Helpers
   const tabs = [
-    { label: 'All', value: 'All' },
-    { label: 'Pending', value: 'pending' },
-    { label: 'Paid', value: 'paid' },
-    { label: 'To Ship', value: 'to_ship' },
-    { label: 'Shipped', value: 'shipped' },
-    { label: 'Completed', value: 'completed' },
-    { label: 'Cancelled', value: 'cancelled' },
+    { label: 'ทั้งหมด', value: 'All' },
+    { label: 'รอชำระเงิน', value: 'pending' },
+    { label: 'ชำระเงินแล้ว', value: 'paid' },
+    { label: 'เตรียมจัดส่ง', value: 'to_ship' },
+    { label: 'จัดส่งแล้ว', value: 'shipped' },
+    { label: 'สำเร็จ', value: 'completed' },
+    { label: 'ยกเลิก', value: 'cancelled' },
   ];
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
       pending: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
-      paid: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+      paid: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
       to_ship: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
-      shipped: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
+      shipped: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
       completed: 'bg-green-500/10 text-green-500 border-green-500/20',
       cancelled: 'bg-red-500/10 text-red-500 border-red-500/20',
     };
@@ -208,7 +208,12 @@ const OrderManagement = () => {
 
                     <td className="p-4">
                       <span className={`px-3 py-1 rounded-full text-[10px] font-bold border ${getStatusColor(order.status)} uppercase tracking-wider shadow-sm`}>
-                        {order.status.replace('_', ' ')}
+                        {order.status === 'pending' ? 'รอชำระเงิน' :
+                          order.status === 'paid' ? 'ชำระเงินแล้ว' :
+                          order.status === 'to_ship' ? 'เตรียมจัดส่ง' :
+                          order.status === 'shipped' ? 'จัดส่งแล้ว' :
+                          order.status === 'completed' ? 'สำเร็จ' :
+                          order.status === 'cancelled' ? 'ยกเลิก' : order.status}
                       </span>
                     </td>
 

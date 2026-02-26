@@ -173,6 +173,20 @@ export default function NexusGearProfile() {
     triggerSuccess('SAVED!', 'บันทึกที่อยู่เรียบร้อยแล้ว');
   };
 
+  // ─── Commit 4: Orders Logic ───
+  const openStatusModal = (label: string): void => {
+    let filteredOrders: Order[] = [];
+    if (label === 'ที่ต้องชำระ') filteredOrders = orders.filter((o) => o.status === 'pending_payment');
+    else if (label === 'ที่ต้องจัดส่ง') filteredOrders = orders.filter((o) => o.status === 'processing');
+    else if (label === 'ที่ต้องได้รับ') filteredOrders = orders.filter((o) => o.status === 'shipping');
+    else if (label === 'ให้คะแนน') filteredOrders = orders.filter((o) => o.status === 'delivered');
+    setStatusModal({ title: label, items: filteredOrders });
+  };
+
+  const handleRating = (orderId: string, score: number): void => {
+    setRatings((prev) => ({ ...prev, [orderId]: score }));
+  };
+
   return (
     <div className="min-h-screen bg-[#000000] text-[#F2F4F6] font-['Kanit'] relative overflow-x-hidden selection:bg-[#990000] selection:text-white pb-10">
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&family=Orbitron:wght@400;700;900&display=swap');`}</style>
@@ -315,9 +329,54 @@ export default function NexusGearProfile() {
                 </div>
               )}
 
-              {/* TODO: Tab Orders — Commit 4 */}
-            </div>
+              {/* ─── Tab Orders ─── */}
+              {activeTab === 'orders' && (
+                <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-8 shadow-2xl">
+                  <h3 className="text-2xl font-bold mb-6 flex items-center gap-3 font-['Orbitron'] tracking-wide">
+                    <span className="w-1.5 h-8 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></span> ORDER HISTORY
+                  </h3>
 
+                  {/* แถบสถานะ */}
+                  <div className="grid grid-cols-4 gap-4 mb-8 pb-6 border-b border-[#990000]/20">
+                    {[
+                      { icon: Wallet, label: 'ที่ต้องชำระ', count: 0 },
+                      { icon: Package, label: 'ที่ต้องจัดส่ง', count: 1 },
+                      { icon: Truck, label: 'ที่ต้องได้รับ', count: 2 },
+                      { icon: Star, label: 'ให้คะแนน', count: 0 }
+                    ].map((status, idx) => (
+                      <div key={idx} onClick={() => openStatusModal(status.label)} className="flex flex-col items-center gap-2 cursor-pointer group">
+                        <div className="relative p-3 rounded-xl bg-[#0a0a0a] border border-[#990000]/20 group-hover:border-[#FF0000] group-hover:bg-[#2E0505] transition-all">
+                          {status.count > 0 && <span className="absolute -top-2 -right-2 bg-[#FF0000] text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow-[0_0_5px_#FF0000] z-10">{status.count}</span>}
+                          <status.icon className="w-6 h-6 text-[#F2F4F6]/60 group-hover:text-[#FF0000] transition-colors" />
+                        </div>
+                        <span className="text-xs text-[#F2F4F6]/60 group-hover:text-[#F2F4F6] font-['Kanit'] transition-colors">{status.label}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* รายการ Order */}
+                  <div className="space-y-4">
+                    {orders.map((order) => (
+                      <div key={order.id} className="bg-[#000000] border border-[#990000]/20 rounded-xl p-5 hover:border-[#FF0000] transition-all group">
+                        <div className="flex justify-between items-center mb-4">
+                          <div>
+                            <p className="font-['Orbitron'] font-bold text-[#F2F4F6]">#{order.id}</p>
+                            <p className="text-xs text-[#F2F4F6]/40">{order.date}</p>
+                          </div>
+                          {getStatusBadge(order.status)}
+                        </div>
+                        <div className="flex items-center justify-between border-t border-[#990000]/20 pt-4 mt-2">
+                          <p className="text-[#F2F4F6]/60 text-sm font-['Kanit']">{order.itemsDetail.length} รายการ</p>
+                          <p className="text-xl font-['Orbitron'] font-bold text-[#FF0000]">฿{order.total}</p>
+                        </div>
+                        <button onClick={() => setSelectedOrder(order)} className="w-full mt-4 bg-[#2E0505] hover:bg-[#FF0000] text-[#FF0000] hover:text-white py-2 rounded-lg transition-all text-sm font-bold border border-[#990000]/30">ดูรายละเอียด</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+            </div>
           </div>
         </div>
       </div>
@@ -404,24 +463,131 @@ export default function NexusGearProfile() {
           </div>
         </div>
       )}
+
+      {/* ─── Modal: Delete Address ─── */}
       {showDeleteAddrModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in zoom-in-95">
-            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowDeleteAddrModal(false)}></div>
-            <div className="relative bg-[#0a0a0a] border border-[#FF0000] w-full max-w-sm rounded-2xl p-6 text-center shadow-[0_0_30px_rgba(255,0,0,0.6)]">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowDeleteAddrModal(false)}></div>
+          <div className="relative bg-[#0a0a0a] border border-[#FF0000] w-full max-w-sm rounded-2xl p-6 text-center shadow-[0_0_30px_rgba(255,0,0,0.6)]">
             <div className="w-16 h-16 bg-[#2E0505] rounded-full flex items-center justify-center mx-auto mb-4 border border-[#FF0000]/30">
-                <Trash2 className="w-8 h-8 text-[#FF0000]" />
+              <Trash2 className="w-8 h-8 text-[#FF0000]" />
             </div>
             <h3 className="text-xl font-black font-['Orbitron'] text-[#F2F4F6] mb-2">DELETE ADDRESS?</h3>
             <p className="text-sm text-[#F2F4F6]/60 mb-6">คุณต้องการลบที่อยู่นี้ใช่หรือไม่?</p>
             <div className="flex gap-3">
-                <button onClick={() => setShowDeleteAddrModal(false)} className="flex-1 bg-transparent border border-[#990000]/50 text-[#F2F4F6] py-3 rounded-xl font-bold hover:border-[#FF0000] transition">CANCEL</button>
-                <button onClick={deleteAddress} className="flex-1 bg-[#FF0000] text-white py-3 rounded-xl font-bold hover:bg-[#990000] transition shadow-[0_0_15px_rgba(255,0,0,0.4)]">DELETE</button>
+              <button onClick={() => setShowDeleteAddrModal(false)} className="flex-1 bg-transparent border border-[#990000]/50 text-[#F2F4F6] py-3 rounded-xl font-bold hover:border-[#FF0000] transition">CANCEL</button>
+              <button onClick={deleteAddress} className="flex-1 bg-[#FF0000] text-white py-3 rounded-xl font-bold hover:bg-[#990000] transition shadow-[0_0_15px_rgba(255,0,0,0.4)]">DELETE</button>
             </div>
-            </div>
+          </div>
         </div>
-        )}
+      )}
 
-      {/* TODO: Modals (Delete Address Confirmation, Success, Status) — Commit 3, 4, 5 */}
+      {/* ─── Modal: Order Details ─── */}
+      {selectedOrder && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 animate-in fade-in">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedOrder(null)}></div>
+          <div className="relative bg-[#0a0a0a] border border-[#FF0000]/50 w-full max-w-2xl rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(153,0,0,0.5)]">
+            <div className="bg-[#2E0505]/40 p-6 border-b border-[#990000]/20 flex justify-between items-center">
+              <div>
+                <h4 className="text-xl font-black text-[#F2F4F6] font-['Orbitron']">ORDER DETAILS</h4>
+                <p className="text-xs text-[#FF0000] font-['Orbitron'] mt-1">#{selectedOrder.id}</p>
+              </div>
+              <button onClick={() => setSelectedOrder(null)} className="p-2 hover:bg-[#990000] rounded-full transition-colors text-[#F2F4F6]/50 hover:text-white"><X className="w-6 h-6" /></button>
+            </div>
+            <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-[#000000]/60 p-4 rounded-xl border border-[#990000]/10">
+                  <p className="text-[10px] text-[#F2F4F6]/30 font-['Orbitron'] uppercase mb-1">Status</p>
+                  {getStatusBadge(selectedOrder.status)}
+                </div>
+                <div className="bg-[#000000]/60 p-4 rounded-xl border border-[#990000]/10">
+                  <p className="text-[10px] text-[#F2F4F6]/30 font-['Orbitron'] uppercase mb-1">Tracking</p>
+                  <p className="text-[#F2F4F6] font-['Orbitron'] flex items-center gap-2"><Truck className="w-4 h-4 text-[#FF0000]" /> {selectedOrder.tracking}</p>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs text-[#990000] font-['Orbitron'] uppercase mb-3 flex items-center gap-2"><Package className="w-4 h-4" /> ITEMS</p>
+                {selectedOrder.itemsDetail?.map((i, x) => (
+                  <div key={x} className="flex gap-4 items-center bg-[#1a1a1a]/50 p-3 rounded-xl border border-[#990000]/10 mb-2">
+                    <div className="w-12 h-12 bg-black rounded border border-[#990000]/20 flex items-center justify-center overflow-hidden">
+                      <img src={i.image} alt={i.name} className="w-full h-full object-contain p-1" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-[#F2F4F6]">{i.name}</p>
+                      <p className="text-xs text-[#F2F4F6]/40 font-['Orbitron']">x{i.qty}</p>
+                    </div>
+                    <p className="font-bold text-[#FF0000] font-['Orbitron']">฿{i.price}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="bg-[#2E0505]/10 p-4 rounded-xl border border-[#990000]/10">
+                <p className="text-xs text-[#990000] font-['Orbitron'] uppercase mb-2 flex items-center gap-2"><MapPin className="w-3 h-3" /> Shipping Address</p>
+                <p className="text-sm text-[#F2F4F6]/70">{selectedOrder.address}</p>
+              </div>
+            </div>
+            <div className="p-5 bg-[#2E0505]/20 border-t border-[#990000]/20">
+              <button onClick={() => setSelectedOrder(null)} className="w-full bg-[#FF0000] text-white py-3 rounded-xl font-['Orbitron'] font-bold tracking-widest hover:bg-[#990000] transition-all">CLOSE DETAILS</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Modal: Status Modal ─── */}
+      {statusModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setStatusModal(null)}></div>
+          <div className="relative bg-[#0a0a0a] border border-[#FF0000]/50 w-full max-w-2xl rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(153,0,0,0.5)]">
+            <div className="bg-[#2E0505]/40 p-6 border-b border-[#990000]/20 flex justify-between items-center">
+              <div>
+                <h4 className="text-xl font-black text-[#F2F4F6] font-['Orbitron'] uppercase">{statusModal.title}</h4>
+                <p className="text-xs text-[#FF0000] font-['Kanit'] mt-1">รายการสินค้าที่อยู่ในสถานะ "{statusModal.title}"</p>
+              </div>
+              <button onClick={() => setStatusModal(null)} className="p-2 hover:bg-[#990000] rounded-full transition-colors text-[#F2F4F6]/50 hover:text-white"><X className="w-6 h-6" /></button>
+            </div>
+            <div className="p-6 max-h-[70vh] overflow-y-auto space-y-4">
+              {statusModal.items.length > 0 ? (
+                statusModal.items.map((order) => (
+                  <div key={order.id} className="bg-[#000000] border border-[#990000]/20 rounded-xl p-5 hover:border-[#FF0000] transition-all group">
+                    <div className="flex justify-between items-center mb-4">
+                      <div>
+                        <p className="font-['Orbitron'] font-bold text-[#F2F4F6]">#{order.id}</p>
+                        <p className="text-xs text-[#F2F4F6]/40">{order.date}</p>
+                      </div>
+                      {getStatusBadge(order.status)}
+                    </div>
+                    <div className="flex items-center justify-between border-t border-[#990000]/20 pt-4 mt-2">
+                      <p className="text-[#F2F4F6]/60 text-sm font-['Kanit']">{order.itemsDetail.length} รายการ</p>
+                      <p className="text-xl font-['Orbitron'] font-bold text-[#FF0000]">฿{order.total}</p>
+                    </div>
+
+                    {/* Star Rating */}
+                    {statusModal.title === 'ให้คะแนน' && (
+                      <div className="flex items-center gap-1 mt-3 justify-end">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button key={star} onClick={() => handleRating(order.id, star)} className="transition-transform hover:scale-110 focus:outline-none">
+                            <Star className={`w-5 h-5 transition-colors ${(ratings[order.id] || 0) >= star ? 'text-yellow-500 fill-yellow-500' : 'text-[#F2F4F6]/20'}`} />
+                          </button>
+                        ))}
+                        <span className="text-xs text-[#F2F4F6]/50 ml-2 font-['Kanit']">
+                          {ratings[order.id] ? `คุณให้ ${ratings[order.id]} ดาว` : 'กดเพื่อรีวิวสินค้า'}
+                        </span>
+                      </div>
+                    )}
+
+                    <button onClick={() => setSelectedOrder(order)} className="w-full mt-4 bg-[#2E0505] hover:bg-[#FF0000] text-[#FF0000] hover:text-white py-2 rounded-lg transition-all text-sm font-bold border border-[#990000]/30">ดูรายละเอียด</button>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-10 text-[#F2F4F6]/40 font-['Kanit']">
+                  <p>ไม่มีรายการคำสั่งซื้อในสถานะนี้</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TODO: Remaining Modals (Success Modal, Logout Modal) */}
     </div>
   );
 }

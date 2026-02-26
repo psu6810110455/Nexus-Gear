@@ -132,6 +132,47 @@ export default function NexusGearProfile() {
     triggerSuccess('SUCCESS!', 'เปลี่ยนรหัสผ่านเรียบร้อยแล้ว');
   };
 
+  // ─── Commit 3: Address Management Logic ───
+  const openAddAddress = (): void => {
+    setEditingAddressId(null);
+    setAddressForm({ label: '', address: '', isDefault: false });
+    setShowAddressModal(true);
+  };
+
+  const openEditAddress = (addr: Address): void => {
+    setEditingAddressId(addr.id);
+    setAddressForm({ label: addr.label, address: addr.address, isDefault: addr.isDefault });
+    setShowAddressModal(true);
+  };
+
+  const confirmDeleteAddress = (id: number): void => {
+    setAddrToDelete(id);
+    setShowDeleteAddrModal(true);
+  };
+
+  const deleteAddress = (): void => {
+    setAddresses(addresses.filter((a) => a.id !== addrToDelete));
+    setShowDeleteAddrModal(false);
+    triggerSuccess('DELETED!', 'ลบที่อยู่เรียบร้อยแล้ว');
+  };
+
+  const saveAddress = (): void => {
+    if (editingAddressId) {
+      setAddresses(addresses.map((a) =>
+        a.id === editingAddressId ? { ...a, ...addressForm } : (addressForm.isDefault ? { ...a, isDefault: false } : a)
+      ));
+    } else {
+      const newAddr: Address = { id: Date.now(), ...addressForm };
+      if (addressForm.isDefault) {
+        setAddresses(addresses.map((a) => ({ ...a, isDefault: false })).concat(newAddr));
+      } else {
+        setAddresses([...addresses, newAddr]);
+      }
+    }
+    setShowAddressModal(false);
+    triggerSuccess('SAVED!', 'บันทึกที่อยู่เรียบร้อยแล้ว');
+  };
+
   return (
     <div className="min-h-screen bg-[#000000] text-[#F2F4F6] font-['Kanit'] relative overflow-x-hidden selection:bg-[#990000] selection:text-white pb-10">
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&family=Orbitron:wght@400;700;900&display=swap');`}</style>
@@ -238,7 +279,42 @@ export default function NexusGearProfile() {
                 </div>
               )}
 
-              {/* TODO: Tab Addresses — Commit 3 */}
+              {/* ─── Tab Addresses ─── */}
+              {activeTab === 'addresses' && (
+                <div className="space-y-6">
+                  <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-8 shadow-2xl">
+                    <div className="flex items-center justify-between mb-8">
+                      <h3 className="text-2xl font-bold flex items-center gap-3 font-['Orbitron'] tracking-wide">
+                        <span className="w-1.5 h-8 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></span> ADDRESSES
+                      </h3>
+                      <button onClick={openAddAddress} className="bg-[#990000] hover:bg-[#FF0000] text-white px-4 py-2 rounded-lg transition-all shadow-[0_0_10px_rgba(153,0,0,0.4)] text-sm font-bold flex items-center gap-2">
+                        <Plus className="w-4 h-4" /> เพิ่มที่อยู่
+                      </button>
+                    </div>
+                    <div className="space-y-4">
+                      {addresses.map((addr) => (
+                        <div key={addr.id} className="bg-[#000000] border border-[#990000]/20 rounded-xl p-5 hover:border-[#FF0000]/50 transition-all group relative overflow-hidden">
+                          <div className="absolute top-0 left-0 w-1 h-full bg-[#990000] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                          <div className="flex items-start justify-between pl-2">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <span className="font-bold text-lg text-[#F2F4F6] group-hover:text-[#FF0000] transition-colors">{addr.label}</span>
+                                {addr.isDefault && <span className="bg-[#FF0000]/20 text-[#FF0000] text-[10px] px-2 py-0.5 rounded border border-[#FF0000]/30 font-['Orbitron'] tracking-wider">DEFAULT</span>}
+                              </div>
+                              <p className="text-[#F2F4F6]/60 text-sm">{addr.address}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button onClick={() => openEditAddress(addr)} className="text-[#F2F4F6]/30 hover:text-[#FF0000] hover:bg-[#2E0505] rounded-full p-2 transition-all"><Edit2 className="w-5 h-5" /></button>
+                              <button onClick={() => confirmDeleteAddress(addr.id)} className="text-[#F2F4F6]/30 hover:text-[#FF0000] hover:bg-[#2E0505] rounded-full p-2 transition-all"><Trash2 className="w-5 h-5" /></button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* TODO: Tab Orders — Commit 4 */}
             </div>
 
@@ -283,7 +359,69 @@ export default function NexusGearProfile() {
         </div>
       )}
 
-      {/* TODO: Modals — Commit 3, 4, 5 */}
+      {/* ─── Modal: Add/Edit Address ─── */}
+      {showAddressModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowAddressModal(false)}></div>
+          <div className="relative bg-[#0a0a0a] border border-[#FF0000]/50 w-full max-w-lg rounded-3xl p-8 shadow-[0_0_50px_rgba(153,0,0,0.5)]">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-black font-['Orbitron'] text-[#F2F4F6]">{editingAddressId ? 'EDIT ADDRESS' : 'NEW ADDRESS'}</h3>
+              <button onClick={() => setShowAddressModal(false)}><X className="text-[#F2F4F6] hover:text-[#FF0000]" /></button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-['Orbitron'] text-[#FF0000] mb-2 uppercase">Label (ชื่อเรียก)</label>
+                <input
+                  value={addressForm.label}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addressForm, label: e.target.value })}
+                  placeholder="เช่น บ้าน, ที่ทำงาน"
+                  className="w-full bg-[#000000] border border-[#990000]/30 rounded-xl px-4 py-3 text-[#F2F4F6] focus:border-[#FF0000] outline-none transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-['Orbitron'] text-[#FF0000] mb-2 uppercase">Full Address (ที่อยู่จัดส่ง)</label>
+                <textarea
+                  value={addressForm.address}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setAddressForm({ ...addressForm, address: e.target.value })}
+                  placeholder="รายละเอียดที่อยู่..." rows={3}
+                  className="w-full bg-[#000000] border border-[#990000]/30 rounded-xl px-4 py-3 text-[#F2F4F6] focus:border-[#FF0000] outline-none transition-all resize-none"
+                />
+              </div>
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <div className={`w-5 h-5 border rounded flex items-center justify-center transition-all ${addressForm.isDefault ? 'bg-[#FF0000] border-[#FF0000]' : 'border-[#F2F4F6]/30 group-hover:border-[#FF0000]'}`}>
+                  {addressForm.isDefault && <CheckCircle className="w-3.5 h-3.5 text-white" />}
+                </div>
+                <input
+                  type="checkbox"
+                  checked={addressForm.isDefault}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addressForm, isDefault: e.target.checked })}
+                  className="hidden"
+                />
+                <span className="text-sm text-[#F2F4F6]/80 group-hover:text-white transition-colors">ตั้งเป็นที่อยู่เริ่มต้น (Set as Default)</span>
+              </label>
+              <button onClick={saveAddress} className="w-full bg-[#FF0000] hover:bg-[#990000] text-white py-3 rounded-xl font-['Orbitron'] font-bold tracking-widest transition-all mt-4 shadow-[0_0_15px_rgba(255,0,0,0.3)]">SAVE ADDRESS</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showDeleteAddrModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in zoom-in-95">
+            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowDeleteAddrModal(false)}></div>
+            <div className="relative bg-[#0a0a0a] border border-[#FF0000] w-full max-w-sm rounded-2xl p-6 text-center shadow-[0_0_30px_rgba(255,0,0,0.6)]">
+            <div className="w-16 h-16 bg-[#2E0505] rounded-full flex items-center justify-center mx-auto mb-4 border border-[#FF0000]/30">
+                <Trash2 className="w-8 h-8 text-[#FF0000]" />
+            </div>
+            <h3 className="text-xl font-black font-['Orbitron'] text-[#F2F4F6] mb-2">DELETE ADDRESS?</h3>
+            <p className="text-sm text-[#F2F4F6]/60 mb-6">คุณต้องการลบที่อยู่นี้ใช่หรือไม่?</p>
+            <div className="flex gap-3">
+                <button onClick={() => setShowDeleteAddrModal(false)} className="flex-1 bg-transparent border border-[#990000]/50 text-[#F2F4F6] py-3 rounded-xl font-bold hover:border-[#FF0000] transition">CANCEL</button>
+                <button onClick={deleteAddress} className="flex-1 bg-[#FF0000] text-white py-3 rounded-xl font-bold hover:bg-[#990000] transition shadow-[0_0_15px_rgba(255,0,0,0.4)]">DELETE</button>
+            </div>
+            </div>
+        </div>
+        )}
+
+      {/* TODO: Modals (Delete Address Confirmation, Success, Status) — Commit 3, 4, 5 */}
     </div>
   );
 }

@@ -12,6 +12,7 @@ import Login from './pages/Login';
 import AdminPage from './pages/AdminPage';
 import AdminLayout from './components/AdminLayout';
 import NexusGearAdminOrders from './pages/NexusGearAdminOrders';
+import NexusGearOrderStatus from './pages/NexusGearOrderStatus';
 import './App.css'
 
 interface CartItem {
@@ -87,6 +88,7 @@ function AppContent() {
         <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/my-orders" element={<NexusGearOrderStatus />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Navigate to="orders" replace />} />

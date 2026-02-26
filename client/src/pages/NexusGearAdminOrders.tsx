@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Eye, Search } from 'lucide-react';
+import { Search, Eye, CheckCircle } from 'lucide-react';
 import { getOrders, updateOrderStatus, type Order } from '../services/api';
 import OrderDetailModal from '../components/OrderDetailModal';
 
@@ -9,8 +9,8 @@ const OrderManagement = () => {
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Initial Fetch
   useEffect(() => {
@@ -31,30 +31,50 @@ const OrderManagement = () => {
     }
   };
 
+  const handleUpdateStatus = async (
+    orderId: number,
+    newStatus: 'pending' | 'paid' | 'to_ship' | 'shipped' | 'completed' | 'cancelled' | string
+  ) => {
+    try {
+      await updateOrderStatus(orderId, newStatus);
+
+      setOrders(prevOrders =>
+        prevOrders.map(order =>
+          order.id === orderId ? { ...order, status: newStatus as any } : order
+        )
+      );
+
+      setSelectedOrder(null);
+
+      const getThaiStatus = (status: string) => {
+        const thStatus: Record<string, string> = {
+          pending: 'รอชำระเงิน', paid: 'ชำระเงินแล้ว', to_ship: 'เตรียมจัดส่ง',
+          shipped: 'จัดส่งแล้ว', completed: 'สำเร็จ', cancelled: 'ยกเลิก'
+        };
+        return thStatus[status] || status;
+      };
+
+      const thaiStatus = getThaiStatus(newStatus);
+      setToastMessage(`อัปเดตสถานะเป็น "${thaiStatus}" สำเร็จเรียบร้อย! ✅`);
+      
+      // ให้ Popup หายไปเองใน 3 วินาที
+      setTimeout(() => {
+        setToastMessage(null);
+      }, 3000);
+
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      // เปลี่ยน error แจ้งเตือนด้วยก็ได้ครับ
+      setToastMessage('เกิดข้อผิดพลาดในการอัปเดตสถานะ ❌');
+      setTimeout(() => setToastMessage(null), 3000);
+    }
+  };
+
   // Handlers
   const handleOpenModal = (order: Order) => {
     setSelectedOrder(order);
-    setIsModalOpen(true);
   };
 
-  const handleUpdateStatus = async (id: number, newStatus: string) => {
-    try {
-      await updateOrderStatus(id, newStatus);
-      
-      // Update local state to reflect changes immediately
-      setOrders(prevOrders => 
-        prevOrders.map(o => o.id === id ? { ...o, status: newStatus as any } : o)
-      );
-
-      // Update modal state if open
-      if (selectedOrder && selectedOrder.id === id) {
-        setSelectedOrder({ ...selectedOrder, status: newStatus as any });
-      }
-    } catch (error) {
-      console.error('Update status failed:', error);
-      alert('ไม่สามารถอัปเดตสถานะได้ กรุณาลองใหม่อีกครั้ง');
-    }
-  };
 
   // Constants & Helpers
   const tabs = [
@@ -240,11 +260,18 @@ const OrderManagement = () => {
       </div>
 
       <OrderDetailModal 
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={selectedOrder !== null}
+        onClose={() => setSelectedOrder(null)}
         order={selectedOrder}
         onUpdateStatus={handleUpdateStatus}
       />
+
+      {toastMessage && (
+          <div className="fixed bottom-10 right-10 bg-[#121212] border border-green-500/50 text-green-400 px-6 py-4 rounded-xl shadow-[0_10px_40px_-10px_rgba(34,197,94,0.3)] flex items-center gap-3 z-50 animate-fade-in">
+            <CheckCircle size={24} className="text-green-500" />
+            <span className="font-bold tracking-wide">{toastMessage}</span>
+          </div>
+      )}
     </div>
   );
 };

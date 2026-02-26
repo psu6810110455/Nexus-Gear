@@ -82,6 +82,19 @@ export class OrdersService {
     });
   }
 
+  async findOne(id: number): Promise<Order> {
+    const order = await this.ordersRepository.findOne({
+      where: { id },
+      relations: ['items', 'items.product', 'user'],
+    });
+
+    if (!order) {
+      throw new NotFoundException(`ไม่พบคำสั่งซื้อหมายเลข ${id}`);
+    }
+
+    return order;
+  }
+
   // 2. ฟังก์ชันเสกข้อมูล (Seed)
   async seed() {
     // สร้าง User จำลอง

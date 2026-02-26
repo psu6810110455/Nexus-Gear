@@ -8,6 +8,8 @@ import { AuthModule } from './auth/auth.module';
 import { CartModule } from './cart/cart.module';
 import { DatabaseService } from './database/database.service';
 import { CategoriesModule } from './categories/categories.module';
+import { O } from 'node_modules/@faker-js/faker/dist/airline-Dz1uGqgJ';
+import { OrdersModule } from './orders/orders.module';
 
 @Global()
 @Module({
@@ -27,6 +29,7 @@ import { CategoriesModule } from './categories/categories.module';
     AuthModule,
     CartModule,
     CategoriesModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [

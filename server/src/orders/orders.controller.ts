@@ -22,6 +22,16 @@ export class OrdersController {
     return this.ordersService.findAll();
   }
 
+  @Get('user/:userId')
+  findByUserId(@Param('userId') userId: string) {
+    return this.ordersService.findByUserId(+userId);
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.ordersService.findOne(+id);
+  }
+
   @Patch(':id/status')
   updateStatus(@Param('id') id: string, @Body() updateOrderStatusDto: UpdateOrderStatusDto) {
     console.log('ID ที่รับมา:', id);
@@ -29,8 +39,5 @@ export class OrdersController {
     return this.ordersService.updateStatus(+id, updateOrderStatusDto.status);
   }
 
-  @Get('user/:userId')
-  findByUserId(@Param('userId') userId: string) {
-    return this.ordersService.findByUserId(+userId);
-  }
+
 }

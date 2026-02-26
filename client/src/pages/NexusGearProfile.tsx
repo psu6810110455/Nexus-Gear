@@ -187,6 +187,12 @@ export default function NexusGearProfile() {
     setRatings((prev) => ({ ...prev, [orderId]: score }));
   };
 
+  // ─── Commit 5: Logout Logic ───
+  const handleLogout = (): void => {
+    setShowLogoutModal(false);
+    triggerSuccess('LOGGED OUT', 'ออกจากระบบเรียบร้อยแล้ว');
+  };
+
   return (
     <div className="min-h-screen bg-[#000000] text-[#F2F4F6] font-['Kanit'] relative overflow-x-hidden selection:bg-[#990000] selection:text-white pb-10">
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&family=Orbitron:wght@400;700;900&display=swap');`}</style>
@@ -587,7 +593,39 @@ export default function NexusGearProfile() {
         </div>
       )}
 
-      {/* TODO: Remaining Modals (Success Modal, Logout Modal) */}
+      {/* ─── Modal: Logout ─── */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in zoom-in-95">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowLogoutModal(false)}></div>
+          <div className="relative bg-[#0a0a0a] border border-[#FF0000] w-full max-w-sm rounded-2xl p-6 text-center shadow-[0_0_30px_rgba(255,0,0,0.6)]">
+            <div className="w-16 h-16 bg-[#2E0505] rounded-full flex items-center justify-center mx-auto mb-4 border border-[#FF0000]/30">
+              <LogOut className="w-8 h-8 text-[#FF0000]" />
+            </div>
+            <h3 className="text-xl font-black font-['Orbitron'] text-[#F2F4F6] mb-2">LOGOUT?</h3>
+            <p className="text-sm text-[#F2F4F6]/60 mb-6">คุณต้องการออกจากระบบใช่หรือไม่?</p>
+            <div className="flex gap-3">
+              <button onClick={() => setShowLogoutModal(false)} className="flex-1 bg-transparent border border-[#990000]/50 text-[#F2F4F6] py-3 rounded-xl font-bold hover:border-[#FF0000] transition">CANCEL</button>
+              <button onClick={handleLogout} className="flex-1 bg-[#FF0000] text-white py-3 rounded-xl font-bold hover:bg-[#990000] transition shadow-[0_0_15px_rgba(255,0,0,0.4)]">CONFIRM</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Modal: Success ─── */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="absolute inset-0 bg-black/90 backdrop-blur-md"></div>
+          <div className="relative bg-[#0a0a0a] border-2 border-[#00FF00] w-full max-w-sm rounded-3xl p-8 flex flex-col items-center text-center shadow-[0_0_50px_rgba(0,255,0,0.3)] animate-in zoom-in-95">
+            <div className="w-20 h-20 bg-[#003300] rounded-full flex items-center justify-center mb-6 border border-[#00FF00] shadow-[0_0_20px_rgba(0,255,0,0.4)]">
+              <Check className="w-10 h-10 text-[#00FF00]" />
+            </div>
+            <h3 className="text-2xl font-black font-['Orbitron'] text-white mb-2 tracking-wider">{successMessage.title}</h3>
+            <p className="text-[#F2F4F6]/60 font-['Kanit'] mb-8">{successMessage.detail}</p>
+            <button onClick={() => setShowSuccessModal(false)} className="w-full bg-[#00FF00] hover:bg-[#00CC00] text-black font-['Orbitron'] font-bold py-3 rounded-xl transition-all shadow-[0_0_20px_rgba(0,255,0,0.4)]">OK</button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

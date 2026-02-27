@@ -40,15 +40,21 @@ export default function NexusGearCart({ onNavigate }: CartProps) {
     loadData();
   }, []);
 
-  // ─── ฟังก์ชันที่ 1 (จาก Commit 3): เลือกสินค้าทีละรายการ ───
+  // ─── ฟังก์ชันที่ 1: เลือกสินค้าทีละรายการ ───
   const toggleSelect = (id: number) => {
     setSelectedItems(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
 
-  // ─── ⭐ เพิ่มใหม่ใน Commit 4: ฟังก์ชันเลือกสินค้าทั้งหมด ───
+  // ─── ฟังก์ชันที่ 2: เลือกสินค้าทั้งหมด ───
   const toggleSelectAll = () => {
-    // ถ้าเลือกครบทุกชิ้นอยู่แล้ว ให้ยกเลิกการเลือกทั้งหมด ถ้ายังไม่ครบ ให้เลือกทุกไอดี
     setSelectedItems(selectedItems.length === cartItems.length && cartItems.length > 0 ? [] : cartItems.map(i => i.id));
+  };
+
+  // ─── ⭐ เพิ่มใหม่ใน Commit 5: ฟังก์ชันเพิ่ม/ลดจำนวนสินค้า ───
+  const updateQty = (id: number, delta: number) => {
+    setCartItems(prev => prev.map(item => 
+      item.id === id ? { ...item, quantity: Math.max(1, Math.min(item.maxQty, item.quantity + delta)) } : item
+    ));
   };
 
   // ─── 4. RENDER: สถานะกำลังโหลด ───
@@ -138,7 +144,6 @@ export default function NexusGearCart({ onNavigate }: CartProps) {
           
           <section aria-label="Cart Items" className="lg:col-span-2 space-y-4">
             
-            {/* ⭐ จุดที่ 2 อัปเดตใน Commit 4: ผูกปุ่มเข้ากับฟังก์ชัน toggleSelectAll */}
             <header className="bg-[#000000]/40 border border-[#990000]/20 rounded-t-xl px-5 py-4 flex items-center gap-4 backdrop-blur-sm">
                 <button 
                   onClick={toggleSelectAll} 
@@ -153,7 +158,6 @@ export default function NexusGearCart({ onNavigate }: CartProps) {
                    <span className="text-[#F2F4F6] font-['Orbitron'] font-bold tracking-wider">NEXUS OFFICIAL STORE</span>
                 </div>
                 <div className="flex-1 text-right">
-                    {/* ปุ่มลบทั้งหมดยังรอฟังก์ชันลบใน Commit ถัดไปครับ */}
                     <button className="text-[#990000] hover:text-[#FF0000] text-xs font-['Orbitron'] tracking-wider transition flex items-center gap-2 group justify-end ml-auto">
                         <Trash2 aria-hidden="true" className="w-3 h-3 group-hover:rotate-12 transition-transform" /> CLEAR ALL
                     </button>
@@ -173,11 +177,46 @@ export default function NexusGearCart({ onNavigate }: CartProps) {
                              <figure className="m-0">
                                 <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded-xl border border-[#990000]/30 bg-[#1a1a1a]" />
                              </figure>
-                             <div className="flex-1 flex flex-col justify-center">
-                                <p className="text-[10px] font-['Orbitron'] text-[#990000] tracking-widest uppercase mb-1">{item.category}</p>
-                                <h3 className="font-bold text-lg text-[#F2F4F6] mb-2">{item.name}</h3>
-                                <span className="text-xl font-['Orbitron'] font-bold text-[#FF0000]">฿{(item.price).toLocaleString('th-TH')}</span>
+                             
+                             {/* ⭐ จุดที่อัปเดตใน Commit 5: เพิ่มปุ่มปรับจำนวนสินค้า */}
+                             <div className="flex-1 min-w-0 flex flex-col justify-between h-24">
+                                <div className="flex items-start justify-between gap-2">
+                                    <header>
+                                        <p className="text-[10px] font-['Orbitron'] text-[#990000] tracking-widest uppercase mb-1">{item.category}</p>
+                                        <h3 className="font-bold text-lg text-[#F2F4F6] line-clamp-1">{item.name}</h3>
+                                    </header>
+                                </div>
+                                <div className="flex items-end justify-between mt-auto">
+                                    <div className="flex flex-col">
+                                        {item.originalPrice !== item.price && (<span className="text-xs text-[#F2F4F6]/30 line-through font-['Kanit']">฿{item.originalPrice.toLocaleString('th-TH')}</span>)}
+                                        <span className="text-xl font-['Orbitron'] font-bold text-[#FF0000] drop-shadow-[0_0_5px_rgba(255,0,0,0.3)]">฿{item.price.toLocaleString('th-TH')}</span>
+                                    </div>
+                                    
+                                    {/* ชุดปุ่มควบคุมจำนวนสินค้า */}
+                                    <div className="flex items-center bg-[#000000] border border-[#990000]/30 rounded-lg overflow-hidden">
+                                        <button 
+                                          onClick={() => updateQty(item.id, -1)} 
+                                          disabled={item.quantity <= 1} 
+                                          className="w-8 h-8 flex items-center justify-center text-[#F2F4F6]/60 hover:bg-[#2E0505] hover:text-[#FF0000] disabled:opacity-30 transition border-r border-[#990000]/20"
+                                          aria-label="Decrease quantity"
+                                        >
+                                          <Minus aria-hidden="true" className="w-3 h-3" />
+                                        </button>
+                                        <div className="w-10 h-8 flex items-center justify-center font-['Orbitron'] font-bold text-[#F2F4F6] text-sm" aria-live="polite">
+                                          {item.quantity}
+                                        </div>
+                                        <button 
+                                          onClick={() => updateQty(item.id, 1)} 
+                                          disabled={item.quantity >= item.maxQty} 
+                                          className="w-8 h-8 flex items-center justify-center text-[#F2F4F6]/60 hover:bg-[#2E0505] hover:text-[#FF0000] disabled:opacity-30 transition border-l border-[#990000]/20"
+                                          aria-label="Increase quantity"
+                                        >
+                                          <Plus aria-hidden="true" className="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
+
                         </div>
                     </div>
                 </article>

@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import logoImg from '../../../assets/logo.png';
-import { useAuth } from '../../../context/AuthContext';
+import { useAuth } from "../../auth/context/AuthContext";
 import type { NavLink } from '../types/nav.types';
 
 const PUBLIC_LINKS: NavLink[] = [

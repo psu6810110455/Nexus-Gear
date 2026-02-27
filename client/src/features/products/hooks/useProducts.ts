@@ -4,7 +4,6 @@ import {
   fetchProducts,
   extractCategoriesFromProducts,
 } from '../services/product.service';
-
 interface UseProductsReturn {
   products: Product[];
   loading: boolean;

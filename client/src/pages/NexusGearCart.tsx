@@ -40,9 +40,15 @@ export default function NexusGearCart({ onNavigate }: CartProps) {
     loadData();
   }, []);
 
-  // ─── ⭐ เพิ่มใหม่ใน Commit 3: ฟังก์ชันเลือกสินค้าทีละชิ้น ───
+  // ─── ฟังก์ชันที่ 1 (จาก Commit 3): เลือกสินค้าทีละรายการ ───
   const toggleSelect = (id: number) => {
     setSelectedItems(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  };
+
+  // ─── ⭐ เพิ่มใหม่ใน Commit 4: ฟังก์ชันเลือกสินค้าทั้งหมด ───
+  const toggleSelectAll = () => {
+    // ถ้าเลือกครบทุกชิ้นอยู่แล้ว ให้ยกเลิกการเลือกทั้งหมด ถ้ายังไม่ครบ ให้เลือกทุกไอดี
+    setSelectedItems(selectedItems.length === cartItems.length && cartItems.length > 0 ? [] : cartItems.map(i => i.id));
   };
 
   // ─── 4. RENDER: สถานะกำลังโหลด ───
@@ -58,8 +64,6 @@ export default function NexusGearCart({ onNavigate }: CartProps) {
   if (cartItems.length === 0) {
     return (
       <main className="min-h-screen bg-[#000000] text-[#F2F4F6] font-['Kanit'] flex flex-col items-center justify-center relative overflow-hidden">
-        
-        {/* Background Effects */}
         <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none">
             <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#2E0505] blur-[150px] rounded-full opacity-60"></div>
             <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#2E0505] blur-[150px] rounded-full opacity-60"></div>
@@ -87,7 +91,6 @@ export default function NexusGearCart({ onNavigate }: CartProps) {
   return (
     <div className="min-h-screen bg-[#000000] text-[#F2F4F6] font-['Kanit'] relative overflow-x-hidden selection:bg-[#990000] selection:text-white">
 
-      {/* Background Effects */}
       <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#2E0505] blur-[150px] rounded-full opacity-60"></div>
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#2E0505] blur-[150px] rounded-full opacity-60"></div>
@@ -95,7 +98,6 @@ export default function NexusGearCart({ onNavigate }: CartProps) {
       </div>
 
       <div className="relative z-10">
-        {/* ─── แถบเมนูด้านบน (Header Navigation) ─── */}
         <header className="bg-[#000000]/80 border-b border-[#990000]/30 backdrop-blur-md sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             <div onClick={() => onNavigate?.('home')} className="flex items-center gap-4 group cursor-pointer" role="button" tabIndex={0} aria-label="Go to Home">
@@ -117,7 +119,6 @@ export default function NexusGearCart({ onNavigate }: CartProps) {
           </div>
         </header>
 
-        {/* ─── ส่วนหัวของหน้า (Page Title) ─── */}
         <section aria-labelledby="cart-heading" className="max-w-7xl mx-auto px-4 pt-8 pb-4">
           <button onClick={() => onNavigate?.('products')} className="flex items-center gap-2 text-[#F2F4F6]/40 hover:text-[#FF0000] transition text-sm mb-6 group" aria-label="Go back to shop">
             <ArrowLeft aria-hidden="true" className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> BACK TO SHOP
@@ -133,24 +134,41 @@ export default function NexusGearCart({ onNavigate }: CartProps) {
           </header>
         </section>
 
-        {/* ─── ⭐ เปลี่ยนใหม่ใน Commit 3: พื้นที่เนื้อหาหลัก ─── */}
         <main className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-8 pb-20">
           
-          {/* ส่วนที่ 1: รายการสินค้าฝั่งซ้าย (มีแค่ฟังก์ชันติ๊กเลือก toggleSelect) */}
           <section aria-label="Cart Items" className="lg:col-span-2 space-y-4">
+            
+            {/* ⭐ จุดที่ 2 อัปเดตใน Commit 4: ผูกปุ่มเข้ากับฟังก์ชัน toggleSelectAll */}
+            <header className="bg-[#000000]/40 border border-[#990000]/20 rounded-t-xl px-5 py-4 flex items-center gap-4 backdrop-blur-sm">
+                <button 
+                  onClick={toggleSelectAll} 
+                  className="text-[#FF0000] hover:scale-110 transition-transform"
+                  aria-label={selectedItems.length === cartItems.length ? "Deselect all items" : "Select all items"}
+                >
+                   {selectedItems.length === cartItems.length && cartItems.length > 0 ? <CheckSquare aria-hidden="true" className="w-6 h-6" /> : <Square aria-hidden="true" className="w-6 h-6" />}
+                </button>
+                <div aria-hidden="true" className="h-6 w-[1px] bg-[#990000]/40"></div>
+                <div className="flex items-center gap-2">
+                   <Store aria-hidden="true" className="w-5 h-5 text-[#F2F4F6]" />
+                   <span className="text-[#F2F4F6] font-['Orbitron'] font-bold tracking-wider">NEXUS OFFICIAL STORE</span>
+                </div>
+                <div className="flex-1 text-right">
+                    {/* ปุ่มลบทั้งหมดยังรอฟังก์ชันลบใน Commit ถัดไปครับ */}
+                    <button className="text-[#990000] hover:text-[#FF0000] text-xs font-['Orbitron'] tracking-wider transition flex items-center gap-2 group justify-end ml-auto">
+                        <Trash2 aria-hidden="true" className="w-3 h-3 group-hover:rotate-12 transition-transform" /> CLEAR ALL
+                    </button>
+                </div>
+            </header>
+
             <div className="space-y-4">
                 {cartItems.map((item) => (
                 <article key={item.id} className={`bg-[#000000]/60 border ${selectedItems.includes(item.id) ? 'border-[#FF0000]/60 bg-[#2E0505]/20' : 'border-[#990000]/20'} backdrop-blur-xl rounded-2xl p-5 transition-all duration-300 relative overflow-hidden`}>
                     <div className="flex items-start gap-4">
-                        
-                        {/* กล่อง Checkbox ที่เรียกใช้ toggleSelect */}
                         <div className="pt-4">
                              <button onClick={() => toggleSelect(item.id)} className="text-[#FF0000] hover:scale-110 transition-transform" aria-label={`Select ${item.name}`}>
                                 {selectedItems.includes(item.id) ? <CheckSquare aria-hidden="true" className="w-6 h-6" /> : <Square aria-hidden="true" className="w-6 h-6 text-[#F2F4F6]/20" />}
                              </button>
                         </div>
-                        
-                        {/* รูปและรายละเอียดสินค้า (ยังไม่มีปุ่มลบ/เพิ่มจำนวน) */}
                         <div className="flex-1 flex gap-5">
                              <figure className="m-0">
                                 <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded-xl border border-[#990000]/30 bg-[#1a1a1a]" />
@@ -161,14 +179,12 @@ export default function NexusGearCart({ onNavigate }: CartProps) {
                                 <span className="text-xl font-['Orbitron'] font-bold text-[#FF0000]">฿{(item.price).toLocaleString('th-TH')}</span>
                             </div>
                         </div>
-                        
                     </div>
                 </article>
                 ))}
             </div>
           </section>
 
-          {/* ส่วนที่ 2: โครงสร้าง Sidebar ฝั่งขวา (รอทำใน Commit ถัดๆ ไป) */}
           <aside className="lg:col-span-1">
              <div className="bg-[#000000]/60 border border-[#990000]/30 rounded-2xl p-6 h-[200px] flex items-center justify-center">
                 <p className="text-[#FF0000] font-['Orbitron'] animate-pulse text-center leading-relaxed">
@@ -179,7 +195,6 @@ export default function NexusGearCart({ onNavigate }: CartProps) {
           </aside>
 
         </main>
-
       </div>
     </div>
   );

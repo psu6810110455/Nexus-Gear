@@ -9,23 +9,24 @@ import Register from './pages/Register';
 import Login from './pages/Login';
 import AdminPage from './pages/AdminPage';
 import NexusGearAdminDashboard from './pages/NexusGearAdminDashboard'; 
-// ⭐ 1. นำเข้าหน้า Cart ที่เราเพิ่งสร้าง
 import NexusGearCart from './pages/NexusGearCart'; 
+// ⭐ 1. นำเข้าหน้า Payment 
+import NexusGearPayment from './pages/NexusGearPayment'; 
 import './App.css'
 
 function AppContent() {
   const location = useLocation();
-  // ⭐ เพิ่ม useNavigate เพื่อให้ปุ่มต่างๆ ในหน้า Cart ลิงก์ไปหน้าอื่นได้จริง
   const navigate = useNavigate();
 
-  // ⭐ 2. เพิ่มเงื่อนไขให้ซ่อน Navbar เดิม ถ้าอยู่หน้า /cart (เพราะหน้า Cart มี Header ของตัวเองแล้ว)
+  // ⭐ 2. เพิ่ม /payment เข้าไปในเงื่อนไขซ่อน Navbar เดิม
   const hideNavbar = location.pathname.startsWith('/admin') || 
                      location.pathname.startsWith('/dashboard') || 
-                     location.pathname.startsWith('/cart');
+                     location.pathname.startsWith('/cart') ||
+                     location.pathname.startsWith('/payment');
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#0a0a0a' }}>
-      {/* ซ่อน Navbar เมื่ออยู่หน้า Admin, Dashboard หรือ Cart */}
+      {/* ซ่อน Navbar เมื่ออยู่หน้า Admin, Dashboard, Cart หรือ Payment */}
       {!hideNavbar && <Navbar />}
 
       <Routes>
@@ -36,7 +37,6 @@ function AppContent() {
         <Route path="/login" element={<Login />} />
         <Route path="/admin" element={<AdminPage />} />
 
-        {/* เรียกหน้า NexusGearAdminDashboard */}
         <Route 
             path="/dashboard" 
             element={
@@ -46,17 +46,29 @@ function AppContent() {
             } 
         />
 
-        {/* ⭐ 3. สร้างประตูทางเข้าหน้า Cart ของเรา */}
+        {/* หน้า Cart */}
         <Route 
             path="/cart" 
             element={
                 <NexusGearCart 
                     onNavigate={(page) => {
-                        // เช็คว่าถ้าหน้า Cart ส่งคำสั่งมา ให้เด้งไปหน้าไหน
                         if (page === 'home') navigate('/');
                         else if (page === 'products') navigate('/shop');
                         else if (page === 'profile') navigate('/login');
-                        else if (page === 'payment') navigate('/payment'); // เผื่อทำหน้า Payment ในอนาคต
+                        else if (page === 'payment') navigate('/payment');
+                    }}
+                />
+            } 
+        />
+
+        {/* ⭐ 3. สร้างประตูทางเข้าหน้า Payment */}
+        <Route 
+            path="/payment" 
+            element={
+                <NexusGearPayment 
+                    onNavigate={(page) => {
+                        if (page === 'cart') navigate('/cart');
+                        else if (page === 'home') navigate('/');
                     }}
                 />
             } 

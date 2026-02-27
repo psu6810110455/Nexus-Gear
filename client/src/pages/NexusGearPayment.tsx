@@ -1,20 +1,13 @@
 // src/pages/NexusGearPayment.tsx
-import React, { useState } from 'react';
-// ⭐ นำเข้าไอคอนลูกศรขึ้นลง (ChevronUp, ChevronDown) เพิ่มเติม
+import React, { useState, useEffect } from 'react';
+// ลบไอคอนที่ไม่ได้ใช้ออก และนำเข้าเฉพาะที่ใช้จริงในหน้านี้
 import { ArrowLeft, ArrowRight, Check, MapPin, CreditCard, FileText, ShoppingCart, Upload, Loader, ChevronDown, ChevronUp } from 'lucide-react';
 
-// ─── 1. INTERFACES ───
+import { fetchAddresses, fetchOrderSummary } from '../services/apiPayment';
+import type { Address, OrderSummaryData } from '../services/apiPayment';
+
 interface PaymentProps {
   onNavigate?: (page: string) => void;
-}
-
-interface Address {
-  id: number;
-  label: string;
-  name: string;
-  detail: string;
-  phone: string;
-  isDefault: boolean;
 }
 
 interface UploadedSlip {
@@ -22,53 +15,16 @@ interface UploadedSlip {
   preview: string | ArrayBuffer | null;
 }
 
-// ⭐ เพิ่ม Interface สำหรับสรุปยอด
-interface OrderItem {
-  name: string;
-  qty: number;
-  price: number;
-}
-
-interface OrderSummaryData {
-  items: OrderItem[];
-  subtotal: number;
-  discount: number;
-  shipping: number;
-  coupon: string;
-}
-
-// ─── 2. MOCK DATA ───
-const savedAddresses: Address[] = [
-  { id: 1, label: 'บ้าน', name: 'แม็กซ์ เกมเมอร์', detail: '123 ถนนเกมมิ่ง แขวงไฮเทค เขตดิจิตอล กรุงเทพฯ 10110', phone: '081-234-5678', isDefault: true },
-  { id: 2, label: 'ที่ทำงาน', name: 'แม็กซ์ เกมเมอร์', detail: '456 อาคารออฟฟิศ ถนนสีลม บางรัก กรุงเทพฯ 10500', phone: '081-234-5678', isDefault: false },
-];
-
-// ⭐ ข้อมูลจำลองสำหรับบิลฝั่งขวา
-const orderSummary: OrderSummaryData = {
-  items: [
-    { name: 'ROG Phone 7 Ultimate', qty: 1, price: 45990 },
-    { name: 'HyperX Cloud Alpha', qty: 2, price: 3990 },
-    { name: 'Razer Kishi V2', qty: 1, price: 3490 },
-    { name: 'Gaming Finger Sleeves', qty: 1, price: 290 }, 
-  ],
-  subtotal: 53760,
-  discount: 5376,
-  shipping: 0,
-  coupon: 'NEXUS10',
-};
-
 const fmt = (n: number) => n.toLocaleString('th-TH');
-const grandTotal = orderSummary.subtotal - orderSummary.discount + orderSummary.shipping;
 
-// ─── 3. COMPONENT: STEP INDICATOR ───
 function StepBar({ current }: { current: number }) {
   const steps = [
     { id: 1, label: 'ที่อยู่จัดส่ง', icon: MapPin },
     { id: 2, label: 'วิธีชำระเงิน', icon: CreditCard },
-    { id: 3, label: 'ยืนยันการจอง', icon: FileText },
+    { id: 3, label: 'ยืนยันคำสั่งซื้อ', icon: FileText },
   ];
   return (
-    <nav aria-label="Progress" className="flex items-center justify-center gap-0 w-full max-w-lg mx-auto mb-10">
+    <nav aria-label="สถานะการสั่งซื้อ" className="flex items-center justify-center gap-0 w-full max-w-lg mx-auto mb-10">
       {steps.map((step, idx) => {
         const Icon = step.icon;
         const done = current > step.id;
@@ -80,7 +36,7 @@ function StepBar({ current }: { current: number }) {
                 ${done ? 'bg-[#990000] border-[#FF0000] shadow-[0_0_14px_rgba(255,0,0,0.5)]' : active ? 'bg-[#2E0505] border-[#FF0000] shadow-[0_0_14px_rgba(255,0,0,0.4)] scale-110' : 'bg-[#0a0a0a] border-[#990000]/30'}`}>
                 {done ? <Check aria-hidden="true" className="w-5 h-5 text-white" /> : <Icon aria-hidden="true" className={`w-5 h-5 ${active ? 'text-[#FF0000]' : 'text-[#F2F4F6]/30'}`} />}
               </div>
-              <span className={`text-[10px] font-['Orbitron'] mt-3 tracking-wider absolute translate-y-12 transition-colors duration-300 w-24 text-center ${active ? 'text-[#FF0000] font-bold' : done ? 'text-[#F2F4F6]/60' : 'text-[#F2F4F6]/20'}`}>
+              <span className={`text-[10px] font-['Kanit'] mt-3 tracking-wider absolute translate-y-12 transition-colors duration-300 w-24 text-center ${active ? 'text-[#FF0000] font-bold' : done ? 'text-[#F2F4F6]/60' : 'text-[#F2F4F6]/20'}`}>
                 {step.label}
               </span>
             </div>
@@ -97,20 +53,37 @@ function StepBar({ current }: { current: number }) {
   );
 }
 
-// ─── 4. MAIN COMPONENT ───
 export default function NexusGearPayment({ onNavigate }: PaymentProps) {
-  // ─── STATE MANAGEMENT ───
+  const [isApiLoading, setIsApiLoading] = useState<boolean>(true);
+  const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
+  const [orderSummary, setOrderSummary] = useState<OrderSummaryData | null>(null);
+
   const [step, setStep] = useState<number>(1);
-  const [selectedAddr, setSelectedAddr] = useState<number>(1);
+  const [selectedAddr, setSelectedAddr] = useState<number | null>(null);
   const [payMethod, setPayMethod] = useState<string | null>(null);
   const [uploadedSlip, setUploadedSlip] = useState<UploadedSlip | null>(null);
   const [confirmed, setConfirmed] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
-  
-  // ⭐ เพิ่ม State สำหรับซ่อน/แสดง Summary ในมือถือ
+  const [loadingAction, setLoadingAction] = useState<boolean>(false);
   const [showSummary, setShowSummary] = useState<boolean>(false);
 
-  // ─── LOGIC FUNCTIONS ───
+  useEffect(() => {
+    const loadData = async () => {
+      setIsApiLoading(true);
+      const [addrs, summary] = await Promise.all([
+        fetchAddresses(),
+        fetchOrderSummary()
+      ]);
+      setSavedAddresses(addrs);
+      setOrderSummary(summary);
+      
+      const defaultAddr = addrs.find(a => a.isDefault);
+      if (defaultAddr) setSelectedAddr(defaultAddr.id);
+      
+      setIsApiLoading(false);
+    };
+    loadData();
+  }, []);
+
   const goNext = () => { 
     window.scrollTo({ top: 0, behavior: 'smooth' }); 
     setStep((s) => Math.min(3, s + 1)); 
@@ -130,18 +103,27 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
   };
 
   const handleConfirm = () => {
-    setLoading(true);
+    setLoadingAction(true);
     setTimeout(() => { 
-      setLoading(false); 
+      setLoadingAction(false); 
       setConfirmed(true); 
       window.scrollTo(0,0); 
     }, 2000);
   };
 
+  if (isApiLoading || !orderSummary) {
+    return (
+      <main className="min-h-screen bg-[#000000] flex justify-center items-center">
+        <p className="text-[#FF0000] font-['Orbitron'] animate-pulse text-2xl tracking-widest">กำลังโหลดระบบชำระเงิน...</p>
+      </main>
+    );
+  }
+
+  const grandTotal = orderSummary.subtotal - orderSummary.discount + orderSummary.shipping;
+
   return (
     <div className="min-h-screen bg-[#000000] text-[#F2F4F6] font-['Kanit'] relative overflow-x-hidden selection:bg-[#990000] selection:text-white pb-20">
       
-      {/* ⭐ Custom Scrollbar Styles สำหรับกล่องสรุปสินค้า */}
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: rgba(46, 5, 5, 0.3); border-radius: 4px; }
@@ -152,23 +134,23 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
       <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#2E0505] blur-[150px] rounded-full opacity-60"></div>
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#2E0505] blur-[150px] rounded-full opacity-60"></div>
-        <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h40v40H0V0zm1 1h38v38H1V1z' fill='%23990000' fill-opacity='0.4' fill-rule='evenodd'/%3E%3C/svg%3E")` }}></div>
+        <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h40v40H0V0zm1 1h38v38H1V1z' fill='%23990000' fill-opacity='0.4' fill-rule='evenodd'/%3E%3C/svg%3E")` }}></div>
       </div>
 
       <div className="relative z-10">
         <header className="bg-[#000000]/80 border-b border-[#990000]/30 backdrop-blur-md sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <div onClick={() => onNavigate?.('home')} className="flex items-center gap-4 group cursor-pointer" role="button" tabIndex={0}>
+            <div onClick={() => onNavigate?.('home')} className="flex items-center gap-4 group cursor-pointer" role="button" tabIndex={0} aria-label="กลับไปหน้าหลัก">
               <figure className="relative m-0">
                 <div aria-hidden="true" className="absolute inset-0 bg-[#FF0000]/20 blur-md rounded-full group-hover:bg-[#FF0000]/40 transition duration-300"></div>
-                <img src="/nexus-logo.png" alt="Nexus Logo" className="w-10 h-10 object-contain relative z-10" />
+                <img src="/nexus-logo.png" alt="โลโก้ Nexus Gear" className="w-10 h-10 object-contain relative z-10" />
               </figure>
               <h1 className="text-2xl font-['Orbitron'] font-black text-[#F2F4F6] tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,1)]">NEXUS GEAR</h1>
             </div>
-            <nav className="hidden md:flex items-center gap-8">
-              <button onClick={() => onNavigate?.('home')} className="text-[#F2F4F6]/60 hover:text-[#FF0000] transition font-['Orbitron'] text-sm tracking-wider">HOME</button>
-              <button onClick={() => onNavigate?.('cart')} className="text-[#F2F4F6]/60 hover:text-[#FF0000] transition font-['Orbitron'] text-sm tracking-wider flex items-center gap-2"><ShoppingCart aria-hidden="true" className="w-3 h-3" /> CART</button>
-              <button className="text-[#FF0000] font-['Orbitron'] text-sm tracking-wider flex items-center gap-2 border-b-2 border-[#FF0000] pb-1" aria-current="page"><CreditCard aria-hidden="true" className="w-4 h-4" /> CHECKOUT</button>
+            <nav aria-label="เมนูหลัก" className="hidden md:flex items-center gap-8">
+              <button onClick={() => onNavigate?.('home')} className="text-[#F2F4F6]/60 hover:text-[#FF0000] transition font-['Kanit'] text-sm tracking-wide">หน้าหลัก</button>
+              <button onClick={() => onNavigate?.('cart')} className="text-[#F2F4F6]/60 hover:text-[#FF0000] transition font-['Kanit'] text-sm tracking-wide flex items-center gap-2"><ShoppingCart aria-hidden="true" className="w-3 h-3" /> ตะกร้าสินค้า</button>
+              <button className="text-[#FF0000] font-['Kanit'] text-sm tracking-wide flex items-center gap-2 border-b-2 border-[#FF0000] pb-1" aria-current="page"><CreditCard aria-hidden="true" className="w-4 h-4" /> ชำระเงิน</button>
             </nav>
           </div>
         </header>
@@ -183,8 +165,8 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
                       <Check aria-hidden="true" className="w-16 h-16 text-[#FF0000] drop-shadow-[0_0_10px_rgba(255,0,0,0.8)]" />
                   </div>
                 </figure>
-                <h2 className="text-4xl font-['Orbitron'] font-black text-[#FF0000] mb-3 tracking-wide drop-shadow-[0_0_10px_rgba(255,0,0,0.5)]">ORDER CONFIRMED!</h2>
-                <p className="text-[#F2F4F6]/50 mb-2 font-['Orbitron']">ORDER ID</p>
+                <h2 className="text-4xl font-['Orbitron'] font-black text-[#FF0000] mb-3 tracking-wide drop-shadow-[0_0_10px_rgba(255,0,0,0.5)]">สั่งซื้อสำเร็จ!</h2>
+                <p className="text-[#F2F4F6]/50 mb-2 font-['Kanit']">หมายเลขคำสั่งซื้อ (ORDER ID)</p>
                 <div className="bg-[#2E0505]/50 px-6 py-2 rounded-lg border border-[#FF0000]/20 mb-8">
                     <p className="text-xl font-['Orbitron'] font-bold text-[#F2F4F6] tracking-widest">#ORD-20260203-4821</p>
                 </div>
@@ -192,8 +174,8 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
                     ระบบได้รับคำสั่งซื้อของคุณแล้ว<br/>เราจะส่งรายละเอียดการจัดส่งไปยังอีเมล<br/><span className="text-[#FF0000]">max.gamer@email.com</span>
                 </p>
                 <footer className="flex flex-col sm:flex-row gap-4 w-full justify-center">
-                    <button className="bg-[#990000] hover:bg-[#FF0000] text-white px-8 py-3 rounded-xl font-['Orbitron'] font-bold tracking-wider transition-all shadow-[0_0_15px_rgba(153,0,0,0.4)] hover:shadow-[0_0_25px_rgba(255,0,0,0.6)]">VIEW ORDER</button>
-                    <button onClick={() => onNavigate?.('home')} className="bg-transparent border border-[#990000]/50 text-[#F2F4F6]/60 hover:text-[#FF0000] hover:border-[#FF0000] px-8 py-3 rounded-xl font-['Orbitron'] font-bold tracking-wider transition-all">BACK TO HOME</button>
+                    <button className="bg-[#990000] hover:bg-[#FF0000] text-white px-8 py-3 rounded-xl font-['Kanit'] font-bold tracking-wide transition-all shadow-[0_0_15px_rgba(153,0,0,0.4)] hover:shadow-[0_0_25px_rgba(255,0,0,0.6)]">ดูรายละเอียดคำสั่งซื้อ</button>
+                    <button onClick={() => onNavigate?.('home')} className="bg-transparent border border-[#990000]/50 text-[#F2F4F6]/60 hover:text-[#FF0000] hover:border-[#FF0000] px-8 py-3 rounded-xl font-['Kanit'] font-bold tracking-wide transition-all">กลับสู่หน้าหลัก</button>
                 </footer>
             </article>
           </main>
@@ -201,8 +183,8 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
           <main className="max-w-5xl mx-auto px-4 py-8">
             <section aria-labelledby="checkout-heading" className="flex items-center justify-between mb-8">
               <div>
-                  <button onClick={() => onNavigate?.('cart')} className="flex items-center gap-2 text-[#F2F4F6]/40 hover:text-[#FF0000] transition text-sm mb-4 group">
-                    <ArrowLeft aria-hidden="true" className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> BACK TO CART
+                  <button onClick={() => onNavigate?.('cart')} className="flex items-center gap-2 text-[#F2F4F6]/40 hover:text-[#FF0000] transition text-sm mb-4 group" aria-label="กลับไปหน้าตะกร้าสินค้า">
+                    <ArrowLeft aria-hidden="true" className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> กลับไปตะกร้าสินค้า
                   </button>
                   <h2 id="checkout-heading" className="text-3xl md:text-4xl font-['Orbitron'] font-bold flex items-center gap-4">
                     <div aria-hidden="true" className="w-1.5 h-10 bg-[#FF0000] rounded-full shadow-[0_0_15px_#FF0000]"></div>
@@ -223,7 +205,7 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
                       <div aria-hidden="true" className="absolute top-0 right-0 w-32 h-32 bg-[#FF0000]/5 blur-[50px] rounded-full pointer-events-none"></div>
                       <header className="flex items-center gap-3 mb-6 border-b border-[#990000]/20 pb-4">
                         <div aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></div> 
-                        <h3 className="text-xl font-['Orbitron'] font-bold">SHIPPING ADDRESS</h3>
+                        <h3 className="text-xl font-['Kanit'] font-bold">เลือกที่อยู่จัดส่ง</h3>
                       </header>
 
                       <div className="space-y-4">
@@ -234,10 +216,10 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
                               {active && <div aria-hidden="true" className="absolute top-0 left-0 w-1 h-full bg-[#FF0000] shadow-[0_0_10px_#FF0000]"></div>}
                               <div className="flex items-start justify-between pl-3">
                                 <div>
-                                  <div className="flex items-center gap-3 mb-2"><span className={`font-bold text-lg ${active ? 'text-[#FF0000]' : 'text-[#F2F4F6]'}`}>{addr.label}</span>{addr.isDefault && <span className="bg-[#FF0000]/15 text-[#FF0000] text-[9px] px-2 py-0.5 rounded border border-[#FF0000]/30 font-['Orbitron'] tracking-wider">DEFAULT</span>}</div>
+                                  <div className="flex items-center gap-3 mb-2"><span className={`font-bold text-lg ${active ? 'text-[#FF0000]' : 'text-[#F2F4F6]'}`}>{addr.label}</span>{addr.isDefault && <span className="bg-[#FF0000]/15 text-[#FF0000] text-[9px] px-2 py-0.5 rounded border border-[#FF0000]/30 font-['Kanit'] tracking-wider">ค่าเริ่มต้น</span>}</div>
                                   <p className="text-sm text-[#F2F4F6]/80 mb-1 font-bold">{addr.name}</p>
                                   <p className="text-sm text-[#F2F4F6]/60 leading-relaxed">{addr.detail}</p>
-                                  <p className="text-xs text-[#F2F4F6]/40 mt-2 flex items-center gap-1"><span className="text-[#990000]">TEL:</span> {addr.phone}</p>
+                                  <p className="text-xs text-[#F2F4F6]/40 mt-2 flex items-center gap-1"><span className="text-[#990000]">เบอร์โทร:</span> {addr.phone}</p>
                                 </div>
                                 <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${active ? 'border-[#FF0000] bg-[#990000]' : 'border-[#990000]/30'}`}>{active && <Check aria-hidden="true" className="w-3 h-3 text-white" />}</div>
                               </div>
@@ -247,8 +229,8 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
                       </div>
                     </div>
 
-                    <button onClick={goNext} disabled={!selectedAddr} className="w-full bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] disabled:opacity-50 disabled:cursor-not-allowed text-white py-4 rounded-xl font-['Orbitron'] font-bold tracking-widest text-sm transition-all shadow-[0_0_20px_rgba(153,0,0,0.4)] hover:shadow-[0_0_30px_rgba(255,0,0,0.6)] flex items-center justify-center gap-3 active:scale-95 group">
-                      CONTINUE TO PAYMENT <ArrowRight aria-hidden="true" className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    <button onClick={goNext} disabled={!selectedAddr} className="w-full bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] disabled:opacity-50 disabled:cursor-not-allowed text-white py-4 rounded-xl font-['Kanit'] font-bold tracking-wide text-sm transition-all shadow-[0_0_20px_rgba(153,0,0,0.4)] hover:shadow-[0_0_30px_rgba(255,0,0,0.6)] flex items-center justify-center gap-3 active:scale-95 group">
+                      ดำเนินการชำระเงิน <ArrowRight aria-hidden="true" className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </button>
                   </article>
                 )}
@@ -259,18 +241,18 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
                       <div aria-hidden="true" className="absolute top-0 right-0 w-32 h-32 bg-[#FF0000]/5 blur-[50px] rounded-full pointer-events-none"></div>
                       <header className="flex items-center gap-3 mb-6 border-b border-[#990000]/20 pb-4">
                         <div aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></div>
-                        <h3 className="text-xl font-['Orbitron'] font-bold">PAYMENT METHOD</h3>
+                        <h3 className="text-xl font-['Kanit'] font-bold">เลือกวิธีชำระเงิน</h3>
                       </header>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {[{ id: 'qr', title: 'THAI QR', sub: 'Scan with any bank app', emoji: '📱' }, { id: 'transfer', title: 'BANK TRANSFER', sub: 'Upload slip required', emoji: '🏦' }].map((m) => {
+                        {[{ id: 'qr', title: 'สแกนคิวอาร์โค้ด (THAI QR)', sub: 'รองรับทุกแอปธนาคาร', emoji: '📱' }, { id: 'transfer', title: 'โอนเงินผ่านธนาคาร', sub: 'แนบสลิปเพื่อยืนยัน', emoji: '🏦' }].map((m) => {
                           const active = payMethod === m.id;
                           return (
                             <button key={m.id} onClick={() => setPayMethod(m.id)} className={`relative text-left bg-[#0a0a0a] border rounded-2xl p-5 transition-all overflow-hidden group ${active ? 'border-[#FF0000] shadow-[0_0_15px_rgba(255,0,0,0.2)] bg-[#2E0505]/20' : 'border-[#990000]/20 hover:border-[#990000]/50 hover:bg-[#2E0505]/10'}`}>
                               {active && <div aria-hidden="true" className="absolute top-0 left-0 w-1 h-full bg-[#FF0000] shadow-[0_0_10px_#FF0000]"></div>}
                               <div className="flex items-start gap-4 pl-2">
                                 <span className="text-3xl group-hover:scale-110 transition-transform">{m.emoji}</span>
-                                <div className="flex-1"><p className={`font-bold font-['Orbitron'] tracking-wide ${active ? 'text-[#FF0000]' : 'text-[#F2F4F6]'}`}>{m.title}</p><p className="text-xs text-[#F2F4F6]/40 mt-1 font-light">{m.sub}</p></div>
+                                <div className="flex-1"><p className={`font-bold font-['Kanit'] tracking-wide ${active ? 'text-[#FF0000]' : 'text-[#F2F4F6]'}`}>{m.title}</p><p className="text-xs text-[#F2F4F6]/40 mt-1 font-light">{m.sub}</p></div>
                                 <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${active ? 'border-[#FF0000] bg-[#990000]' : 'border-[#990000]/30'}`}>{active && <Check aria-hidden="true" className="w-3 h-3 text-white" />}</div>
                               </div>
                             </button>
@@ -284,28 +266,28 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
                             <div className="absolute top-0 left-0 w-full h-1 bg-[#FF0000] shadow-[0_0_10px_#FF0000] animate-[scan_2s_ease-in-out_infinite]"></div>
                             <div className="text-center"><p className="text-[#000000] font-['Orbitron'] text-sm font-bold mb-2">SCAN TO PAY</p><div className="grid grid-cols-8 gap-1 mt-2 mx-auto opacity-80" style={{ width: 100 }}>{Array.from({ length: 64 }, (_, i) => (<div key={i} className={`w-2.5 h-2.5 rounded-[1px] ${Math.random() > 0.4 ? 'bg-[#000000]' : 'bg-transparent'}`} />))}</div></div>
                           </figure>
-                          <p className="text-[#F2F4F6]/50 text-sm mt-6 font-light">Scan this QR code with your banking app</p>
+                          <p className="text-[#F2F4F6]/50 text-sm mt-6 font-light">เปิดแอปพลิเคชันธนาคารเพื่อสแกน QR Code</p>
                           <p className="text-[#FF0000] font-['Orbitron'] font-bold text-2xl mt-2 drop-shadow-[0_0_5px_rgba(255,0,0,0.5)]">฿{fmt(grandTotal)}</p>
                         </div>
                       )}
 
                       {payMethod === 'transfer' && (
                         <div className="mt-6 bg-[#0a0a0a] border border-[#990000]/20 rounded-xl p-6 space-y-4 animate-in slide-in-from-top-2">
-                          <p className="text-sm text-[#F2F4F6]/60 font-['Orbitron'] tracking-wide">BANK ACCOUNT DETAILS</p>
-                          {[{ bank: 'KBANK', acct: '123-4-56789-0', name: 'Nexus Gear Co., Ltd.', color: 'text-green-500' }, { bank: 'SCB', acct: '987-6-54321-0', name: 'Nexus Gear Co., Ltd.', color: 'text-purple-500' }].map((b, i) => (
+                          <p className="text-sm text-[#F2F4F6]/60 font-['Kanit'] tracking-wide">บัญชีธนาคารสำหรับโอนเงิน</p>
+                          {[{ bank: 'KBANK (กสิกรไทย)', acct: '123-4-56789-0', name: 'Nexus Gear Co., Ltd.', color: 'text-green-500' }, { bank: 'SCB (ไทยพาณิชย์)', acct: '987-6-54321-0', name: 'Nexus Gear Co., Ltd.', color: 'text-purple-500' }].map((b, i) => (
                             <div key={i} className="border border-[#990000]/15 rounded-lg p-4 flex items-center justify-between hover:bg-[#2E0505]/20 transition">
-                              <div><p className={`text-xs font-['Orbitron'] font-bold ${b.color} mb-1`}>{b.bank}</p><p className="text-[#F2F4F6] font-bold tracking-widest text-lg font-['Orbitron']">{b.acct}</p><p className="text-[#F2F4F6]/40 text-xs">{b.name}</p></div>
-                              <button className="text-[#F2F4F6]/40 hover:text-[#FF0000] text-xs border border-[#F2F4F6]/20 hover:border-[#FF0000] px-3 py-1 rounded transition">COPY</button>
+                              <div><p className={`text-xs font-['Kanit'] font-bold ${b.color} mb-1`}>{b.bank}</p><p className="text-[#F2F4F6] font-bold tracking-widest text-lg font-['Orbitron']">{b.acct}</p><p className="text-[#F2F4F6]/40 text-xs">{b.name}</p></div>
+                              <button className="text-[#F2F4F6]/40 hover:text-[#FF0000] text-xs border border-[#F2F4F6]/20 hover:border-[#FF0000] px-3 py-1 rounded transition">คัดลอก</button>
                             </div>
                           ))}
-                          <div className="bg-[#2E0505] rounded-lg p-4 text-center mt-4 border border-[#FF0000]/20"><p className="text-[#F2F4F6]/60 text-xs mb-1">TOTAL AMOUNT</p><p className="text-[#FF0000] font-bold text-2xl font-['Orbitron']">฿{fmt(grandTotal)}</p></div>
+                          <div className="bg-[#2E0505] rounded-lg p-4 text-center mt-4 border border-[#FF0000]/20"><p className="text-[#F2F4F6]/60 text-xs mb-1">ยอดชำระทั้งหมด</p><p className="text-[#FF0000] font-bold text-2xl font-['Orbitron']">฿{fmt(grandTotal)}</p></div>
                         </div>
                       )}
                     </div>
 
                     <footer className="flex gap-4 pt-4">
-                      <button onClick={goBack} className="flex-1 border border-[#990000]/50 text-[#F2F4F6]/60 hover:text-[#FF0000] hover:border-[#FF0000] py-4 rounded-xl font-['Orbitron'] text-xs font-bold tracking-wider transition flex items-center justify-center gap-2 group"><ArrowLeft aria-hidden="true" className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> BACK</button>
-                      <button onClick={goNext} disabled={!payMethod} className="flex-[2] bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] disabled:opacity-30 disabled:cursor-not-allowed text-white py-4 rounded-xl font-['Orbitron'] font-bold tracking-widest text-sm transition-all shadow-[0_0_18px_rgba(153,0,0,0.5)] flex items-center justify-center gap-3 active:scale-95 group">NEXT STEP <ArrowRight aria-hidden="true" className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></button>
+                      <button onClick={goBack} className="flex-1 border border-[#990000]/50 text-[#F2F4F6]/60 hover:text-[#FF0000] hover:border-[#FF0000] py-4 rounded-xl font-['Kanit'] text-xs font-bold tracking-wide transition flex items-center justify-center gap-2 group"><ArrowLeft aria-hidden="true" className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> ย้อนกลับ</button>
+                      <button onClick={goNext} disabled={!payMethod} className="flex-[2] bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] disabled:opacity-30 disabled:cursor-not-allowed text-white py-4 rounded-xl font-['Kanit'] font-bold tracking-wide text-sm transition-all shadow-[0_0_18px_rgba(153,0,0,0.5)] flex items-center justify-center gap-3 active:scale-95 group">ขั้นตอนต่อไป <ArrowRight aria-hidden="true" className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></button>
                     </footer>
                   </article>
                 )}
@@ -315,52 +297,52 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
                     <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl relative overflow-hidden">
                       <div aria-hidden="true" className="absolute top-0 right-0 w-32 h-32 bg-[#FF0000]/5 blur-[50px] rounded-full pointer-events-none"></div>
                       <header>
-                        <h3 className="text-xl font-['Orbitron'] font-bold flex items-center gap-3 mb-2"><span className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></span> CONFIRM ORDER</h3>
-                        <p className="text-[#F2F4F6]/40 text-sm mb-8 pl-5 font-light">Please verify your details before confirming.</p>
+                        <h3 className="text-xl font-['Kanit'] font-bold flex items-center gap-3 mb-2"><span className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></span> ยืนยันคำสั่งซื้อ</h3>
+                        <p className="text-[#F2F4F6]/40 text-sm mb-8 pl-5 font-light">โปรดตรวจสอบรายละเอียดให้ถูกต้องก่อนกดยืนยัน</p>
                       </header>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div className="bg-[#0a0a0a] border border-[#990000]/20 rounded-xl p-5 hover:border-[#FF0000]/50 transition duration-300">
                             <div className="flex items-center justify-between mb-3 border-b border-[#990000]/20 pb-2">
-                                <span className="text-xs font-['Orbitron'] text-[#990000] tracking-wider flex items-center gap-2"><MapPin aria-hidden="true" className="w-3 h-3" /> SHIPPING TO</span>
-                                <button onClick={() => setStep(1)} className="text-[#F2F4F6]/40 text-[10px] font-['Orbitron'] hover:text-[#FF0000] transition">EDIT</button>
+                                <span className="text-xs font-['Kanit'] text-[#990000] tracking-wide flex items-center gap-2"><MapPin aria-hidden="true" className="w-3 h-3" /> จัดส่งไปที่</span>
+                                <button onClick={() => setStep(1)} className="text-[#F2F4F6]/40 text-[10px] font-['Kanit'] hover:text-[#FF0000] transition">แก้ไข</button>
                             </div>
                             <p className="text-sm text-[#F2F4F6] font-bold mb-1">{savedAddresses.find(a => a.id === selectedAddr)?.name}</p>
                             <p className="text-xs text-[#F2F4F6]/60 leading-relaxed">{savedAddresses.find(a => a.id === selectedAddr)?.detail}</p>
                         </div>
                         <div className="bg-[#0a0a0a] border border-[#990000]/20 rounded-xl p-5 hover:border-[#FF0000]/50 transition duration-300">
                             <div className="flex items-center justify-between mb-3 border-b border-[#990000]/20 pb-2">
-                                <span className="text-xs font-['Orbitron'] text-[#990000] tracking-wider flex items-center gap-2"><CreditCard aria-hidden="true" className="w-3 h-3" /> PAYMENT</span>
-                                <button onClick={() => setStep(2)} className="text-[#F2F4F6]/40 text-[10px] font-['Orbitron'] hover:text-[#FF0000] transition">EDIT</button>
+                                <span className="text-xs font-['Kanit'] text-[#990000] tracking-wide flex items-center gap-2"><CreditCard aria-hidden="true" className="w-3 h-3" /> วิธีชำระเงิน</span>
+                                <button onClick={() => setStep(2)} className="text-[#F2F4F6]/40 text-[10px] font-['Kanit'] hover:text-[#FF0000] transition">แก้ไข</button>
                             </div>
-                            <p className="text-lg text-[#F2F4F6] font-bold flex items-center gap-2">{payMethod === 'qr' ? '📱 QR Code' : '🏦 Bank Transfer'}</p>
-                            <p className="text-xs text-[#F2F4F6]/40 mt-1">Total: ฿{fmt(grandTotal)}</p>
+                            <p className="text-lg text-[#F2F4F6] font-bold flex items-center gap-2">{payMethod === 'qr' ? '📱 สแกน QR Code' : '🏦 โอนเงินผ่านธนาคาร'}</p>
+                            <p className="text-xs text-[#F2F4F6]/40 mt-1">ยอดรวม: ฿{fmt(grandTotal)}</p>
                         </div>
                       </div>
 
                       {payMethod === 'transfer' && (
                         <div className="bg-[#0a0a0a] border border-[#990000]/20 rounded-xl p-6 relative overflow-hidden">
                           <div aria-hidden="true" className="absolute top-0 left-0 w-1 h-full bg-[#FF0000]"></div>
-                          <h4 className="text-sm font-['Orbitron'] text-[#F2F4F6] tracking-wider mb-4 flex items-center gap-2"><Upload aria-hidden="true" className="w-4 h-4 text-[#FF0000]" /> UPLOAD PAYMENT SLIP</h4>
+                          <h4 className="text-sm font-['Kanit'] text-[#F2F4F6] tracking-wide mb-4 flex items-center gap-2"><Upload aria-hidden="true" className="w-4 h-4 text-[#FF0000]" /> อัปโหลดสลิปโอนเงิน</h4>
                           
                           {!uploadedSlip ? (
                             <label className="flex flex-col items-center justify-center border-2 border-dashed border-[#990000]/30 hover:border-[#FF0000] hover:bg-[#FF0000]/5 rounded-xl p-10 cursor-pointer transition-all group">
                               <div className="w-12 h-12 rounded-full bg-[#2E0505] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(153,0,0,0.3)]">
                                 <Upload aria-hidden="true" className="w-6 h-6 text-[#FF0000]" />
                               </div>
-                              <p className="text-sm text-[#F2F4F6]/70 font-bold">Click to upload slip</p>
-                              <p className="text-xs text-[#F2F4F6]/30 mt-1">Supports: JPG, PNG (Max 5MB)</p>
+                              <p className="text-sm text-[#F2F4F6]/70 font-bold">คลิกเพื่ออัปโหลดสลิป</p>
+                              <p className="text-xs text-[#F2F4F6]/30 mt-1">รองรับไฟล์: JPG, PNG (ขนาดไม่เกิน 5MB)</p>
                               <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
                             </label>
                           ) : (
                             <div className="flex items-start gap-4 bg-[#2E0505]/40 border border-[#990000]/30 rounded-xl p-4 animate-in fade-in">
                               <figure className="m-0">
-                                <img src={uploadedSlip.preview as string} alt="slip preview" className="w-20 h-24 object-cover rounded-lg border border-[#990000]/30 bg-black" />
+                                <img src={uploadedSlip.preview as string} alt="รูปภาพสลิปที่อัปโหลด" className="w-20 h-24 object-cover rounded-lg border border-[#990000]/30 bg-black" />
                               </figure>
                               <div className="flex-1 min-w-0 py-1">
                                 <p className="text-sm text-[#F2F4F6] font-bold truncate mb-1">{uploadedSlip.name}</p>
-                                <p className="text-xs text-green-400 flex items-center gap-1 mb-3"><Check aria-hidden="true" className="w-3 h-3" /> Uploaded successfully</p>
-                                <button onClick={() => setUploadedSlip(null)} className="text-[#F2F4F6]/40 hover:text-[#FF0000] text-xs border border-[#F2F4F6]/10 hover:border-[#FF0000] px-3 py-1.5 rounded transition">Remove / Change</button>
+                                <p className="text-xs text-green-400 flex items-center gap-1 mb-3"><Check aria-hidden="true" className="w-3 h-3" /> อัปโหลดสำเร็จ</p>
+                                <button onClick={() => setUploadedSlip(null)} className="text-[#F2F4F6]/40 hover:text-[#FF0000] text-xs border border-[#F2F4F6]/10 hover:border-[#FF0000] px-3 py-1.5 rounded transition">ลบ / เปลี่ยนรูปใหม่</button>
                               </div>
                             </div>
                           )}
@@ -369,19 +351,19 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
                     </div>
 
                     <footer className="flex gap-4 pt-4">
-                      <button onClick={goBack} className="flex-1 border border-[#990000]/50 text-[#F2F4F6]/60 hover:text-[#FF0000] hover:border-[#FF0000] py-4 rounded-xl font-['Orbitron'] text-xs font-bold tracking-wider transition flex items-center justify-center gap-2 group">
-                        <ArrowLeft aria-hidden="true" className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> BACK
+                      <button onClick={goBack} className="flex-1 border border-[#990000]/50 text-[#F2F4F6]/60 hover:text-[#FF0000] hover:border-[#FF0000] py-4 rounded-xl font-['Kanit'] text-xs font-bold tracking-wide transition flex items-center justify-center gap-2 group">
+                        <ArrowLeft aria-hidden="true" className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> ย้อนกลับ
                       </button>
                       <button 
                         onClick={handleConfirm} 
-                        disabled={(payMethod === 'transfer' && !uploadedSlip) || loading} 
-                        className="flex-[2] bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] disabled:opacity-30 disabled:cursor-not-allowed text-white py-4 rounded-xl font-['Orbitron'] font-bold tracking-widest text-sm transition-all shadow-[0_0_18px_rgba(153,0,0,0.5)] flex items-center justify-center gap-3 active:scale-95 group relative overflow-hidden"
+                        disabled={(payMethod === 'transfer' && !uploadedSlip) || loadingAction} 
+                        className="flex-[2] bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] disabled:opacity-30 disabled:cursor-not-allowed text-white py-4 rounded-xl font-['Kanit'] font-bold tracking-wide text-sm transition-all shadow-[0_0_18px_rgba(153,0,0,0.5)] flex items-center justify-center gap-3 active:scale-95 group relative overflow-hidden"
                       >
-                        {loading ? (
-                          <><Loader aria-hidden="true" className="w-5 h-5 animate-spin" /> PROCESSING...</>
+                        {loadingAction ? (
+                          <><Loader aria-hidden="true" className="w-5 h-5 animate-spin" /> กำลังดำเนินการ...</>
                         ) : (
                           <>
-                            <span className="relative z-10">CONFIRM ORDER</span> 
+                            <span className="relative z-10">ยืนยันการสั่งซื้อ</span> 
                             <Check aria-hidden="true" className="w-5 h-5 relative z-10" />
                             <div aria-hidden="true" className="absolute top-0 -left-full w-full h-full bg-white/20 skew-x-[30deg] group-hover:animate-[shimmer_1s_infinite]"></div>
                           </>
@@ -393,12 +375,11 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
 
               </section>
 
-              {/* ─── ⭐ เพิ่มใหม่ใน Commit 4: RIGHT SIDEBAR (Order Summary) ─── */}
               <aside className="lg:col-span-1">
                 <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl sticky top-28 transition-all duration-300">
                   <button onClick={() => setShowSummary(!showSummary)} className="w-full flex items-center justify-between lg:pointer-events-none mb-2" aria-expanded={showSummary}>
-                    <h3 className="text-lg font-['Orbitron'] font-bold flex items-center gap-3">
-                      <span aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></span> SUMMARY
+                    <h3 className="text-lg font-['Kanit'] font-bold flex items-center gap-3">
+                      <span aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></span> สรุปคำสั่งซื้อ
                     </h3>
                     <span className="lg:hidden text-[#F2F4F6]/40">
                       {showSummary ? <ChevronUp aria-hidden="true" className="w-5 h-5" /> : <ChevronDown aria-hidden="true" className="w-5 h-5" />}
@@ -407,7 +388,6 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
 
                   <div className={`mt-5 space-y-4 ${showSummary ? 'block' : 'hidden'} lg:block animate-in slide-in-from-top-2`}>
                     
-                    {/* รายการสินค้าที่ใช้ Custom Scrollbar */}
                     <div className="space-y-3 max-h-60 overflow-y-auto pr-6 custom-scrollbar">
                         {orderSummary.items.map((item, i) => (
                         <article key={i} className="flex items-start justify-between group">
@@ -417,7 +397,7 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
                                 </figure>
                                 <div>
                                   <p className="text-sm text-[#F2F4F6]/90 truncate font-bold w-32 group-hover:text-[#FF0000] transition-colors">{item.name}</p>
-                                  <p className="text-xs text-[#F2F4F6]/40">Qty: {item.qty}</p>
+                                  <p className="text-xs text-[#F2F4F6]/40">จำนวน: {item.qty}</p>
                                 </div>
                             </div>
                             <span className="text-sm text-[#F2F4F6] font-['Orbitron']">฿{fmt(item.price * item.qty)}</span>
@@ -427,27 +407,27 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
 
                     <footer className="border-t border-[#990000]/25 pt-4 mt-2 space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span className="text-[#F2F4F6]/50">Subtotal</span>
+                        <span className="text-[#F2F4F6]/50">ราคาสินค้า</span>
                         <span className="text-[#F2F4F6] font-['Orbitron']">฿{fmt(orderSummary.subtotal)}</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-[#FF0000]">Discount ({orderSummary.coupon})</span>
+                        <span className="text-[#FF0000]">ส่วนลดคูปอง ({orderSummary.coupon})</span>
                         <span className="text-[#FF0000] font-['Orbitron']">-฿{fmt(orderSummary.discount)}</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-[#F2F4F6]/50">Shipping</span>
-                        <span className="text-green-400 font-bold font-['Orbitron'] tracking-wide">FREE</span>
+                        <span className="text-[#F2F4F6]/50">ค่าจัดส่ง</span>
+                        <span className="text-green-400 font-bold font-['Kanit'] tracking-wide">ส่งฟรี</span>
                       </div>
                     </footer>
 
                     <div className="border-t border-[#990000]/30 pt-4 mt-2 flex justify-between items-end bg-[#2E0505]/30 p-4 rounded-xl border border-[#990000]/10">
-                      <span className="font-['Orbitron'] text-xs text-[#F2F4F6]/50 tracking-wider">TOTAL</span>
+                      <span className="font-['Kanit'] text-xs text-[#F2F4F6]/50 tracking-wide">ยอดรวมสุทธิ</span>
                       <span className="font-['Orbitron'] text-2xl font-black text-[#FF0000] drop-shadow-[0_0_8px_rgba(255,0,0,0.5)]">฿{fmt(grandTotal)}</span>
                     </div>
 
                     <div className="flex justify-center gap-4 pt-2 opacity-50">
-                        {['SECURE', 'FAST', 'WARRANTY'].map(t => (
-                          <span key={t} className="text-[9px] font-['Orbitron'] border border-[#F2F4F6]/20 px-2 py-0.5 rounded text-[#F2F4F6]/60">{t}</span>
+                        {['ปลอดภัย', 'รวดเร็ว', 'รับประกัน'].map(t => (
+                          <span key={t} className="text-[9px] font-['Kanit'] border border-[#F2F4F6]/20 px-2 py-0.5 rounded text-[#F2F4F6]/60">{t}</span>
                         ))}
                     </div>
                   </div>
@@ -460,4 +440,4 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
       </div>
     </div>
   );
-}ห
+}

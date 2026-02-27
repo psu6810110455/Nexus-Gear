@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, ArrowRight, Check, MapPin, CreditCard, FileText, ShoppingCart } from 'lucide-react';
 
-// ─── 1. INTERFACES (กำหนด Type สำหรับ TSX) ───
+// ─── 1. INTERFACES ───
 interface PaymentProps {
   onNavigate?: (page: string) => void;
 }
@@ -16,11 +16,14 @@ interface Address {
   isDefault: boolean;
 }
 
-// ─── 2. MOCK DATA (ข้อมูลจำลอง) ───
+// ─── 2. MOCK DATA ───
 const savedAddresses: Address[] = [
   { id: 1, label: 'บ้าน', name: 'แม็กซ์ เกมเมอร์', detail: '123 ถนนเกมมิ่ง แขวงไฮเทค เขตดิจิตอล กรุงเทพฯ 10110', phone: '081-234-5678', isDefault: true },
   { id: 2, label: 'ที่ทำงาน', name: 'แม็กซ์ เกมเมอร์', detail: '456 อาคารออฟฟิศ ถนนสีลม บางรัก กรุงเทพฯ 10500', phone: '081-234-5678', isDefault: false },
 ];
+
+const fmt = (n: number) => n.toLocaleString('th-TH');
+const grandTotal = 49784; // ยอดรวมจำลองชั่วคราว รอทำระบบสรุปยอดใน Commit หน้า
 
 // ─── 3. COMPONENT: STEP INDICATOR ───
 function StepBar({ current }: { current: number }) {
@@ -64,6 +67,8 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
   // ─── STATE MANAGEMENT ───
   const [step, setStep] = useState<number>(1);
   const [selectedAddr, setSelectedAddr] = useState<number>(1);
+  // ⭐ เพิ่ม State สำหรับ Step 2
+  const [payMethod, setPayMethod] = useState<string | null>(null);
 
   // ─── LOGIC FUNCTIONS ───
   const goNext = () => { 
@@ -86,7 +91,6 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
       </div>
 
       <div className="relative z-10">
-        {/* ── Header ── */}
         <header className="bg-[#000000]/80 border-b border-[#990000]/30 backdrop-blur-md sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             <div onClick={() => onNavigate?.('home')} className="flex items-center gap-4 group cursor-pointer" role="button" tabIndex={0}>
@@ -104,10 +108,8 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
           </div>
         </header>
 
-        {/* ── Main Content ── */}
         <main className="max-w-5xl mx-auto px-4 py-8">
           
-          {/* Title & Back Button */}
           <section aria-labelledby="checkout-heading" className="flex items-center justify-between mb-8">
             <div>
                 <button onClick={() => onNavigate?.('cart')} className="flex items-center gap-2 text-[#F2F4F6]/40 hover:text-[#FF0000] transition text-sm mb-4 group">
@@ -120,12 +122,10 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
             </div>
           </section>
 
-          {/* Progress Bar */}
           <StepBar current={step} />
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-12">
             
-            {/* ═══════ LEFT CONTENT ═══════ */}
             <section className="lg:col-span-2 space-y-6">
               
               {/* ─── STEP 1: Address Selection ─── */}
@@ -180,9 +180,97 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
                 </article>
               )}
 
+              {/* ─── ⭐ เพิ่มใหม่ใน Commit 2: STEP 2: Payment Method ─── */}
+              {step === 2 && (
+                <article className="space-y-6 animate-in slide-in-from-right-4 duration-500">
+                  <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+                    <div aria-hidden="true" className="absolute top-0 right-0 w-32 h-32 bg-[#FF0000]/5 blur-[50px] rounded-full pointer-events-none"></div>
+                    
+                    <header className="flex items-center gap-3 mb-6 border-b border-[#990000]/20 pb-4">
+                      <div aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></div>
+                      <h3 className="text-xl font-['Orbitron'] font-bold">PAYMENT METHOD</h3>
+                    </header>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {[{ id: 'qr', title: 'THAI QR', sub: 'Scan with any bank app', emoji: '📱' }, 
+                        { id: 'transfer', title: 'BANK TRANSFER', sub: 'Upload slip required', emoji: '🏦' }].map((m) => {
+                        const active = payMethod === m.id;
+                        return (
+                          <button 
+                            key={m.id} 
+                            onClick={() => setPayMethod(m.id)} 
+                            className={`relative text-left bg-[#0a0a0a] border rounded-2xl p-5 transition-all overflow-hidden group 
+                              ${active ? 'border-[#FF0000] shadow-[0_0_15px_rgba(255,0,0,0.2)] bg-[#2E0505]/20' : 'border-[#990000]/20 hover:border-[#990000]/50 hover:bg-[#2E0505]/10'}`}
+                          >
+                            {active && <div aria-hidden="true" className="absolute top-0 left-0 w-1 h-full bg-[#FF0000] shadow-[0_0_10px_#FF0000]"></div>}
+                            <div className="flex items-start gap-4 pl-2">
+                              <span className="text-3xl group-hover:scale-110 transition-transform">{m.emoji}</span>
+                              <div className="flex-1">
+                                <p className={`font-bold font-['Orbitron'] tracking-wide ${active ? 'text-[#FF0000]' : 'text-[#F2F4F6]'}`}>{m.title}</p>
+                                <p className="text-xs text-[#F2F4F6]/40 mt-1 font-light">{m.sub}</p>
+                              </div>
+                              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${active ? 'border-[#FF0000] bg-[#990000]' : 'border-[#990000]/30'}`}>
+                                {active && <Check aria-hidden="true" className="w-3 h-3 text-white" />}
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* แสดงรายละเอียด QR Code (ถ้ายูสเซอร์เลือก QR) */}
+                    {payMethod === 'qr' && (
+                      <div className="mt-6 bg-[#0a0a0a] border border-[#990000]/20 rounded-xl p-8 flex flex-col items-center animate-in zoom-in-95">
+                        <div className="w-56 h-56 bg-white rounded-xl flex items-center justify-center border-4 border-[#990000]/30 relative overflow-hidden shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+                          <div className="absolute top-0 left-0 w-full h-1 bg-[#FF0000] shadow-[0_0_10px_#FF0000] animate-[scan_2s_ease-in-out_infinite]"></div>
+                          <div className="text-center">
+                            <p className="text-[#000000] font-['Orbitron'] text-sm font-bold mb-2">SCAN TO PAY</p>
+                            <div className="grid grid-cols-8 gap-1 mt-2 mx-auto opacity-80" style={{ width: 100 }}>
+                              {Array.from({ length: 64 }, (_, i) => (<div key={i} className={`w-2.5 h-2.5 rounded-[1px] ${Math.random() > 0.4 ? 'bg-[#000000]' : 'bg-transparent'}`} />))}
+                            </div>
+                          </div>
+                        </div>
+                        <p className="text-[#F2F4F6]/50 text-sm mt-6 font-light">Scan this QR code with your banking app</p>
+                        <p className="text-[#FF0000] font-['Orbitron'] font-bold text-2xl mt-2 drop-shadow-[0_0_5px_rgba(255,0,0,0.5)]">฿{fmt(grandTotal)}</p>
+                      </div>
+                    )}
+
+                    {/* แสดงรายละเอียดโอนเงิน (ถ้ายูสเซอร์เลือกโอน) */}
+                    {payMethod === 'transfer' && (
+                      <div className="mt-6 bg-[#0a0a0a] border border-[#990000]/20 rounded-xl p-6 space-y-4 animate-in slide-in-from-top-2">
+                        <p className="text-sm text-[#F2F4F6]/60 font-['Orbitron'] tracking-wide">BANK ACCOUNT DETAILS</p>
+                        {[{ bank: 'KBANK', acct: '123-4-56789-0', name: 'Nexus Gear Co., Ltd.', color: 'text-green-500' }, 
+                          { bank: 'SCB', acct: '987-6-54321-0', name: 'Nexus Gear Co., Ltd.', color: 'text-purple-500' }].map((b, i) => (
+                          <div key={i} className="border border-[#990000]/15 rounded-lg p-4 flex items-center justify-between hover:bg-[#2E0505]/20 transition">
+                            <div>
+                              <p className={`text-xs font-['Orbitron'] font-bold ${b.color} mb-1`}>{b.bank}</p>
+                              <p className="text-[#F2F4F6] font-bold tracking-widest text-lg font-['Orbitron']">{b.acct}</p>
+                              <p className="text-[#F2F4F6]/40 text-xs">{b.name}</p>
+                            </div>
+                            <button className="text-[#F2F4F6]/40 hover:text-[#FF0000] text-xs border border-[#F2F4F6]/20 hover:border-[#FF0000] px-3 py-1 rounded transition">COPY</button>
+                          </div>
+                        ))}
+                        <div className="bg-[#2E0505] rounded-lg p-4 text-center mt-4 border border-[#FF0000]/20">
+                          <p className="text-[#F2F4F6]/60 text-xs mb-1">TOTAL AMOUNT</p>
+                          <p className="text-[#FF0000] font-bold text-2xl font-['Orbitron']">฿{fmt(grandTotal)}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <footer className="flex gap-4 pt-4">
+                    <button onClick={goBack} className="flex-1 border border-[#990000]/50 text-[#F2F4F6]/60 hover:text-[#FF0000] hover:border-[#FF0000] py-4 rounded-xl font-['Orbitron'] text-xs font-bold tracking-wider transition flex items-center justify-center gap-2 group">
+                      <ArrowLeft aria-hidden="true" className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> BACK
+                    </button>
+                    <button onClick={goNext} disabled={!payMethod} className="flex-[2] bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] disabled:opacity-30 disabled:cursor-not-allowed text-white py-4 rounded-xl font-['Orbitron'] font-bold tracking-widest text-sm transition-all shadow-[0_0_18px_rgba(153,0,0,0.5)] flex items-center justify-center gap-3 active:scale-95 group">
+                      NEXT STEP <ArrowRight aria-hidden="true" className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  </footer>
+                </article>
+              )}
+
             </section>
 
-            {/* ═══════ RIGHT SIDEBAR (โครงสร้างชั่วคราว) ═══════ */}
             <aside className="lg:col-span-1">
                <div className="bg-[#000000]/60 border border-[#990000]/30 rounded-2xl p-6 h-[200px] flex items-center justify-center sticky top-28">
                   <p className="text-[#FF0000] font-['Orbitron'] animate-pulse text-center leading-relaxed">

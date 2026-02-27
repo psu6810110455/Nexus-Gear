@@ -18,7 +18,7 @@ interface DeleteModalState {
 }
 
 export default function NexusGearCart({ onNavigate }: CartProps) {
-  // ─── 2. STATE MANAGEMENT (จัดการข้อมูลสถานะ) ───
+  // ─── 2. STATE MANAGEMENT ───
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [selectedItems, setSelectedItems] = useState<number[]>([]); 
@@ -29,7 +29,7 @@ export default function NexusGearCart({ onNavigate }: CartProps) {
   const [showCouponInput, setShowCouponInput] = useState<boolean>(false);
   const [deleteModal, setDeleteModal] = useState<DeleteModalState>({ show: false, type: null, id: null });
 
-  // ─── 3. LIFECYCLE (ดึงข้อมูลตอนโหลด) ───
+  // ─── 3. LIFECYCLE ───
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
@@ -40,21 +40,34 @@ export default function NexusGearCart({ onNavigate }: CartProps) {
     loadData();
   }, []);
 
-  // ─── ฟังก์ชันที่ 1: เลือกสินค้าทีละรายการ ───
+  // ─── ฟังก์ชันที่ 1-4 (จาก Commit ก่อนหน้า) ───
   const toggleSelect = (id: number) => {
     setSelectedItems(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
 
-  // ─── ฟังก์ชันที่ 2: เลือกสินค้าทั้งหมด ───
   const toggleSelectAll = () => {
     setSelectedItems(selectedItems.length === cartItems.length && cartItems.length > 0 ? [] : cartItems.map(i => i.id));
   };
 
-  // ─── ⭐ เพิ่มใหม่ใน Commit 5: ฟังก์ชันเพิ่ม/ลดจำนวนสินค้า ───
   const updateQty = (id: number, delta: number) => {
     setCartItems(prev => prev.map(item => 
       item.id === id ? { ...item, quantity: Math.max(1, Math.min(item.maxQty, item.quantity + delta)) } : item
     ));
+  };
+
+  const openDeleteModal = (type: 'single' | 'all', id: number | null = null) => {
+    setDeleteModal({ show: true, type, id });
+  };
+
+  const confirmDelete = () => {
+    if (deleteModal.type === 'single') {
+      setCartItems(prev => prev.filter(item => item.id !== deleteModal.id));
+      setSelectedItems(prev => prev.filter(i => i !== deleteModal.id));
+    } else if (deleteModal.type === 'all') {
+      setCartItems([]);
+      setSelectedItems([]);
+    }
+    setDeleteModal({ show: false, type: null, id: null });
   };
 
   // ─── 4. RENDER: สถานะกำลังโหลด ───
@@ -66,7 +79,7 @@ export default function NexusGearCart({ onNavigate }: CartProps) {
     );
   }
 
-  // ─── 5. RENDER: สถานะตะกร้าว่างเปล่า (Semantic HTML) ───
+  // ─── 5. RENDER: สถานะตะกร้าว่างเปล่า ───
   if (cartItems.length === 0) {
     return (
       <main className="min-h-screen bg-[#000000] text-[#F2F4F6] font-['Kanit'] flex flex-col items-center justify-center relative overflow-hidden">
@@ -93,7 +106,7 @@ export default function NexusGearCart({ onNavigate }: CartProps) {
     );
   }
 
-  // ─── 6. RENDER: โครงสร้างหลัก (Header & Title) ───
+  // ─── 6. RENDER: โครงสร้างหลัก ───
   return (
     <div className="min-h-screen bg-[#000000] text-[#F2F4F6] font-['Kanit'] relative overflow-x-hidden selection:bg-[#990000] selection:text-white">
 
@@ -158,66 +171,67 @@ export default function NexusGearCart({ onNavigate }: CartProps) {
                    <span className="text-[#F2F4F6] font-['Orbitron'] font-bold tracking-wider">NEXUS OFFICIAL STORE</span>
                 </div>
                 <div className="flex-1 text-right">
-                    <button className="text-[#990000] hover:text-[#FF0000] text-xs font-['Orbitron'] tracking-wider transition flex items-center gap-2 group justify-end ml-auto">
+                    <button 
+                      onClick={() => openDeleteModal('all')} 
+                      className="text-[#990000] hover:text-[#FF0000] text-xs font-['Orbitron'] tracking-wider transition flex items-center gap-2 group justify-end ml-auto"
+                      aria-label="Clear all items from cart"
+                    >
                         <Trash2 aria-hidden="true" className="w-3 h-3 group-hover:rotate-12 transition-transform" /> CLEAR ALL
                     </button>
                 </div>
             </header>
 
+            {/* ⭐ จุดที่อัปเดต: เปลี่ยน div เป็น article, header, footer, figure */}
             <div className="space-y-4">
                 {cartItems.map((item) => (
-                <article key={item.id} className={`bg-[#000000]/60 border ${selectedItems.includes(item.id) ? 'border-[#FF0000]/60 bg-[#2E0505]/20' : 'border-[#990000]/20'} backdrop-blur-xl rounded-2xl p-5 transition-all duration-300 relative overflow-hidden`}>
-                    <div className="flex items-start gap-4">
-                        <div className="pt-4">
-                             <button onClick={() => toggleSelect(item.id)} className="text-[#FF0000] hover:scale-110 transition-transform" aria-label={`Select ${item.name}`}>
-                                {selectedItems.includes(item.id) ? <CheckSquare aria-hidden="true" className="w-6 h-6" /> : <Square aria-hidden="true" className="w-6 h-6 text-[#F2F4F6]/20" />}
-                             </button>
-                        </div>
-                        <div className="flex-1 flex gap-5">
-                             <figure className="m-0">
-                                <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded-xl border border-[#990000]/30 bg-[#1a1a1a]" />
-                             </figure>
-                             
-                             {/* ⭐ จุดที่อัปเดตใน Commit 5: เพิ่มปุ่มปรับจำนวนสินค้า */}
-                             <div className="flex-1 min-w-0 flex flex-col justify-between h-24">
-                                <div className="flex items-start justify-between gap-2">
-                                    <header>
-                                        <p className="text-[10px] font-['Orbitron'] text-[#990000] tracking-widest uppercase mb-1">{item.category}</p>
-                                        <h3 className="font-bold text-lg text-[#F2F4F6] line-clamp-1">{item.name}</h3>
-                                    </header>
+                <article key={item.id} className={`bg-[#000000]/60 border ${selectedItems.includes(item.id) ? 'border-[#FF0000]/60 bg-[#2E0505]/20' : 'border-[#990000]/20'} backdrop-blur-xl rounded-2xl p-5 transition-all duration-300 relative overflow-hidden flex items-start gap-4`}>
+                    
+                    <div className="pt-4">
+                         <button onClick={() => toggleSelect(item.id)} className="text-[#FF0000] hover:scale-110 transition-transform" aria-label={`Select ${item.name}`}>
+                            {selectedItems.includes(item.id) ? <CheckSquare aria-hidden="true" className="w-6 h-6" /> : <Square aria-hidden="true" className="w-6 h-6 text-[#F2F4F6]/20" />}
+                         </button>
+                    </div>
+                    
+                    <div className="flex-1 flex gap-5">
+                         <figure className="m-0">
+                            <img src={item.image} alt={`รูปภาพของ ${item.name}`} className="w-24 h-24 object-cover rounded-xl border border-[#990000]/30 bg-[#1a1a1a]" />
+                         </figure>
+                         
+                         <div className="flex-1 min-w-0 flex flex-col justify-between h-24">
+                            <header className="flex items-start justify-between gap-2">
+                                <div>
+                                    <p className="text-[10px] font-['Orbitron'] text-[#990000] tracking-widest uppercase mb-1">{item.category}</p>
+                                    <h3 className="font-bold text-lg text-[#F2F4F6] line-clamp-1">{item.name}</h3>
                                 </div>
-                                <div className="flex items-end justify-between mt-auto">
-                                    <div className="flex flex-col">
-                                        {item.originalPrice !== item.price && (<span className="text-xs text-[#F2F4F6]/30 line-through font-['Kanit']">฿{item.originalPrice.toLocaleString('th-TH')}</span>)}
-                                        <span className="text-xl font-['Orbitron'] font-bold text-[#FF0000] drop-shadow-[0_0_5px_rgba(255,0,0,0.3)]">฿{item.price.toLocaleString('th-TH')}</span>
-                                    </div>
-                                    
-                                    {/* ชุดปุ่มควบคุมจำนวนสินค้า */}
-                                    <div className="flex items-center bg-[#000000] border border-[#990000]/30 rounded-lg overflow-hidden">
-                                        <button 
-                                          onClick={() => updateQty(item.id, -1)} 
-                                          disabled={item.quantity <= 1} 
-                                          className="w-8 h-8 flex items-center justify-center text-[#F2F4F6]/60 hover:bg-[#2E0505] hover:text-[#FF0000] disabled:opacity-30 transition border-r border-[#990000]/20"
-                                          aria-label="Decrease quantity"
-                                        >
-                                          <Minus aria-hidden="true" className="w-3 h-3" />
-                                        </button>
-                                        <div className="w-10 h-8 flex items-center justify-center font-['Orbitron'] font-bold text-[#F2F4F6] text-sm" aria-live="polite">
-                                          {item.quantity}
-                                        </div>
-                                        <button 
-                                          onClick={() => updateQty(item.id, 1)} 
-                                          disabled={item.quantity >= item.maxQty} 
-                                          className="w-8 h-8 flex items-center justify-center text-[#F2F4F6]/60 hover:bg-[#2E0505] hover:text-[#FF0000] disabled:opacity-30 transition border-l border-[#990000]/20"
-                                          aria-label="Increase quantity"
-                                        >
-                                          <Plus aria-hidden="true" className="w-3 h-3" />
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                                <button 
+                                  onClick={() => openDeleteModal('single', item.id)} 
+                                  className="text-[#F2F4F6]/20 hover:text-[#FF0000] transition p-1 hover:bg-[#2E0505] rounded"
+                                  aria-label={`Remove ${item.name} from cart`}
+                                >
+                                  <Trash2 aria-hidden="true" className="w-5 h-5" />
+                                </button>
+                            </header>
 
+                            <footer className="flex items-end justify-between mt-auto">
+                                <div className="flex flex-col">
+                                    {item.originalPrice !== item.price && (<span className="text-xs text-[#F2F4F6]/30 line-through font-['Kanit']">฿{item.originalPrice.toLocaleString('th-TH')}</span>)}
+                                    <span className="text-xl font-['Orbitron'] font-bold text-[#FF0000] drop-shadow-[0_0_5px_rgba(255,0,0,0.3)]">฿{item.price.toLocaleString('th-TH')}</span>
+                                </div>
+                                
+                                <div className="flex items-center bg-[#000000] border border-[#990000]/30 rounded-lg overflow-hidden">
+                                    <button onClick={() => updateQty(item.id, -1)} disabled={item.quantity <= 1} className="w-8 h-8 flex items-center justify-center text-[#F2F4F6]/60 hover:bg-[#2E0505] hover:text-[#FF0000] disabled:opacity-30 transition border-r border-[#990000]/20" aria-label="Decrease quantity">
+                                      <Minus aria-hidden="true" className="w-3 h-3" />
+                                    </button>
+                                    <div className="w-10 h-8 flex items-center justify-center font-['Orbitron'] font-bold text-[#F2F4F6] text-sm" aria-live="polite">
+                                      {item.quantity}
+                                    </div>
+                                    <button onClick={() => updateQty(item.id, 1)} disabled={item.quantity >= item.maxQty} className="w-8 h-8 flex items-center justify-center text-[#F2F4F6]/60 hover:bg-[#2E0505] hover:text-[#FF0000] disabled:opacity-30 transition border-l border-[#990000]/20" aria-label="Increase quantity">
+                                      <Plus aria-hidden="true" className="w-3 h-3" />
+                                    </button>
+                                </div>
+                            </footer>
                         </div>
+
                     </div>
                 </article>
                 ))}
@@ -235,6 +249,33 @@ export default function NexusGearCart({ onNavigate }: CartProps) {
 
         </main>
       </div>
+
+      {/* ─── ⭐ จุดที่อัปเดต: เปลี่ยน div ของ Modal เป็น dialog และ article ─── */}
+      {deleteModal.show && (
+        <dialog open className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-transparent m-auto w-full h-full">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setDeleteModal({ ...deleteModal, show: false })} aria-hidden="true"></div>
+          <article className="relative bg-[#0a0a0a] border border-[#FF0000] w-full max-w-sm rounded-2xl p-6 text-center shadow-[0_0_30px_rgba(255,0,0,0.6)] animate-in zoom-in-95">
+            <figure className="w-16 h-16 bg-[#2E0505] rounded-full flex items-center justify-center mx-auto mb-4 border border-[#FF0000]/30 m-0">
+              <AlertTriangle aria-hidden="true" className="w-8 h-8 text-[#FF0000]" />
+            </figure>
+            <header>
+              <h3 className="text-xl font-black font-['Orbitron'] text-[#F2F4F6] mb-2">
+                  {deleteModal.type === 'all' ? 'CLEAR CART?' : 'DELETE ITEM?'}
+              </h3>
+              <p className="text-sm text-[#F2F4F6]/60 mb-6 font-['Kanit']">
+                  {deleteModal.type === 'all' 
+                   ? 'คุณต้องการลบสินค้าทั้งหมดออกจากตะกร้าใช่หรือไม่?' 
+                   : 'คุณต้องการลบสินค้านี้ออกจากตะกร้าใช่หรือไม่?'}
+              </p>
+            </header>
+            <footer className="flex gap-3">
+              <button onClick={() => setDeleteModal({ ...deleteModal, show: false })} className="flex-1 bg-transparent border border-[#990000]/50 text-[#F2F4F6] py-3 rounded-xl font-bold hover:border-[#FF0000] transition font-['Orbitron'] tracking-wider">CANCEL</button>
+              <button onClick={confirmDelete} className="flex-1 bg-[#FF0000] text-white py-3 rounded-xl font-bold hover:bg-[#990000] transition shadow-[0_0_15px_rgba(255,0,0,0.4)] font-['Orbitron'] tracking-wider">DELETE</button>
+            </footer>
+          </article>
+        </dialog>
+      )}
+
     </div>
   );
 }

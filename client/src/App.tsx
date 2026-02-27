@@ -11,6 +11,7 @@ import Register from './pages/Register';
 import Login from './pages/Login';
 import AdminPage from './pages/AdminPage';
 import './App.css'
+import NexusGearProfile from './pages/NexusGearProfile';
 
 interface CartItem {
   cart_item_id: number;
@@ -86,6 +87,7 @@ function AppContent() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/profile" element={<NexusGearProfile />} />
 
         {/* Dashboard Route */}
         <Route path="/dashboard" element={

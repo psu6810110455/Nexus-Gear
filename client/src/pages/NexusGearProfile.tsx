@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import { User, Mail, Phone, MapPin, Edit2, Save, X, LogOut, Package, Truck, Plus, CheckCircle, Lock, Key, Check, Wallet, Star, Trash2 } from 'lucide-react';
+import { useEffect } from 'react'; 
+import { getUserProfile, updateUserProfile } from '../api/userApi';
+
+
 
 // ─── Types ───
 interface UserData {

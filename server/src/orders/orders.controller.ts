@@ -7,11 +7,6 @@ import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
-  @Post('seed')
-  seed() {
-    return this.ordersService.seed();
-  }
-
   @Post()
   create(@Body() createOrderDto: CreateOrderDto) {
     return this.ordersService.create(createOrderDto);
@@ -34,10 +29,6 @@ export class OrdersController {
 
   @Patch(':id/status')
   updateStatus(@Param('id') id: string, @Body() updateOrderStatusDto: UpdateOrderStatusDto) {
-    console.log('ID ที่รับมา:', id);
-    console.log('Body ที่รับมา:', updateOrderStatusDto);
     return this.ordersService.updateStatus(+id, updateOrderStatusDto.status);
   }
-
-
 }

@@ -38,7 +38,9 @@ export class OrdersService {
     // 3. Loop สร้าง Order Items และคำนวณราคา
     for (const itemDto of items) {
       const product = await this.productsRepository.findOneBy({ id: itemDto.productId });
-      if (!product) continue; 
+      if (!product) {
+        throw new NotFoundException(`ไม่พบสินค้า Product ID: ${itemDto.productId}`);
+      }
 
       const orderItem = new OrderItem();
       orderItem.product = product;
@@ -93,70 +95,5 @@ export class OrdersService {
     }
 
     return order;
-  }
-
-  // 2. ฟังก์ชันเสกข้อมูล (Seed)
-  async seed() {
-    // สร้าง User จำลอง
-    let user = await this.usersRepository.findOneBy({ id: 1 });
-    if (!user) {
-      user = this.usersRepository.create({
-        email: 'admin@nexusgear.com',
-        password: 'hash-password',
-        name: 'AdminNexus',
-        role: 'admin'
-      });
-      await this.usersRepository.save(user);
-    }
-
-    // สร้าง Product จำลอง
-    const productNames = [
-      { name: 'Razer Kishi V2', price: 3490 },
-      { name: 'Logitech G Pro X', price: 4590 },
-      { name: 'Keychron Q1 Pro', price: 7290 },
-    ];
-
-    for (const p of productNames) {
-      const exists = await this.productsRepository.findOneBy({ name: p.name });
-      if (!exists) {
-        await this.productsRepository.save({
-          name: p.name,
-          description: 'Gaming Gear High End',
-          price: p.price,
-        });
-      }
-    }
-
-    // สร้าง Order จำลอง
-    const products = await this.productsRepository.find();
-    const statuses = [
-      OrderStatus.PENDING,
-      OrderStatus.PAID,
-      OrderStatus.SHIPPED,
-      OrderStatus.TO_SHIP,
-      OrderStatus.COMPLETED,
-      OrderStatus.CANCELLED,
-    ];
-
-    for (let i = 0; i < 10; i++) {
-      const randomProduct = products[Math.floor(Math.random() * products.length)];
-      const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
-      
-      const order = new Order();
-      order.user = user;
-      order.shipping_address = '99/9 ถ.พหลโยธิน จตุจักร กทม. 10900';
-      order.status = randomStatus;
-      order.total_price = randomProduct.price; 
-      
-      const item = new OrderItem();
-      item.product = randomProduct;
-      item.quantity = 1;
-      item.price_at_purchase = randomProduct.price;
-
-      order.items = [item];
-      await this.ordersRepository.save(order);
-    }
-
-    return { message: 'Mock data created successfully! 🚀' };
   }
 }

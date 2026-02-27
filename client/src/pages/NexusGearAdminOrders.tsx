@@ -4,7 +4,6 @@ import { getOrders, updateOrderStatus, type Order } from '../services/api';
 import OrderDetailModal from '../components/OrderDetailModal';
 
 const OrderManagement = () => {
-  // State Management
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('All');
@@ -12,7 +11,6 @@ const OrderManagement = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Initial Fetch
   useEffect(() => {
     setTimeout(() => {
       fetchOrders();
@@ -73,13 +71,12 @@ const OrderManagement = () => {
     setSelectedOrder(order);
   };
 
-  // Constants & Helpers
   const tabs = [
     { label: 'ทั้งหมด', value: 'All' },
     { label: 'รอชำระเงิน', value: 'pending' },
     { label: 'ชำระเงินแล้ว', value: 'paid' },
     { label: 'เตรียมจัดส่ง', value: 'to_ship' },
-    { label: 'จัดส่งแล้ว', value: 'shipped' },
+    { label: 'ระหว่างขนส่ง', value: 'shipped' },
     { label: 'สำเร็จ', value: 'completed' },
     { label: 'ยกเลิก', value: 'cancelled' },
   ];
@@ -96,7 +93,6 @@ const OrderManagement = () => {
     return colors[status] || 'bg-gray-500/10 text-gray-500';
   };
 
-  // Filter Logic
   const filteredOrders = orders.filter(order => {
     const matchesTab = activeTab === 'All' || order.status === activeTab;
     const searchLower = searchTerm.toLowerCase();
@@ -107,7 +103,6 @@ const OrderManagement = () => {
     return matchesTab && matchesSearch;
   });
 
-  // Skeleton UI Component
   const TableSkeleton = () => (
     <>
       {[...Array(5)].map((_, index) => (
@@ -138,13 +133,12 @@ const OrderManagement = () => {
   return (
     <div className="space-y-6 relative animate-fade-in"> 
       
-      {/* 1. Header Section (แก้โครงสร้าง <div> ตรงนี้ให้สมบูรณ์) */}
+      {/* 1. Header Section */}
       <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
         
-        {/* ข้อความและ Popup แจ้งเตือน */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
           <div>
-            <h1 className="text-2xl font-bold text-white tracking-wide">ORDER MANAGEMENT</h1>
+            <h1 className="text-2xl font-bold text-white tracking-wide uppercase">จัดการคำสั่งซื้อ</h1>
             <p className="text-zinc-400 text-sm mt-1">จัดการและตรวจสอบสถานะคำสั่งซื้อทั้งหมด</p>
           </div>
           
@@ -211,12 +205,12 @@ const OrderManagement = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-gradient-to-r from-zinc-900/50 to-transparent text-zinc-400 text-xs uppercase tracking-wider border-b border-zinc-800/80">
-                <th className="p-5 font-medium">Order Details</th>
-                <th className="p-5 font-medium">Total Amount</th>
-                <th className="p-5 font-medium">Status</th>
-                <th className="p-5 font-medium">Shipping</th>
-                <th className="p-5 font-medium text-right">Actions</th>
+              <tr className="bg-zinc-900/80 text-zinc-300 text-xs uppercase tracking-widest border-b border-zinc-800/80">
+                <th className="p-5 font-bold">ข้อมูลคำสั่งซื้อ</th>
+                <th className="p-5 font-bold text-right">ยอดรวมสุทธิ</th>
+                <th className="p-5 font-bold text-center">สถานะ</th>
+                <th className="p-5 font-bold">การจัดส่ง</th>
+                <th className="p-5 font-bold text-center">การจัดการ</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800/50">
@@ -239,31 +233,31 @@ const OrderManagement = () => {
                   <tr key={order.id} className="hover:bg-[#141414] transition-all duration-300 group">
                     <td className="p-5">
                       <div className="flex items-center gap-4">
-                        <div className="w-11 h-11 rounded-full bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center text-zinc-400 font-bold shadow-inner border border-zinc-700/50 group-hover:border-red-500/50 group-hover:text-red-400 group-hover:shadow-[0_0_15px_rgba(239,68,68,0.2)] transition-all duration-300">
+                        <div className="w-11 h-11 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-300 font-bold shadow-inner border border-zinc-700/50 group-hover:border-red-500/50 group-hover:text-red-400 group-hover:shadow-[0_0_15px_rgba(239,68,68,0.2)] transition-all duration-300">
                           {order.user?.username ? order.user.username.charAt(0).toUpperCase() : '?'}
                         </div>
                         <div>
                           <div className="text-white font-bold flex items-center gap-2 group-hover:text-red-50 transition-colors duration-300">
                             ORD-{new Date().getFullYear() + 543}-{String(order.id).padStart(3, '0')}
                           </div>
-                          <div className="text-zinc-500 text-xs mt-1 font-medium">{order.user?.username || 'Guest'}</div>
+                          <div className="text-zinc-400 text-xs mt-1 font-medium">{order.user?.username || 'ลูกค้าทั่วไป'}</div>
                           <div className="text-zinc-600 text-[10px] mt-0.5">{new Date(order.created_at).toLocaleString('th-TH')}</div>
                         </div>
                       </div>
                     </td>
 
-                    <td className="p-5">
+                    <td className="p-5 text-right">
                       <span className="text-white font-bold text-lg tracking-tight group-hover:text-red-100 transition-colors">
                         ฿{Number(order.total_price).toLocaleString()}
                       </span>
                     </td>
 
-                    <td className="p-5">
+                    <td className="p-5 text-center">
                       <span className={`px-3.5 py-1.5 rounded-full text-[11px] font-bold border ${getStatusColor(order.status)} uppercase tracking-wider shadow-sm transition-all`}>
                         {order.status === 'pending' ? 'รอชำระเงิน' :
                           order.status === 'paid' ? 'ชำระเงินแล้ว' :
                           order.status === 'to_ship' ? 'เตรียมจัดส่ง' :
-                          order.status === 'shipped' ? 'จัดส่งแล้ว' :
+                          order.status === 'shipped' ? 'ระหว่างขนส่ง' :
                           order.status === 'completed' ? 'สำเร็จ' :
                           order.status === 'cancelled' ? 'ยกเลิก' : order.status}
                       </span>
@@ -271,13 +265,13 @@ const OrderManagement = () => {
 
                     <td className="p-5">
                       <div className="text-zinc-300 text-sm font-medium group-hover:text-white transition-colors">Kerry Express</div>
-                      <div className="text-zinc-500 text-xs mt-0.5">Standard Delivery</div>
+                      <div className="text-zinc-500 text-xs mt-0.5">จัดส่งแบบมาตรฐาน</div>
                     </td>
 
-                    <td className="p-5 text-right">
+                    <td className="p-5 text-center">
                       <button 
                         onClick={() => handleOpenModal(order)}
-                        className="p-2.5 bg-zinc-800/40 border border-zinc-700/50 text-zinc-400 hover:bg-red-500/20 hover:border-red-500/50 hover:text-red-400 rounded-xl transition-all duration-300 transform hover:scale-110 active:scale-95 shadow-sm hover:shadow-[0_0_15px_rgba(239,68,68,0.3)]"
+                        className="p-2.5 bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-red-600 hover:border-red-500 hover:text-white rounded-xl transition-all duration-300 transform hover:scale-110 active:scale-95 shadow-md"
                         title="ดูรายละเอียด"
                       >
                         <Eye size={18} />

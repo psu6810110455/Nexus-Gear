@@ -1,7 +1,7 @@
 // src/pages/NexusGearPayment.tsx
 import React, { useState } from 'react';
-// ⭐ เพิ่ม Upload, Loader เข้ามา
-import { ArrowLeft, ArrowRight, Check, MapPin, CreditCard, FileText, ShoppingCart, Upload, Loader } from 'lucide-react';
+// ⭐ นำเข้าไอคอนลูกศรขึ้นลง (ChevronUp, ChevronDown) เพิ่มเติม
+import { ArrowLeft, ArrowRight, Check, MapPin, CreditCard, FileText, ShoppingCart, Upload, Loader, ChevronDown, ChevronUp } from 'lucide-react';
 
 // ─── 1. INTERFACES ───
 interface PaymentProps {
@@ -17,10 +17,24 @@ interface Address {
   isDefault: boolean;
 }
 
-// ⭐ เพิ่ม Interface สำหรับไฟล์สลิป
 interface UploadedSlip {
   name: string;
   preview: string | ArrayBuffer | null;
+}
+
+// ⭐ เพิ่ม Interface สำหรับสรุปยอด
+interface OrderItem {
+  name: string;
+  qty: number;
+  price: number;
+}
+
+interface OrderSummaryData {
+  items: OrderItem[];
+  subtotal: number;
+  discount: number;
+  shipping: number;
+  coupon: string;
 }
 
 // ─── 2. MOCK DATA ───
@@ -29,8 +43,22 @@ const savedAddresses: Address[] = [
   { id: 2, label: 'ที่ทำงาน', name: 'แม็กซ์ เกมเมอร์', detail: '456 อาคารออฟฟิศ ถนนสีลม บางรัก กรุงเทพฯ 10500', phone: '081-234-5678', isDefault: false },
 ];
 
+// ⭐ ข้อมูลจำลองสำหรับบิลฝั่งขวา
+const orderSummary: OrderSummaryData = {
+  items: [
+    { name: 'ROG Phone 7 Ultimate', qty: 1, price: 45990 },
+    { name: 'HyperX Cloud Alpha', qty: 2, price: 3990 },
+    { name: 'Razer Kishi V2', qty: 1, price: 3490 },
+    { name: 'Gaming Finger Sleeves', qty: 1, price: 290 }, 
+  ],
+  subtotal: 53760,
+  discount: 5376,
+  shipping: 0,
+  coupon: 'NEXUS10',
+};
+
 const fmt = (n: number) => n.toLocaleString('th-TH');
-const grandTotal = 49784; // ยอดรวมจำลองชั่วคราว
+const grandTotal = orderSummary.subtotal - orderSummary.discount + orderSummary.shipping;
 
 // ─── 3. COMPONENT: STEP INDICATOR ───
 function StepBar({ current }: { current: number }) {
@@ -75,11 +103,12 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
   const [step, setStep] = useState<number>(1);
   const [selectedAddr, setSelectedAddr] = useState<number>(1);
   const [payMethod, setPayMethod] = useState<string | null>(null);
-  
-  // ⭐ เพิ่ม State ใหม่สำหรับ Commit 3
   const [uploadedSlip, setUploadedSlip] = useState<UploadedSlip | null>(null);
   const [confirmed, setConfirmed] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
+  
+  // ⭐ เพิ่ม State สำหรับซ่อน/แสดง Summary ในมือถือ
+  const [showSummary, setShowSummary] = useState<boolean>(false);
 
   // ─── LOGIC FUNCTIONS ───
   const goNext = () => { 
@@ -91,7 +120,6 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
     setStep((s) => Math.max(1, s - 1));
   };
 
-  // ⭐ เพิ่มฟังก์ชันอัปโหลดสลิป
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -101,10 +129,8 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
     }
   };
 
-  // ⭐ เพิ่มฟังก์ชันยืนยันการสั่งซื้อ
   const handleConfirm = () => {
     setLoading(true);
-    // จำลองการโหลดส่งข้อมูล 2 วินาที
     setTimeout(() => { 
       setLoading(false); 
       setConfirmed(true); 
@@ -115,6 +141,14 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
   return (
     <div className="min-h-screen bg-[#000000] text-[#F2F4F6] font-['Kanit'] relative overflow-x-hidden selection:bg-[#990000] selection:text-white pb-20">
       
+      {/* ⭐ Custom Scrollbar Styles สำหรับกล่องสรุปสินค้า */}
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(46, 5, 5, 0.3); border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #990000; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #FF0000; }
+      `}</style>
+
       <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#2E0505] blur-[150px] rounded-full opacity-60"></div>
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#2E0505] blur-[150px] rounded-full opacity-60"></div>
@@ -139,7 +173,6 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
           </div>
         </header>
 
-        {/* ─── ⭐ SUCCESS SCREEN (แสดงเมื่อกด Confirm เสร็จ) ─── */}
         {confirmed ? (
           <main className="min-h-[80vh] flex items-center justify-center animate-in zoom-in-95 duration-500">
             <article className="max-w-2xl w-full mx-4 px-4 py-16 flex flex-col items-center text-center bg-[#000000]/40 backdrop-blur-xl border border-[#990000]/30 rounded-3xl relative overflow-hidden">
@@ -165,7 +198,6 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
             </article>
           </main>
         ) : (
-          /* ─── NORMAL STEPS ─── */
           <main className="max-w-5xl mx-auto px-4 py-8">
             <section aria-labelledby="checkout-heading" className="flex items-center justify-between mb-8">
               <div>
@@ -185,7 +217,6 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
               
               <section className="lg:col-span-2 space-y-6">
                 
-                {/* ─── STEP 1 ─── */}
                 {step === 1 && (
                   <article className="space-y-6 animate-in slide-in-from-left-4 duration-500">
                     <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl relative overflow-hidden">
@@ -222,7 +253,6 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
                   </article>
                 )}
 
-                {/* ─── STEP 2 ─── */}
                 {step === 2 && (
                   <article className="space-y-6 animate-in slide-in-from-right-4 duration-500">
                     <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl relative overflow-hidden">
@@ -280,7 +310,6 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
                   </article>
                 )}
 
-                {/* ─── ⭐ เพิ่มใหม่ใน Commit 3: STEP 3: Confirm & Upload ─── */}
                 {step === 3 && (
                   <article className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
                     <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl relative overflow-hidden">
@@ -290,7 +319,6 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
                         <p className="text-[#F2F4F6]/40 text-sm mb-8 pl-5 font-light">Please verify your details before confirming.</p>
                       </header>
                       
-                      {/* REVIEW CARD */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div className="bg-[#0a0a0a] border border-[#990000]/20 rounded-xl p-5 hover:border-[#FF0000]/50 transition duration-300">
                             <div className="flex items-center justify-between mb-3 border-b border-[#990000]/20 pb-2">
@@ -310,7 +338,6 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
                         </div>
                       </div>
 
-                      {/* UPLOAD SLIP (ถ้ายูสเซอร์เลือกแบบโอนเงิน) */}
                       {payMethod === 'transfer' && (
                         <div className="bg-[#0a0a0a] border border-[#990000]/20 rounded-xl p-6 relative overflow-hidden">
                           <div aria-hidden="true" className="absolute top-0 left-0 w-1 h-full bg-[#FF0000]"></div>
@@ -345,8 +372,6 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
                       <button onClick={goBack} className="flex-1 border border-[#990000]/50 text-[#F2F4F6]/60 hover:text-[#FF0000] hover:border-[#FF0000] py-4 rounded-xl font-['Orbitron'] text-xs font-bold tracking-wider transition flex items-center justify-center gap-2 group">
                         <ArrowLeft aria-hidden="true" className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> BACK
                       </button>
-                      
-                      {/* ปุ่ม CONFIRM ORDER */}
                       <button 
                         onClick={handleConfirm} 
                         disabled={(payMethod === 'transfer' && !uploadedSlip) || loading} 
@@ -368,14 +393,65 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
 
               </section>
 
-              {/* ═══════ RIGHT SIDEBAR (โครงสร้างชั่วคราว) ═══════ */}
+              {/* ─── ⭐ เพิ่มใหม่ใน Commit 4: RIGHT SIDEBAR (Order Summary) ─── */}
               <aside className="lg:col-span-1">
-                 <div className="bg-[#000000]/60 border border-[#990000]/30 rounded-2xl p-6 h-[200px] flex items-center justify-center sticky top-28">
-                    <p className="text-[#FF0000] font-['Orbitron'] animate-pulse text-center leading-relaxed">
-                      WAITING FOR ORDER SUMMARY...<br/>
-                      <span className="text-xs text-[#F2F4F6]/50">(รอประกอบร่างใน Commit ถัดไป)</span>
-                    </p>
-                 </div>
+                <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl sticky top-28 transition-all duration-300">
+                  <button onClick={() => setShowSummary(!showSummary)} className="w-full flex items-center justify-between lg:pointer-events-none mb-2" aria-expanded={showSummary}>
+                    <h3 className="text-lg font-['Orbitron'] font-bold flex items-center gap-3">
+                      <span aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></span> SUMMARY
+                    </h3>
+                    <span className="lg:hidden text-[#F2F4F6]/40">
+                      {showSummary ? <ChevronUp aria-hidden="true" className="w-5 h-5" /> : <ChevronDown aria-hidden="true" className="w-5 h-5" />}
+                    </span>
+                  </button>
+
+                  <div className={`mt-5 space-y-4 ${showSummary ? 'block' : 'hidden'} lg:block animate-in slide-in-from-top-2`}>
+                    
+                    {/* รายการสินค้าที่ใช้ Custom Scrollbar */}
+                    <div className="space-y-3 max-h-60 overflow-y-auto pr-6 custom-scrollbar">
+                        {orderSummary.items.map((item, i) => (
+                        <article key={i} className="flex items-start justify-between group">
+                            <div className="flex items-start gap-3">
+                                <figure className="w-8 h-8 rounded bg-[#1a1a1a] border border-[#990000]/20 flex items-center justify-center text-[10px] text-[#F2F4F6]/30 m-0">
+                                  IMG
+                                </figure>
+                                <div>
+                                  <p className="text-sm text-[#F2F4F6]/90 truncate font-bold w-32 group-hover:text-[#FF0000] transition-colors">{item.name}</p>
+                                  <p className="text-xs text-[#F2F4F6]/40">Qty: {item.qty}</p>
+                                </div>
+                            </div>
+                            <span className="text-sm text-[#F2F4F6] font-['Orbitron']">฿{fmt(item.price * item.qty)}</span>
+                        </article>
+                        ))}
+                    </div>
+
+                    <footer className="border-t border-[#990000]/25 pt-4 mt-2 space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-[#F2F4F6]/50">Subtotal</span>
+                        <span className="text-[#F2F4F6] font-['Orbitron']">฿{fmt(orderSummary.subtotal)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-[#FF0000]">Discount ({orderSummary.coupon})</span>
+                        <span className="text-[#FF0000] font-['Orbitron']">-฿{fmt(orderSummary.discount)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-[#F2F4F6]/50">Shipping</span>
+                        <span className="text-green-400 font-bold font-['Orbitron'] tracking-wide">FREE</span>
+                      </div>
+                    </footer>
+
+                    <div className="border-t border-[#990000]/30 pt-4 mt-2 flex justify-between items-end bg-[#2E0505]/30 p-4 rounded-xl border border-[#990000]/10">
+                      <span className="font-['Orbitron'] text-xs text-[#F2F4F6]/50 tracking-wider">TOTAL</span>
+                      <span className="font-['Orbitron'] text-2xl font-black text-[#FF0000] drop-shadow-[0_0_8px_rgba(255,0,0,0.5)]">฿{fmt(grandTotal)}</span>
+                    </div>
+
+                    <div className="flex justify-center gap-4 pt-2 opacity-50">
+                        {['SECURE', 'FAST', 'WARRANTY'].map(t => (
+                          <span key={t} className="text-[9px] font-['Orbitron'] border border-[#F2F4F6]/20 px-2 py-0.5 rounded text-[#F2F4F6]/60">{t}</span>
+                        ))}
+                    </div>
+                  </div>
+                </div>
               </aside>
 
             </div>
@@ -384,4 +460,4 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
       </div>
     </div>
   );
-}
+}ห

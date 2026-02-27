@@ -108,6 +108,7 @@ function ProductList() {
     <div className="min-h-screen bg-[#0f0f12] text-white font-sans pb-20">
       <div className="container mx-auto px-6 py-8">
         
+        
         {/* Search Bar */}
         <div className="flex justify-center mb-10">
             <div className="relative w-full max-w-3xl">

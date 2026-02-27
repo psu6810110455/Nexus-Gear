@@ -40,7 +40,7 @@ export default function NexusGearCart({ onNavigate }: CartProps) {
     loadData();
   }, []);
 
-  // ─── ฟังก์ชันที่ 1-4 (จาก Commit ก่อนหน้า) ───
+  // ─── LOGIC FUNCTIONS ───
   const toggleSelect = (id: number) => {
     setSelectedItems(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
@@ -69,6 +69,17 @@ export default function NexusGearCart({ onNavigate }: CartProps) {
     }
     setDeleteModal({ show: false, type: null, id: null });
   };
+
+  // ─── ⭐ เพิ่มใหม่ใน Commit 8: คำนวณราคาและสรุปยอด ───
+  const selectedCartItems = cartItems.filter(i => selectedItems.includes(i.id));
+  const subtotal = selectedCartItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const totalSaved = selectedCartItems.reduce((sum, i) => sum + (i.originalPrice - i.price) * i.quantity, 0);
+  const shippingFee = selectedCartItems.length > 0 ? (subtotal >= 1500 ? 0 : 150) : 0;
+  
+  let discountAmount = 0; // เผื่อตัวแปรไว้สำหรับคูปองใน Commit ถัดไป
+  const grandTotal = Math.max(0, subtotal - discountAmount + shippingFee);
+
+  const fmt = (n: number) => n.toLocaleString('th-TH');
 
   // ─── 4. RENDER: สถานะกำลังโหลด ───
   if (isLoading) {
@@ -106,7 +117,7 @@ export default function NexusGearCart({ onNavigate }: CartProps) {
     );
   }
 
-  // ─── 6. RENDER: โครงสร้างหลัก ───
+  // ─── 6. RENDER: โครงสร้างหลัก (Semantic HTML) ───
   return (
     <div className="min-h-screen bg-[#000000] text-[#F2F4F6] font-['Kanit'] relative overflow-x-hidden selection:bg-[#990000] selection:text-white">
 
@@ -181,7 +192,6 @@ export default function NexusGearCart({ onNavigate }: CartProps) {
                 </div>
             </header>
 
-            {/* ⭐ จุดที่อัปเดต: เปลี่ยน div เป็น article, header, footer, figure */}
             <div className="space-y-4">
                 {cartItems.map((item) => (
                 <article key={item.id} className={`bg-[#000000]/60 border ${selectedItems.includes(item.id) ? 'border-[#FF0000]/60 bg-[#2E0505]/20' : 'border-[#990000]/20'} backdrop-blur-xl rounded-2xl p-5 transition-all duration-300 relative overflow-hidden flex items-start gap-4`}>
@@ -238,19 +248,73 @@ export default function NexusGearCart({ onNavigate }: CartProps) {
             </div>
           </section>
 
+          {/* ─── ⭐ เพิ่มใหม่ใน Commit 8: แถบสรุปยอดสั่งซื้อ (Order Summary) ─── */}
           <aside className="lg:col-span-1">
-             <div className="bg-[#000000]/60 border border-[#990000]/30 rounded-2xl p-6 h-[200px] flex items-center justify-center">
-                <p className="text-[#FF0000] font-['Orbitron'] animate-pulse text-center leading-relaxed">
-                  WAITING FOR SUMMARY...<br/>
-                  <span className="text-xs text-[#F2F4F6]/50">(รอประกอบร่างใน Commit ถัดไป)</span>
-                </p>
-             </div>
+            <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl sticky top-28 space-y-6 relative overflow-hidden">
+              <div aria-hidden="true" className="absolute top-0 right-0 w-32 h-32 bg-[#FF0000]/5 blur-[40px] rounded-full pointer-events-none"></div>
+              
+              <h3 className="text-xl font-['Orbitron'] font-bold flex items-center gap-3 border-b border-[#990000]/20 pb-4">
+                <span aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></span> ORDER SUMMARY
+              </h3>
+
+              {/* ช่องใส่คูปอง (รอเชื่อม Logic ใน Commit หน้า) */}
+              <div className="space-y-2 border-b border-[#990000]/20 pb-4">
+                 <p className="text-[#F2F4F6]/40 text-xs font-['Orbitron'] flex items-center gap-2">
+                    <Tag aria-hidden="true" className="w-4 h-4" /> PROMO CODE (รอทำใน Commit 9)
+                 </p>
+              </div>
+
+              {/* บิลคำนวณราคา */}
+              <div className="space-y-3 pt-2">
+                <div className="flex justify-between text-sm font-['Kanit']">
+                  <span className="text-[#F2F4F6]/50">ราคาสินค้า ({selectedItems.length} ชิ้น)</span>
+                  <span className="text-[#F2F4F6] font-['Orbitron']">฿{fmt(subtotal)}</span>
+                </div>
+                {totalSaved > 0 && selectedItems.length > 0 && (
+                  <div className="flex justify-between text-sm font-['Kanit']">
+                    <span className="text-green-500/80">ส่วนลดโปรโมชั่น</span>
+                    <span className="text-green-500 font-['Orbitron']">-฿{fmt(totalSaved)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-sm font-['Kanit']">
+                  <span className="text-[#F2F4F6]/50">ค่าจัดส่ง</span>
+                  <span className={shippingFee === 0 ? 'text-green-500 font-bold' : 'text-[#F2F4F6] font-["Orbitron"]'}>
+                    {shippingFee === 0 ? (subtotal > 0 ? 'FREE' : '฿0') : `฿${fmt(shippingFee)}`}
+                  </span>
+                </div>
+              </div>
+
+              <div aria-hidden="true" className="border-t border-[#990000]/30 border-dashed"></div>
+              
+              {/* ยอดรวมสุทธิ */}
+              <div className="flex justify-between items-end">
+                <span className="font-['Orbitron'] text-sm text-[#F2F4F6]/60 tracking-wider">TOTAL</span>
+                <span className="font-['Orbitron'] text-3xl font-black text-[#FF0000] drop-shadow-[0_0_10px_rgba(255,0,0,0.6)]">฿{fmt(grandTotal)}</span>
+              </div>
+
+              <button 
+                disabled={selectedItems.length === 0} 
+                onClick={() => onNavigate?.('payment')} 
+                className="w-full bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] disabled:from-[#333] disabled:to-[#444] disabled:text-gray-500 text-white py-4 rounded-xl font-['Orbitron'] font-bold tracking-widest text-sm transition-all shadow-[0_0_20px_rgba(153,0,0,0.4)] hover:shadow-[0_0_30px_rgba(255,0,0,0.6)] active:scale-95 group relative overflow-hidden"
+              >
+                <span className="relative z-10 flex items-center justify-center gap-2">CHECKOUT ({selectedItems.length}) <ArrowLeft aria-hidden="true" className="w-4 h-4 rotate-180 group-hover:translate-x-1 transition-transform" /></span>
+                {selectedItems.length > 0 && <div aria-hidden="true" className="absolute top-0 -left-full w-full h-full bg-white/20 skew-x-[30deg] group-hover:animate-[shimmer_1s_infinite]"></div>}
+              </button>
+
+              <footer className="grid grid-cols-3 gap-2 pt-2 border-t border-[#990000]/10">
+                {['SECURE PAY', 'FAST SHIP', 'WARRANTY'].map((b) => (
+                  <div key={b} className="text-[#F2F4F6]/20 text-[9px] text-center font-['Orbitron'] flex flex-col items-center gap-1">
+                    <div aria-hidden="true" className="w-1 h-1 bg-[#990000] rounded-full"></div>{b}
+                  </div>
+                ))}
+              </footer>
+            </div>
           </aside>
 
         </main>
       </div>
 
-      {/* ─── ⭐ จุดที่อัปเดต: เปลี่ยน div ของ Modal เป็น dialog และ article ─── */}
+      {/* ─── MODAL แจ้งเตือนก่อนลบ ─── */}
       {deleteModal.show && (
         <dialog open className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-transparent m-auto w-full h-full">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setDeleteModal({ ...deleteModal, show: false })} aria-hidden="true"></div>

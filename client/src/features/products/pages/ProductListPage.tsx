@@ -3,6 +3,7 @@ import type { ProductFilterParams } from '../types/product.types';
 import { useProducts } from '../hooks/useProducts';
 import ProductFilter from '../components/ProductFilter';
 import ProductGrid from '../components/ProductGrid';
+import { Search, AlertTriangle } from 'lucide-react'; // ✅ เพิ่ม Icon จาก lucide-react ให้เหมือนหน้า Admin
 
 const DEFAULT_FILTERS: ProductFilterParams = {
   search: '',
@@ -42,50 +43,68 @@ const ProductListPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0f0f12] flex flex-col items-center justify-center text-white gap-4" role="status">
-        <div className="w-10 h-10 border-4 border-red-800 border-t-red-500 rounded-full animate-spin" />
-        <span className="text-gray-400 text-sm tracking-widest">กำลังโหลดสินค้า...</span>
+      // ✅ ปรับ UI Loading ให้เป็นธีมเกมมิ่ง ดำ-แดง มีแสง Glow
+      <div className="min-h-screen bg-gradient-to-br from-[#1A0505] to-[#000000] flex flex-col items-center justify-center text-[#F2F4F6] gap-5" role="status">
+        <div className="relative">
+          <div className="w-16 h-16 border-4 border-[#990000]/30 rounded-full"></div>
+          <div className="w-16 h-16 border-4 border-transparent border-t-[#FF0000] rounded-full animate-spin absolute top-0 left-0 drop-shadow-[0_0_15px_rgba(255,0,0,0.5)]"></div>
+        </div>
+        <span className="text-[#FF0000] text-sm tracking-[0.2em] font-['Orbitron'] font-bold animate-pulse">
+          LOADING GEAR...
+        </span>
       </div>
     );
   }
 
   if (error) {
     return (
-      // ✅ แก้: Error state แสดงปุ่ม retry และข้อความชัดเจนขึ้น
-      <div className="min-h-screen bg-[#0f0f12] flex flex-col items-center justify-center text-center px-6 gap-6" role="alert">
-        <div className="w-16 h-16 rounded-full bg-red-900/30 flex items-center justify-center text-3xl">⚠️</div>
+      // ✅ ปรับ UI Error state ให้ดูน่าเกรงขามและเข้ากับธีม
+      <div className="min-h-screen bg-gradient-to-br from-[#1A0505] to-[#000000] flex flex-col items-center justify-center text-center px-6 gap-6" role="alert">
+        <div className="w-20 h-20 rounded-2xl bg-[#2E0505]/50 border border-[#FF0000]/50 flex items-center justify-center text-[#FF0000] shadow-[0_0_30px_rgba(255,0,0,0.2)]">
+          <AlertTriangle size={40} />
+        </div>
         <div>
-          <p className="text-red-400 text-lg font-bold mb-2">โหลดสินค้าไม่สำเร็จ</p>
-          <p className="text-gray-500 text-sm max-w-md">{error}</p>
+          <p className="text-[#FF0000] text-2xl font-bold mb-2 font-['Orbitron'] tracking-wider">SYSTEM ERROR</p>
+          <p className="text-[#F2F4F6]/60 text-sm max-w-md font-['Kanit']">{error}</p>
         </div>
         <button
           type="button"
           onClick={() => refetch(filters)}
-          className="bg-red-600 hover:bg-red-700 text-white text-sm font-bold px-6 py-2.5 rounded transition active:scale-95"
+          className="bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] text-white text-sm font-['Orbitron'] tracking-widest font-bold px-8 py-3 rounded-xl transition-all active:scale-95 shadow-[0_0_15px_rgba(255,0,0,0.3)]"
         >
-          ลองใหม่
+          RETRY CONNECTION
         </button>
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#0f0f12] text-white font-sans pb-20">
-      <div className="container mx-auto px-6 py-8">
+    // ✅ พื้นหลังไล่สี ดำ-แดงเข้ม พร้อมกำหนดสี Selection
+    <main className="min-h-screen bg-gradient-to-br from-[#1A0505] to-[#000000] text-[#F2F4F6] font-['Kanit'] pb-20 selection:bg-[#FF0000]/30">
+      <div className="container mx-auto px-6 py-10">
+
+        {/* ✅ เพิ่ม Header Title ให้ดูเต็มขึ้น (ลบออกได้ถ้าไม่ต้องการ) */}
+        <div className="text-center mb-10">
+          <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#FF0000] to-[#ff6b6b] font-['Orbitron'] tracking-wider mb-2 drop-shadow-[0_0_10px_rgba(255,0,0,0.3)]">
+            NEXUS GEAR
+          </h1>
+          <p className="text-[#F2F4F6]/50 text-sm tracking-widest uppercase font-['Orbitron']">Explore Our Premium Arsenal</p>
+        </div>
 
         {/* Search Bar */}
-        {/* ✅ แก้: เปลี่ยน <search> (HTML5 element ที่ TypeScript อาจ error) เป็น <div> */}
-        <div className="flex justify-center mb-10" role="search">
-          <div className="relative w-full max-w-3xl">
-            <span className="absolute left-5 top-1/2 -translate-y-1/2 text-white/30 text-xl" aria-hidden="true">
-              🔍
-            </span>
+        <div className="flex justify-center mb-12" role="search">
+          <div className="relative w-full max-w-3xl group">
+            {/* ✅ ใช้ Icon Search จาก lucide-react พร้อม Effect เปลี่ยนสีเมื่อ Focus */}
+            <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none text-[#F2F4F6]/40 group-focus-within:text-[#FF0000] transition-colors duration-300">
+              <Search size={22} />
+            </div>
             <label htmlFor="product-search" className="sr-only">ค้นหาสินค้า</label>
             <input
               id="product-search"
-              type="search"
+              type="text"
               placeholder="ค้นหาอุปกรณ์เทพของคุณ..."
-              className="w-full bg-[#2a0b0b] border border-white/5 rounded-full py-4 pl-14 pr-6 text-white/70 placeholder-white/30 focus:outline-none focus:border-red-900/50 focus:ring-1 focus:ring-red-900/30 transition shadow-lg text-lg font-light tracking-wider"
+              // ✅ ปรับสี Input ให้เป็นกรอบแดง มีเรืองแสงตอนคลิก
+              className="w-full bg-[#000000]/60 backdrop-blur-md border border-[#990000]/30 rounded-2xl py-4 pl-14 pr-6 text-[#F2F4F6] placeholder-[#F2F4F6]/30 focus:outline-none focus:border-[#FF0000] focus:shadow-[0_0_20px_rgba(255,0,0,0.2)] transition-all duration-300 text-lg font-light tracking-wide"
               value={filters.search ?? ''}
               onChange={(e) =>
                 handleFilterChange({ ...filters, search: e.target.value })

@@ -9,8 +9,8 @@ import { CategoriesModule } from './categories/categories.module';
   imports: [
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: 'localhost',
-      port: 3306,           // ✅ แก้: MySQL ใช้ port 3306 ไม่ใช่ 5433
+      host: '127.0.0.1',
+      port: 5433,           // ✅ แก้: MySQL ใช้ port 3306 ไม่ใช่ 5433
       username: 'root',
       password: 'rootpassword',
       database: 'ecommerce_db',

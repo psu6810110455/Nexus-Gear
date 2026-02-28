@@ -1,0 +1,126 @@
+/* src/pages/Login.css */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap');
+
+/* ส่วนที่ 1: ปรับโครงสร้างหน้าเว็บให้เต็มจอ */
+.login-page-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* หากทดสอบแล้วพบว่าหน้าจอมีแถบเลื่อนขึ้นลง ให้เปลี่ยนเป็น height: 100%; ครับ */
+  width: 100vw; /* บังคับกว้างเต็มหน้าจอ */
+  background-color: #050000;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* แถบ ด้านล่าง */
+.bottom-bar { 
+  height: 60px; 
+  background: #000; 
+  border-top: 1px solid #1a1a1a; 
+  width: 100%; /* เต็มจอตามตัวพ่อ */
+}
+
+/* ส่วนที่ 2: พื้นที่เนื้อหาและพื้นหลังไล่เฉดสี */
+.login-container {
+  flex: 1;
+  display: flex;
+  justify-content: center; /* จัดกึ่งกลางแนวนอน */
+  align-items: center;     /* จัดกึ่งกลางแนวตั้ง */
+  background: radial-gradient(circle at center, #2b0000 0%, #050000 70%); /* สีเดียวกับหน้า Register */
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+}
+
+/* เส้นสายสีแดงด้านล่าง */
+.bg-lines {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 150px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 1200 200'%3E%3Cpath d='M0 150 L200 150 L250 100 L950 100 L1000 150 L1200 150' stroke='%23ff0000' stroke-width='3' fill='none' /%3E%3C/svg%3E") no-repeat bottom;
+  pointer-events: none;
+}
+
+/* ส่วนที่ 3: การ์ดและฟอร์ม */
+.login-card { 
+  position: relative; 
+  width: 100%; 
+  max-width: 450px; 
+  padding: 30px; 
+  z-index: 10; 
+}
+
+.form-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 3rem;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 40px;
+  text-transform: uppercase;
+}
+
+.form-group { margin-bottom: 25px; }
+.form-group label { display: block; margin-bottom: 10px; color: #fff; font-size: 1rem; }
+
+.input-wrapper { 
+  display: flex; 
+  align-items: center; 
+  background: #e8e0e0; 
+  border-radius: 4px; 
+  padding-right: 10px; 
+}
+
+.form-input { 
+  flex: 1; 
+  padding: 14px 15px; 
+  background: transparent; 
+  border: none; 
+  outline: none; 
+  color: #333; 
+  font-size: 1rem; 
+}
+
+/* ส่วนที่ 4: การจัดวาง Remember me และ Forgot Password */
+.login-helpers {
+  display: flex;
+  justify-content: space-between; /* ดันแยกซ้าย-ขวา */
+  align-items: center;
+  width: 100%;                  /* บังคับกว้างเต็มฟอร์มเพื่อให้ space-between ทำงาน */
+  margin-bottom: 30px;
+  color: #ccc;
+  font-size: 0.9rem;
+}
+
+.remember-me { 
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
+  cursor: pointer; 
+}
+
+.forgot-link { 
+  color: #ccc; 
+  text-decoration: none; 
+}
+
+.forgot-link:hover { color: #ff0000; text-decoration: underline; }
+
+/* ปุ่มกดและส่วนท้าย */
+.btn-submit {
+  width: 100%;
+  padding: 14px;
+  background: #a81818;
+  color: white;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-transform: lowercase;
+}
+
+.btn-submit:hover { background: #d61f1f; }
+.login-footer { text-align: center; margin-top: 25px; color: #fff; }
+.link-red { color: #ff0000; text-decoration: none; font-weight: bold; margin-left: 5px; }

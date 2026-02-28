@@ -22,9 +22,9 @@ export class Product {
   imageUrl: string;
 
   // เชื่อมกับ Category (หลาย Product อยู่ใน 1 Category)
-  @ManyToOne(() => Category, (category) => category.products, { onDelete: 'SET NULL' })
+  @ManyToOne(() => Category, (category) => category.products, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'category_id' })
-  category: Category;
+  category: Category | null;
 
   @Column({ name: 'category_id', nullable: true })
   categoryId: number;

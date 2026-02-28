@@ -20,10 +20,13 @@ const Navbar = () => {
   };
 
   return (
-    <header role="banner">
+    // ✅ แก้: ย้าย sticky top-0 z-50 มาไว้ที่ <header> แทน <nav>
+    // เพราะ <header> คือ element จริงที่อยู่ใน DOM flow
+    // ถ้า sticky อยู่ใน <nav> ที่เป็น child มันจะ inherit overflow จาก parent ทำให้ sticky ไม่ทำงาน
+    <header role="banner" className="sticky top-0 z-50 bg-black border-b border-gray-800">
       <nav
         aria-label="เมนูหลัก"
-        className="flex items-center justify-between px-10 py-4 bg-black border-b border-gray-800 sticky top-0 z-50"
+        className="flex items-center justify-between px-10 py-4"
       >
         {/* Logo */}
         <Link to="/" aria-label="NEXUS GEAR — หน้าแรก" className="flex items-center gap-2">
@@ -43,7 +46,6 @@ const Navbar = () => {
             </li>
           ))}
 
-          {/* แสดงเฉพาะตอน Login — ทำ Role ภายหลัง */}
           {isLoggedIn && (
             <li>
               <Link to="/admin" className="text-yellow-500/70 hover:text-yellow-400 transition">

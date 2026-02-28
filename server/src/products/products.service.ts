@@ -17,16 +17,11 @@ export class ProductsService {
 
   async create(createProductDto: CreateProductDto) {
     const { categoryId, ...productData } = createProductDto;
-
-    // สร้าง object product
     const product = this.productsRepository.create(productData);
 
-    // ถ้ามีการส่ง categoryId มา ให้หาและใส่เข้าไป
     if (categoryId) {
       const category = await this.categoriesRepository.findOne({ where: { id: categoryId } });
-      if (!category) {
-        throw new NotFoundException(`Category #${categoryId} not found`);
-      }
+      if (!category) throw new NotFoundException(`Category #${categoryId} not found`);
       product.category = category;
     }
 
@@ -34,7 +29,6 @@ export class ProductsService {
   }
 
   findAll() {
-    // ดึงข้อมูล Product พร้อม Category
     return this.productsRepository.find({ relations: ['category'] });
   }
 
@@ -47,11 +41,36 @@ export class ProductsService {
     return product;
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return this.productsRepository.update(id, updateProductDto);
+  // ✅ แก้: update ให้รองรับ categoryId เหมือน create
+  async update(id: number, updateProductDto: UpdateProductDto) {
+    const product = await this.productsRepository.findOne({
+      where: { id },
+      relations: ['category'],
+    });
+    if (!product) throw new NotFoundException(`Product #${id} not found`);
+
+    const { categoryId, ...rest } = updateProductDto;
+
+    // อัปเดตฟิลด์ปกติ
+    Object.assign(product, rest);
+
+    // อัปเดต category ถ้ามี categoryId ส่งมา
+    if (categoryId !== undefined) {
+      if (categoryId === null) {
+        product.category = null;
+      } else {
+        const category = await this.categoriesRepository.findOne({ where: { id: categoryId } });
+        if (!category) throw new NotFoundException(`Category #${categoryId} not found`);
+        product.category = category;
+      }
+    }
+
+    return this.productsRepository.save(product);
   }
 
-  remove(id: number) {
-    return this.productsRepository.delete(id);
+  async remove(id: number) {
+    const product = await this.productsRepository.findOne({ where: { id } });
+    if (!product) throw new NotFoundException(`Product #${id} not found`);
+    return this.productsRepository.remove(product);
   }
 }

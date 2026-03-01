@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, Check, MapPin, CreditCard, FileText, ShoppingCart, Upload, Loader, ChevronDown, ChevronUp } from 'lucide-react';
 
 import { fetchAddresses, fetchOrderSummary } from '../services/payment.service';
-import type { Address, OrderSummaryData } from '../services/payment.service';
+import type { Address, OrderSummaryData } from '../types/payment.types';
 
 interface PaymentProps {
   onNavigate?: (page: string) => void;

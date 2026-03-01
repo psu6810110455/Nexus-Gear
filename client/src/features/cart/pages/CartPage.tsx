@@ -4,7 +4,7 @@ import { ShoppingCart, Trash2, Minus, Plus, ArrowLeft, Tag, ChevronDown, Chevron
 
 // นำเข้า API และ Types จากไฟล์ apiCart.ts ที่เราสร้างไว้
 import { fetchCartItems, validateCoupon } from '../services/cart.service';
-import type { CartItem, CouponData } from '../services/cart.service';
+import type { CartItem, CouponData } from '../types/cart.types';
 
 // 1. กำหนด Interface
 interface CartProps {

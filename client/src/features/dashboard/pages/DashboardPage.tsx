@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { BarChart3, ShoppingBag, Package, AlertTriangle, ArrowRight, TrendingUp, Activity, User as UserIcon, Clock } from 'lucide-react';
 
 import { fetchStats, fetchChart, fetchActivities } from '../services/dashboard.service';
-import type { DashboardStats, ActivityItem } from '../services/dashboard.service';
+import type { DashboardStats, ActivityItem } from '../types/dashboard.types';
 
 interface AdminDashboardProps {
   setActiveTab: (tab: string) => void;

@@ -10,7 +10,6 @@ import Login from './pages/Login';
 import AdminPage from './pages/AdminPage';
 import NexusGearAdminDashboard from './features/dashboard/pages/DashboardPage'; 
 import NexusGearCart from './features/cart/pages/CartPage'; 
-// ⭐ 1. นำเข้าหน้า Payment 
 import NexusGearPayment from './features/payment/pages/PaymentPage'; 
 import './App.css'
 
@@ -18,7 +17,6 @@ function AppContent() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // ⭐ 2. เพิ่ม /payment เข้าไปในเงื่อนไขซ่อน Navbar เดิม
   const hideNavbar = location.pathname.startsWith('/admin') || 
                      location.pathname.startsWith('/dashboard') || 
                      location.pathname.startsWith('/cart') ||
@@ -26,7 +24,6 @@ function AppContent() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#0a0a0a' }}>
-      {/* ซ่อน Navbar เมื่ออยู่หน้า Admin, Dashboard, Cart หรือ Payment */}
       {!hideNavbar && <Navbar />}
 
       <Routes>
@@ -41,17 +38,16 @@ function AppContent() {
             path="/dashboard" 
             element={
                 <NexusGearAdminDashboard 
-                    setActiveTab={(tab) => console.log('เปลี่ยนไปหน้า:', tab)} 
+                    setActiveTab={(tab: string) => console.log('เปลี่ยนไปหน้า:', tab)} 
                 />
             } 
         />
 
-        {/* หน้า Cart */}
         <Route 
             path="/cart" 
             element={
                 <NexusGearCart 
-                    onNavigate={(page) => {
+                    onNavigate={(page: string) => {
                         if (page === 'home') navigate('/');
                         else if (page === 'products') navigate('/shop');
                         else if (page === 'profile') navigate('/login');
@@ -61,12 +57,11 @@ function AppContent() {
             } 
         />
 
-        {/* ⭐ 3. สร้างประตูทางเข้าหน้า Payment */}
         <Route 
             path="/payment" 
             element={
                 <NexusGearPayment 
-                    onNavigate={(page) => {
+                    onNavigate={(page: string) => {
                         if (page === 'cart') navigate('/cart');
                         else if (page === 'home') navigate('/');
                     }}

@@ -3,8 +3,8 @@ import { useState, useEffect } from 'react';
 import { ShoppingCart, Trash2, Minus, Plus, ArrowLeft, Tag, ChevronDown, ChevronUp, User, Square, CheckSquare, Store, X, AlertTriangle } from 'lucide-react';
 
 // นำเข้า API และ Types จากไฟล์ apiCart.ts ที่เราสร้างไว้
-import { fetchCartItems, validateCoupon } from '../services/apiCart';
-import type { CartItem, CouponData } from '../services/apiCart';
+import { fetchCartItems, validateCoupon } from '../services/cart.service';
+import type { CartItem, CouponData } from '../services/cart.service';
 
 // 1. กำหนด Interface
 interface CartProps {

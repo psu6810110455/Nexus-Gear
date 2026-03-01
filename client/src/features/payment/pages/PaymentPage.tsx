@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 // ลบไอคอนที่ไม่ได้ใช้ออก และนำเข้าเฉพาะที่ใช้จริงในหน้านี้
 import { ArrowLeft, ArrowRight, Check, MapPin, CreditCard, FileText, ShoppingCart, Upload, Loader, ChevronDown, ChevronUp } from 'lucide-react';
 
-import { fetchAddresses, fetchOrderSummary } from '../services/apiPayment';
-import type { Address, OrderSummaryData } from '../services/apiPayment';
+import { fetchAddresses, fetchOrderSummary } from '../services/payment.service';
+import type { Address, OrderSummaryData } from '../services/payment.service';
 
 interface PaymentProps {
   onNavigate?: (page: string) => void;

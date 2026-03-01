@@ -8,10 +8,10 @@ import ProductDetail from './components/ProductDetail';
 import Register from './pages/Register';
 import Login from './pages/Login';
 import AdminPage from './pages/AdminPage';
-import NexusGearAdminDashboard from './pages/NexusGearAdminDashboard'; 
-import NexusGearCart from './pages/NexusGearCart'; 
+import NexusGearAdminDashboard from './features/dashboard/pages/DashboardPage'; 
+import NexusGearCart from './features/cart/pages/CartPage'; 
 // ⭐ 1. นำเข้าหน้า Payment 
-import NexusGearPayment from './pages/NexusGearPayment'; 
+import NexusGearPayment from './features/payment/pages/PaymentPage'; 
 import './App.css'
 
 function AppContent() {

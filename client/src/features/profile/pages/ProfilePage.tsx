@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { LogOut, Trash2 } from 'lucide-react';
 
 // นำเข้า Components หลัก
@@ -24,7 +24,7 @@ export const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState('orders');
   const [userData, setUserData] = useState(initialUserData);
   const [addresses, setAddresses] = useState(initialAddresses);
-  const [orders, setOrders] = useState(mockOrders);
+  const [orders] = useState(mockOrders);
   const [ratings, setRatings] = useState<Record<string, number>>({});
 
   // ─── 2. State สำหรับควบคุมการเปิด/ปิด Modals ───
@@ -128,20 +128,7 @@ export const ProfilePage = () => {
       </div>
 
       <div className="relative z-10">
-        <header className="bg-[#000000]/80 border-b border-[#990000]/30 backdrop-blur-md sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-4 group cursor-pointer">
-              <div className="relative">
-                <div className="absolute inset-0 bg-[#FF0000]/20 blur-md rounded-full group-hover:bg-[#FF0000]/40 transition duration-300"></div>
-                <img src="/nexus-logo.png" alt="Nexus Logo" className="w-10 h-10 object-contain relative z-10" />
-              </div>
-              <h1 className="text-2xl font-['Orbitron'] font-black text-[#F2F4F6] tracking-widest">NEXUS GEAR</h1>
-            </div>
-            <button onClick={() => setShowLogoutModal(true)} className="flex items-center gap-2 text-[#F2F4F6]/60 hover:text-[#FF0000] transition font-['Orbitron'] text-sm tracking-wider">
-              <LogOut className="w-4 h-4" /> <span className="hidden md:inline">LOGOUT</span>
-            </button>
-          </div>
-        </header>
+        {/* ลบ <header> ที่ซ้อนกันออกไปแล้ว */}
 
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -176,7 +163,7 @@ export const ProfilePage = () => {
                 <ProfileOrdersTab 
                   orders={orders} 
                   onOpenStatus={openStatusModal}
-                  onOpenDetail={(order: Order) => setSelectedOrder(order)}
+                  onOpenDetail={(order) => setSelectedOrder(order)}
                 />
               )}
             </div>
@@ -211,7 +198,7 @@ export const ProfilePage = () => {
         onClose={() => setStatusModal(null)} 
         ratings={ratings} 
         onRate={handleRating} 
-        onOpenDetail={(order: Order) => {
+        onOpenDetail={(order) => {
           setStatusModal(null);
           setSelectedOrder(order);
         }} 

@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
 import { LogOut } from 'lucide-react';
 import { ProfileSidebar } from '../components/ProfileSidebar';
-import { initialUserData } from '../data/mockData';
+import { initialUserData,initialAddresses, mockOrders } from '../data/mockData';
+import { ProfileInfoTab } from '../components/tabs/ProfileInfoTab';
+import { ProfileAddressesTab } from '../components/tabs/ProfileAddressesTab';
+import { ProfileOrdersTab } from '../components/tabs/ProfileOrdersTab';
 
 export const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState('orders');
   const [userData, setUserData] = useState(initialUserData);
+  const [addresses, setAddresses] = useState(initialAddresses);
+  const [orders, setOrders] = useState(mockOrders);  
 
   return (
     <div className="min-h-screen bg-[#000000] text-[#F2F4F6] font-['Kanit'] relative overflow-x-hidden selection:bg-[#990000] selection:text-white pb-10">
@@ -49,9 +54,28 @@ export const ProfilePage = () => {
 
             {/* ขวา: Content area (เดี๋ยวเราจะเอา Tab components มาใส่ตรงนี้ใน Part 3) */}
             <div className="lg:col-span-3">
-              {activeTab === 'info' && <div className="p-8 text-center text-[#F2F4F6]/50 border border-[#990000]/30 rounded-2xl bg-[#000000]/60 animate-in fade-in">รอเพิ่มเนื้อหา Tab: ข้อมูลส่วนตัว (Part 3)</div>}
-              {activeTab === 'addresses' && <div className="p-8 text-center text-[#F2F4F6]/50 border border-[#990000]/30 rounded-2xl bg-[#000000]/60 animate-in fade-in">รอเพิ่มเนื้อหา Tab: ที่อยู่จัดส่ง (Part 3)</div>}
-              {activeTab === 'orders' && <div className="p-8 text-center text-[#F2F4F6]/50 border border-[#990000]/30 rounded-2xl bg-[#000000]/60 animate-in fade-in">รอเพิ่มเนื้อหา Tab: ประวัติการสั่งซื้อ (Part 3)</div>}
+              {activeTab === 'info' && (
+                <ProfileInfoTab 
+                  userData={userData} 
+                  setUserData={setUserData} 
+                  onOpenPasswordModal={() => console.log('เปิด Modal เปลี่ยนรหัส')} 
+                />
+              )}
+              {activeTab === 'addresses' && (
+                <ProfileAddressesTab 
+                  addresses={addresses} 
+                  onOpenAdd={() => console.log('เปิด Modal เพิ่มที่อยู่')}
+                  onOpenEdit={(addr) => console.log('เปิด Modal แก้ไขที่อยู่', addr)}
+                  onOpenDelete={(id) => console.log('เปิด Modal ลบที่อยู่', id)}
+                />
+              )}
+              {activeTab === 'orders' && (
+                <ProfileOrdersTab 
+                  orders={orders} 
+                  onOpenStatus={(label) => console.log('เปิด Modal สถานะ', label)}
+                  onOpenDetail={(order) => console.log('เปิด Modal รายละเอียดออเดอร์', order)}
+                />
+              )}
             </div>
 
           </div>

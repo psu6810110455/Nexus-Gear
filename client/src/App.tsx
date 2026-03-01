@@ -8,6 +8,7 @@ import Register from './features/auth/pages/Register';
 import Login from './features/auth/pages/Login';
 import AdminPage from './features/admin/pages/AdminPage';
 import './App.css';
+import { ProfilePage } from './features/profile/pages/ProfilePage';
 
 function AppContent() {
   const location = useLocation();
@@ -24,6 +25,7 @@ function AppContent() {
         <Route path="/register"      element={<Register />} />
         <Route path="/login"         element={<Login />} />
         <Route path="/admin"         element={<AdminPage />} />
+        <Route path="/profile"       element={<ProfilePage />} />
         <Route path="*"              element={<Navigate to="/" replace />} />
       </Routes>
     </div>

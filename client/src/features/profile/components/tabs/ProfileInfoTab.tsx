@@ -35,25 +35,30 @@ export const ProfileInfoTab: React.FC<ProfileInfoTabProps> = ({ userData, setUse
         )}
       </div>
 
-      <div className="space-y-6">
+      {/* ✅ เพิ่ม text-left ที่ container หลักของฟอร์ม */}
+      <div className="space-y-6 text-left">
         {fields.map((f) => (
           <div key={f.key}>
-            <label className="block text-xs font-['Orbitron'] text-[#FF0000] mb-2">{f.label}</label>
+            {/* ✅ เพิ่ม text-left ตรง label */}
+            <label className="block text-left text-xs font-['Orbitron'] text-[#FF0000] mb-2">{f.label}</label>
             <div className="relative">
               <f.icon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#F2F4F6]/30" />
               <input 
                 disabled={!isEditing} 
                 value={f.value} 
                 onChange={e => setUserData({ ...userData, [f.key]: e.target.value })} 
-                className="w-full bg-[#000000] border border-[#990000]/30 rounded-xl px-4 py-3 pl-12 text-[#F2F4F6] focus:outline-none focus:border-[#FF0000] disabled:opacity-50" 
+                className="w-full bg-[#000000] border border-[#990000]/30 rounded-xl px-4 py-3 pl-12 text-[#F2F4F6] focus:outline-none focus:border-[#FF0000] disabled:opacity-50 text-left" 
               />
             </div>
           </div>
         ))}
         
         <div className="pt-6 border-t border-[#990000]/20">
-          <label className="block text-xs font-['Orbitron'] text-[#FF0000] mb-2">SECURITY</label>
-          <button onClick={onOpenPasswordModal} className="flex items-center gap-2 text-sm text-[#F2F4F6]/70 hover:text-[#FF0000] transition-colors border border-[#F2F4F6]/10 px-4 py-3 rounded-xl w-full hover:border-[#FF0000]/50">
+          {/* ✅ เพิ่ม text-left ตรง label SECURITY */}
+          <label className="block text-left text-xs font-['Orbitron'] text-[#FF0000] mb-2">SECURITY</label>
+          
+          {/* ✅ เพิ่ม justify-start เพื่อให้เนื้อหาในปุ่มชิดซ้าย */}
+          <button onClick={onOpenPasswordModal} className="flex items-center justify-start gap-2 text-sm text-[#F2F4F6]/70 hover:text-[#FF0000] transition-colors border border-[#F2F4F6]/10 px-4 py-3 rounded-xl w-full hover:border-[#FF0000]/50 text-left">
             <Lock className="w-4 h-4" /> เปลี่ยนรหัสผ่าน (Change Password)
           </button>
         </div>

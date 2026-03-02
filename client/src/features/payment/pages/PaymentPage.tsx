@@ -1,6 +1,5 @@
 // src/pages/NexusGearPayment.tsx
 import React, { useState, useEffect } from 'react';
-// ลบไอคอนที่ไม่ได้ใช้ออก และนำเข้าเฉพาะที่ใช้จริงในหน้านี้
 import { ArrowLeft, ArrowRight, Check, MapPin, CreditCard, FileText, ShoppingCart, Upload, Loader, ChevronDown, ChevronUp } from 'lucide-react';
 
 import { fetchAddresses, fetchOrderSummary } from '../services/payment.service';
@@ -131,13 +130,16 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #FF0000; }
       `}</style>
 
+      {/* เอฟเฟกต์พื้นหลัง */}
       <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#2E0505] blur-[150px] rounded-full opacity-60"></div>
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#2E0505] blur-[150px] rounded-full opacity-60"></div>
-        <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h40v40H0V0zm1 1h38v38H1V1z' fill='%23990000' fill-opacity='0.4' fill-rule='evenodd'/%3E%3C/svg%3E")` }}></div>
+        <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h40v40H0V0zm1 1h38v38H1V1z' fill='%23990000' fill-opacity='0.4' fill-rule='evenodd'/%3E%3C/svg%3E")` }}></div>
       </div>
 
       <div className="relative z-10">
+        
+        {/* แถบนำทางด้านบน */}
         <header className="bg-[#000000]/80 border-b border-[#990000]/30 backdrop-blur-md sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             <div onClick={() => onNavigate?.('home')} className="flex items-center gap-4 group cursor-pointer" role="button" tabIndex={0} aria-label="กลับไปหน้าหลัก">
@@ -155,6 +157,7 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
           </div>
         </header>
 
+        {/* หน้าจอแสดงผลสำเร็จ */}
         {confirmed ? (
           <main className="min-h-[80vh] flex items-center justify-center animate-in zoom-in-95 duration-500">
             <article className="max-w-2xl w-full mx-4 px-4 py-16 flex flex-col items-center text-center bg-[#000000]/40 backdrop-blur-xl border border-[#990000]/30 rounded-3xl relative overflow-hidden">
@@ -165,8 +168,10 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
                       <Check aria-hidden="true" className="w-16 h-16 text-[#FF0000] drop-shadow-[0_0_10px_rgba(255,0,0,0.8)]" />
                   </div>
                 </figure>
-                <h2 className="text-4xl font-['Orbitron'] font-black text-[#FF0000] mb-3 tracking-wide drop-shadow-[0_0_10px_rgba(255,0,0,0.5)]">สั่งซื้อสำเร็จ!</h2>
-                <p className="text-[#F2F4F6]/50 mb-2 font-['Kanit']">หมายเลขคำสั่งซื้อ (ORDER ID)</p>
+                <header>
+                    <h2 className="text-4xl font-['Orbitron'] font-black text-[#FF0000] mb-3 tracking-wide drop-shadow-[0_0_10px_rgba(255,0,0,0.5)]">สั่งซื้อสำเร็จ!</h2>
+                    <p className="text-[#F2F4F6]/50 mb-2 font-['Kanit']">หมายเลขคำสั่งซื้อ (ORDER ID)</p>
+                </header>
                 <div className="bg-[#2E0505]/50 px-6 py-2 rounded-lg border border-[#FF0000]/20 mb-8">
                     <p className="text-xl font-['Orbitron'] font-bold text-[#F2F4F6] tracking-widest">#ORD-20260203-4821</p>
                 </div>
@@ -181,8 +186,10 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
           </main>
         ) : (
           <main className="max-w-5xl mx-auto px-4 py-8">
+            
+            {/* ส่วนหัวของหน้า Checkout */}
             <section aria-labelledby="checkout-heading" className="flex items-center justify-between mb-8">
-              <div>
+              <header>
                   <button onClick={() => onNavigate?.('cart')} className="flex items-center gap-2 text-[#F2F4F6]/40 hover:text-[#FF0000] transition text-sm mb-4 group" aria-label="กลับไปหน้าตะกร้าสินค้า">
                     <ArrowLeft aria-hidden="true" className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> กลับไปตะกร้าสินค้า
                   </button>
@@ -190,15 +197,17 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
                     <div aria-hidden="true" className="w-1.5 h-10 bg-[#FF0000] rounded-full shadow-[0_0_15px_#FF0000]"></div>
                     CHECKOUT
                   </h2>
-              </div>
+              </header>
             </section>
 
             <StepBar current={step} />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-12">
               
+              {/* พื้นที่หลักฝั่งซ้าย */}
               <section className="lg:col-span-2 space-y-6">
                 
+                {/* ─── STEP 1: Address ─── */}
                 {step === 1 && (
                   <article className="space-y-6 animate-in slide-in-from-left-4 duration-500">
                     <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl relative overflow-hidden">
@@ -235,6 +244,7 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
                   </article>
                 )}
 
+                {/* ─── STEP 2: Payment Method ─── */}
                 {step === 2 && (
                   <article className="space-y-6 animate-in slide-in-from-right-4 duration-500">
                     <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl relative overflow-hidden">
@@ -245,7 +255,7 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
                       </header>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {[{ id: 'qr', title: 'สแกนคิวอาร์โค้ด (THAI QR)', sub: 'รองรับทุกแอปธนาคาร', emoji: '📱' }, { id: 'transfer', title: 'โอนเงินผ่านธนาคาร', sub: 'แนบสลิปเพื่อยืนยัน', emoji: '🏦' }].map((m) => {
+                        {[{ id: 'qr', title: 'สแกนคิวอาร์โค้ด', sub: 'รองรับทุกแอปธนาคาร', emoji: '📱' }, { id: 'transfer', title: 'โอนเงินผ่านธนาคาร', sub: 'แนบสลิปเพื่อยืนยัน', emoji: '🏦' }].map((m) => {
                           const active = payMethod === m.id;
                           return (
                             <button key={m.id} onClick={() => setPayMethod(m.id)} className={`relative text-left bg-[#0a0a0a] border rounded-2xl p-5 transition-all overflow-hidden group ${active ? 'border-[#FF0000] shadow-[0_0_15px_rgba(255,0,0,0.2)] bg-[#2E0505]/20' : 'border-[#990000]/20 hover:border-[#990000]/50 hover:bg-[#2E0505]/10'}`}>
@@ -292,6 +302,7 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
                   </article>
                 )}
 
+                {/* ─── STEP 3: Confirm ─── */}
                 {step === 3 && (
                   <article className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
                     <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl relative overflow-hidden">
@@ -375,16 +386,19 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
 
               </section>
 
+              {/* แถบสรุปยอดด้านขวา */}
               <aside className="lg:col-span-1">
                 <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl sticky top-28 transition-all duration-300">
-                  <button onClick={() => setShowSummary(!showSummary)} className="w-full flex items-center justify-between lg:pointer-events-none mb-2" aria-expanded={showSummary}>
-                    <h3 className="text-lg font-['Kanit'] font-bold flex items-center gap-3">
-                      <span aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></span> สรุปคำสั่งซื้อ
-                    </h3>
-                    <span className="lg:hidden text-[#F2F4F6]/40">
-                      {showSummary ? <ChevronUp aria-hidden="true" className="w-5 h-5" /> : <ChevronDown aria-hidden="true" className="w-5 h-5" />}
-                    </span>
-                  </button>
+                  <header>
+                      <button onClick={() => setShowSummary(!showSummary)} className="w-full flex items-center justify-between lg:pointer-events-none mb-2" aria-expanded={showSummary}>
+                        <h3 className="text-lg font-['Kanit'] font-bold flex items-center gap-3">
+                          <span aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></span> สรุปคำสั่งซื้อ
+                        </h3>
+                        <span className="lg:hidden text-[#F2F4F6]/40">
+                          {showSummary ? <ChevronUp aria-hidden="true" className="w-5 h-5" /> : <ChevronDown aria-hidden="true" className="w-5 h-5" />}
+                        </span>
+                      </button>
+                  </header>
 
                   <div className={`mt-5 space-y-4 ${showSummary ? 'block' : 'hidden'} lg:block animate-in slide-in-from-top-2`}>
                     

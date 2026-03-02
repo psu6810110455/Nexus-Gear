@@ -1,9 +1,12 @@
-// src/pages/NexusGearPayment.tsx
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, ArrowRight, Check, MapPin, CreditCard, FileText, ShoppingCart, Upload, Loader, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, MapPin, CreditCard, ShoppingCart, Upload, Loader, ChevronDown, ChevronUp } from 'lucide-react';
 
+// นำเข้า API, Types และ Components
 import { fetchAddresses, fetchOrderSummary } from '../services/payment.service';
 import type { Address, OrderSummaryData } from '../types/payment.types';
+import StepBar from '../components/StepBar';
+import AddressSelect from '../components/AddressSelect';
+import PaymentMethod from '../components/PaymentMethod';
 
 interface PaymentProps {
   onNavigate?: (page: string) => void;
@@ -16,43 +19,8 @@ interface UploadedSlip {
 
 const fmt = (n: number) => n.toLocaleString('th-TH');
 
-function StepBar({ current }: { current: number }) {
-  const steps = [
-    { id: 1, label: 'ที่อยู่จัดส่ง', icon: MapPin },
-    { id: 2, label: 'วิธีชำระเงิน', icon: CreditCard },
-    { id: 3, label: 'ยืนยันคำสั่งซื้อ', icon: FileText },
-  ];
-  return (
-    <nav aria-label="สถานะการสั่งซื้อ" className="flex items-center justify-center gap-0 w-full max-w-lg mx-auto mb-10">
-      {steps.map((step, idx) => {
-        const Icon = step.icon;
-        const done = current > step.id;
-        const active = current === step.id;
-        return (
-          <React.Fragment key={step.id}>
-            <div className="flex flex-col items-center">
-              <div className={`relative w-11 h-11 rounded-full flex items-center justify-center border-2 transition-all duration-500 z-10 
-                ${done ? 'bg-[#990000] border-[#FF0000] shadow-[0_0_14px_rgba(255,0,0,0.5)]' : active ? 'bg-[#2E0505] border-[#FF0000] shadow-[0_0_14px_rgba(255,0,0,0.4)] scale-110' : 'bg-[#0a0a0a] border-[#990000]/30'}`}>
-                {done ? <Check aria-hidden="true" className="w-5 h-5 text-white" /> : <Icon aria-hidden="true" className={`w-5 h-5 ${active ? 'text-[#FF0000]' : 'text-[#F2F4F6]/30'}`} />}
-              </div>
-              <span className={`text-[10px] font-['Kanit'] mt-3 tracking-wider absolute translate-y-12 transition-colors duration-300 w-24 text-center ${active ? 'text-[#FF0000] font-bold' : done ? 'text-[#F2F4F6]/60' : 'text-[#F2F4F6]/20'}`}>
-                {step.label}
-              </span>
-            </div>
-            {idx < steps.length - 1 && (
-              <div className="flex-1 h-0.5 mx-2 relative min-w-[60px] max-w-[100px]" aria-hidden="true">
-                  <div className="absolute inset-0 bg-[#990000]/20 rounded"></div>
-                  <div className={`absolute inset-0 bg-[#FF0000] rounded transition-all duration-700 ease-out ${current > step.id ? 'w-full' : 'w-0'}`}></div>
-              </div>
-            )}
-          </React.Fragment>
-        );
-      })}
-    </nav>
-  );
-}
-
-export default function NexusGearPayment({ onNavigate }: PaymentProps) {
+export default function PaymentPage({ onNavigate }: PaymentProps) {
+  // ─── STATE MANAGEMENT ───
   const [isApiLoading, setIsApiLoading] = useState<boolean>(true);
   const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
   const [orderSummary, setOrderSummary] = useState<OrderSummaryData | null>(null);
@@ -65,6 +33,7 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
   const [loadingAction, setLoadingAction] = useState<boolean>(false);
   const [showSummary, setShowSummary] = useState<boolean>(false);
 
+  // ─── LIFECYCLE ───
   useEffect(() => {
     const loadData = async () => {
       setIsApiLoading(true);
@@ -77,20 +46,18 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
       
       const defaultAddr = addrs.find(a => a.isDefault);
       if (defaultAddr) setSelectedAddr(defaultAddr.id);
-      
       setIsApiLoading(false);
     };
     loadData();
   }, []);
 
+  // ─── LOGIC FUNCTIONS ───
   const goNext = () => { 
     window.scrollTo({ top: 0, behavior: 'smooth' }); 
     setStep((s) => Math.min(3, s + 1)); 
   };
   
-  const goBack = () => {
-    setStep((s) => Math.max(1, s - 1));
-  };
+  const goBack = () => setStep((s) => Math.max(1, s - 1));
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -110,6 +77,7 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
     }, 2000);
   };
 
+  // ─── RENDER STATES ───
   if (isApiLoading || !orderSummary) {
     return (
       <main className="min-h-screen bg-[#000000] flex justify-center items-center">
@@ -120,6 +88,7 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
 
   const grandTotal = orderSummary.subtotal - orderSummary.discount + orderSummary.shipping;
 
+  // ─── MAIN RENDER ───
   return (
     <div className="min-h-screen bg-[#000000] text-[#F2F4F6] font-['Kanit'] relative overflow-x-hidden selection:bg-[#990000] selection:text-white pb-20">
       
@@ -138,10 +107,9 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
       </div>
 
       <div className="relative z-10">
-        
-        {/* แถบนำทางด้านบน */}
+        {/* Navbar */}
         <header className="bg-[#000000]/80 border-b border-[#990000]/30 backdrop-blur-md sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <nav aria-label="เมนูหลัก" className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             <div onClick={() => onNavigate?.('home')} className="flex items-center gap-4 group cursor-pointer" role="button" tabIndex={0} aria-label="กลับไปหน้าหลัก">
               <figure className="relative m-0">
                 <div aria-hidden="true" className="absolute inset-0 bg-[#FF0000]/20 blur-md rounded-full group-hover:bg-[#FF0000]/40 transition duration-300"></div>
@@ -149,16 +117,16 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
               </figure>
               <h1 className="text-2xl font-['Orbitron'] font-black text-[#F2F4F6] tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,1)]">NEXUS GEAR</h1>
             </div>
-            <nav aria-label="เมนูหลัก" className="hidden md:flex items-center gap-8">
+            <div className="hidden md:flex items-center gap-8">
               <button onClick={() => onNavigate?.('home')} className="text-[#F2F4F6]/60 hover:text-[#FF0000] transition font-['Kanit'] text-sm tracking-wide">หน้าหลัก</button>
               <button onClick={() => onNavigate?.('cart')} className="text-[#F2F4F6]/60 hover:text-[#FF0000] transition font-['Kanit'] text-sm tracking-wide flex items-center gap-2"><ShoppingCart aria-hidden="true" className="w-3 h-3" /> ตะกร้าสินค้า</button>
               <button className="text-[#FF0000] font-['Kanit'] text-sm tracking-wide flex items-center gap-2 border-b-2 border-[#FF0000] pb-1" aria-current="page"><CreditCard aria-hidden="true" className="w-4 h-4" /> ชำระเงิน</button>
-            </nav>
-          </div>
+            </div>
+          </nav>
         </header>
 
-        {/* หน้าจอแสดงผลสำเร็จ */}
         {confirmed ? (
+          /* หน้าจอเมื่อสั่งซื้อสำเร็จ */
           <main className="min-h-[80vh] flex items-center justify-center animate-in zoom-in-95 duration-500">
             <article className="max-w-2xl w-full mx-4 px-4 py-16 flex flex-col items-center text-center bg-[#000000]/40 backdrop-blur-xl border border-[#990000]/30 rounded-3xl relative overflow-hidden">
                 <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#FF0000]/10 via-transparent to-transparent opacity-50"></div>
@@ -185,9 +153,8 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
             </article>
           </main>
         ) : (
+          /* หน้าจอชำระเงินปกติ (Checkout) */
           <main className="max-w-5xl mx-auto px-4 py-8">
-            
-            {/* ส่วนหัวของหน้า Checkout */}
             <section aria-labelledby="checkout-heading" className="flex items-center justify-between mb-8">
               <header>
                   <button onClick={() => onNavigate?.('cart')} className="flex items-center gap-2 text-[#F2F4F6]/40 hover:text-[#FF0000] transition text-sm mb-4 group" aria-label="กลับไปหน้าตะกร้าสินค้า">
@@ -200,14 +167,13 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
               </header>
             </section>
 
+            {/* เรียกใช้ Component หลอดสถานะ */}
             <StepBar current={step} />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-12">
-              
-              {/* พื้นที่หลักฝั่งซ้าย */}
               <section className="lg:col-span-2 space-y-6">
                 
-                {/* ─── STEP 1: Address ─── */}
+                {/* STEP 1: Address */}
                 {step === 1 && (
                   <article className="space-y-6 animate-in slide-in-from-left-4 duration-500">
                     <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl relative overflow-hidden">
@@ -217,25 +183,12 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
                         <h3 className="text-xl font-['Kanit'] font-bold">เลือกที่อยู่จัดส่ง</h3>
                       </header>
 
-                      <div className="space-y-4">
-                        {savedAddresses.map((addr) => {
-                          const active = selectedAddr === addr.id;
-                          return (
-                            <button key={addr.id} onClick={() => setSelectedAddr(addr.id)} className={`w-full text-left bg-[#0a0a0a] border rounded-xl p-5 transition-all group relative overflow-hidden ${active ? 'border-[#FF0000] shadow-[0_0_15px_rgba(255,0,0,0.15)] bg-[#2E0505]/20' : 'border-[#990000]/20 hover:border-[#990000]/50 hover:bg-[#2E0505]/10'}`}>
-                              {active && <div aria-hidden="true" className="absolute top-0 left-0 w-1 h-full bg-[#FF0000] shadow-[0_0_10px_#FF0000]"></div>}
-                              <div className="flex items-start justify-between pl-3">
-                                <div>
-                                  <div className="flex items-center gap-3 mb-2"><span className={`font-bold text-lg ${active ? 'text-[#FF0000]' : 'text-[#F2F4F6]'}`}>{addr.label}</span>{addr.isDefault && <span className="bg-[#FF0000]/15 text-[#FF0000] text-[9px] px-2 py-0.5 rounded border border-[#FF0000]/30 font-['Kanit'] tracking-wider">ค่าเริ่มต้น</span>}</div>
-                                  <p className="text-sm text-[#F2F4F6]/80 mb-1 font-bold">{addr.name}</p>
-                                  <p className="text-sm text-[#F2F4F6]/60 leading-relaxed">{addr.detail}</p>
-                                  <p className="text-xs text-[#F2F4F6]/40 mt-2 flex items-center gap-1"><span className="text-[#990000]">เบอร์โทร:</span> {addr.phone}</p>
-                                </div>
-                                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${active ? 'border-[#FF0000] bg-[#990000]' : 'border-[#990000]/30'}`}>{active && <Check aria-hidden="true" className="w-3 h-3 text-white" />}</div>
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
+                      {/* เรียกใช้ Component เลือกที่อยู่ */}
+                      <AddressSelect 
+                        addresses={savedAddresses} 
+                        selectedAddr={selectedAddr} 
+                        onSelect={setSelectedAddr} 
+                      />
                     </div>
 
                     <button onClick={goNext} disabled={!selectedAddr} className="w-full bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] disabled:opacity-50 disabled:cursor-not-allowed text-white py-4 rounded-xl font-['Kanit'] font-bold tracking-wide text-sm transition-all shadow-[0_0_20px_rgba(153,0,0,0.4)] hover:shadow-[0_0_30px_rgba(255,0,0,0.6)] flex items-center justify-center gap-3 active:scale-95 group">
@@ -244,7 +197,7 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
                   </article>
                 )}
 
-                {/* ─── STEP 2: Payment Method ─── */}
+                {/* STEP 2: Payment Method */}
                 {step === 2 && (
                   <article className="space-y-6 animate-in slide-in-from-right-4 duration-500">
                     <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl relative overflow-hidden">
@@ -254,55 +207,26 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
                         <h3 className="text-xl font-['Kanit'] font-bold">เลือกวิธีชำระเงิน</h3>
                       </header>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {[{ id: 'qr', title: 'สแกนคิวอาร์โค้ด', sub: 'รองรับทุกแอปธนาคาร', emoji: '📱' }, { id: 'transfer', title: 'โอนเงินผ่านธนาคาร', sub: 'แนบสลิปเพื่อยืนยัน', emoji: '🏦' }].map((m) => {
-                          const active = payMethod === m.id;
-                          return (
-                            <button key={m.id} onClick={() => setPayMethod(m.id)} className={`relative text-left bg-[#0a0a0a] border rounded-2xl p-5 transition-all overflow-hidden group ${active ? 'border-[#FF0000] shadow-[0_0_15px_rgba(255,0,0,0.2)] bg-[#2E0505]/20' : 'border-[#990000]/20 hover:border-[#990000]/50 hover:bg-[#2E0505]/10'}`}>
-                              {active && <div aria-hidden="true" className="absolute top-0 left-0 w-1 h-full bg-[#FF0000] shadow-[0_0_10px_#FF0000]"></div>}
-                              <div className="flex items-start gap-4 pl-2">
-                                <span className="text-3xl group-hover:scale-110 transition-transform">{m.emoji}</span>
-                                <div className="flex-1"><p className={`font-bold font-['Kanit'] tracking-wide ${active ? 'text-[#FF0000]' : 'text-[#F2F4F6]'}`}>{m.title}</p><p className="text-xs text-[#F2F4F6]/40 mt-1 font-light">{m.sub}</p></div>
-                                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${active ? 'border-[#FF0000] bg-[#990000]' : 'border-[#990000]/30'}`}>{active && <Check aria-hidden="true" className="w-3 h-3 text-white" />}</div>
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      {payMethod === 'qr' && (
-                        <div className="mt-6 bg-[#0a0a0a] border border-[#990000]/20 rounded-xl p-8 flex flex-col items-center animate-in zoom-in-95">
-                          <figure className="w-56 h-56 bg-white rounded-xl flex items-center justify-center border-4 border-[#990000]/30 relative overflow-hidden shadow-[0_0_20px_rgba(255,255,255,0.1)] m-0">
-                            <div className="absolute top-0 left-0 w-full h-1 bg-[#FF0000] shadow-[0_0_10px_#FF0000] animate-[scan_2s_ease-in-out_infinite]"></div>
-                            <div className="text-center"><p className="text-[#000000] font-['Orbitron'] text-sm font-bold mb-2">SCAN TO PAY</p><div className="grid grid-cols-8 gap-1 mt-2 mx-auto opacity-80" style={{ width: 100 }}>{Array.from({ length: 64 }, (_, i) => (<div key={i} className={`w-2.5 h-2.5 rounded-[1px] ${Math.random() > 0.4 ? 'bg-[#000000]' : 'bg-transparent'}`} />))}</div></div>
-                          </figure>
-                          <p className="text-[#F2F4F6]/50 text-sm mt-6 font-light">เปิดแอปพลิเคชันธนาคารเพื่อสแกน QR Code</p>
-                          <p className="text-[#FF0000] font-['Orbitron'] font-bold text-2xl mt-2 drop-shadow-[0_0_5px_rgba(255,0,0,0.5)]">฿{fmt(grandTotal)}</p>
-                        </div>
-                      )}
-
-                      {payMethod === 'transfer' && (
-                        <div className="mt-6 bg-[#0a0a0a] border border-[#990000]/20 rounded-xl p-6 space-y-4 animate-in slide-in-from-top-2">
-                          <p className="text-sm text-[#F2F4F6]/60 font-['Kanit'] tracking-wide">บัญชีธนาคารสำหรับโอนเงิน</p>
-                          {[{ bank: 'KBANK (กสิกรไทย)', acct: '123-4-56789-0', name: 'Nexus Gear Co., Ltd.', color: 'text-green-500' }, { bank: 'SCB (ไทยพาณิชย์)', acct: '987-6-54321-0', name: 'Nexus Gear Co., Ltd.', color: 'text-purple-500' }].map((b, i) => (
-                            <div key={i} className="border border-[#990000]/15 rounded-lg p-4 flex items-center justify-between hover:bg-[#2E0505]/20 transition">
-                              <div><p className={`text-xs font-['Kanit'] font-bold ${b.color} mb-1`}>{b.bank}</p><p className="text-[#F2F4F6] font-bold tracking-widest text-lg font-['Orbitron']">{b.acct}</p><p className="text-[#F2F4F6]/40 text-xs">{b.name}</p></div>
-                              <button className="text-[#F2F4F6]/40 hover:text-[#FF0000] text-xs border border-[#F2F4F6]/20 hover:border-[#FF0000] px-3 py-1 rounded transition">คัดลอก</button>
-                            </div>
-                          ))}
-                          <div className="bg-[#2E0505] rounded-lg p-4 text-center mt-4 border border-[#FF0000]/20"><p className="text-[#F2F4F6]/60 text-xs mb-1">ยอดชำระทั้งหมด</p><p className="text-[#FF0000] font-bold text-2xl font-['Orbitron']">฿{fmt(grandTotal)}</p></div>
-                        </div>
-                      )}
+                      {/* เรียกใช้ Component เลือกวิธีจ่ายเงิน */}
+                      <PaymentMethod 
+                        payMethod={payMethod} 
+                        onSelectMethod={setPayMethod} 
+                        grandTotal={grandTotal} 
+                      />
                     </div>
 
                     <footer className="flex gap-4 pt-4">
-                      <button onClick={goBack} className="flex-1 border border-[#990000]/50 text-[#F2F4F6]/60 hover:text-[#FF0000] hover:border-[#FF0000] py-4 rounded-xl font-['Kanit'] text-xs font-bold tracking-wide transition flex items-center justify-center gap-2 group"><ArrowLeft aria-hidden="true" className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> ย้อนกลับ</button>
-                      <button onClick={goNext} disabled={!payMethod} className="flex-[2] bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] disabled:opacity-30 disabled:cursor-not-allowed text-white py-4 rounded-xl font-['Kanit'] font-bold tracking-wide text-sm transition-all shadow-[0_0_18px_rgba(153,0,0,0.5)] flex items-center justify-center gap-3 active:scale-95 group">ขั้นตอนต่อไป <ArrowRight aria-hidden="true" className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></button>
+                      <button onClick={goBack} className="flex-1 border border-[#990000]/50 text-[#F2F4F6]/60 hover:text-[#FF0000] hover:border-[#FF0000] py-4 rounded-xl font-['Kanit'] text-xs font-bold tracking-wide transition flex items-center justify-center gap-2 group">
+                        <ArrowLeft aria-hidden="true" className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> ย้อนกลับ
+                      </button>
+                      <button onClick={goNext} disabled={!payMethod} className="flex-[2] bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] disabled:opacity-30 disabled:cursor-not-allowed text-white py-4 rounded-xl font-['Kanit'] font-bold tracking-wide text-sm transition-all shadow-[0_0_18px_rgba(153,0,0,0.5)] flex items-center justify-center gap-3 active:scale-95 group">
+                        ขั้นตอนต่อไป <ArrowRight aria-hidden="true" className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                      </button>
                     </footer>
                   </article>
                 )}
 
-                {/* ─── STEP 3: Confirm ─── */}
+                {/* STEP 3: Confirm */}
                 {step === 3 && (
                   <article className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
                     <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl relative overflow-hidden">
@@ -331,6 +255,7 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
                         </div>
                       </div>
 
+                      {/* ส่วนแนบสลิป (แสดงเฉพาะเมื่อเลือกโอนเงิน) */}
                       {payMethod === 'transfer' && (
                         <div className="bg-[#0a0a0a] border border-[#990000]/20 rounded-xl p-6 relative overflow-hidden">
                           <div aria-hidden="true" className="absolute top-0 left-0 w-1 h-full bg-[#FF0000]"></div>
@@ -383,7 +308,6 @@ export default function NexusGearPayment({ onNavigate }: PaymentProps) {
                     </footer>
                   </article>
                 )}
-
               </section>
 
               {/* แถบสรุปยอดด้านขวา */}

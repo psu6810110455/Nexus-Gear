@@ -1,4 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
+import { Address } from '../profile/entities/address.entity';
+import { OneToMany } from 'typeorm';
 
 @Entity('users')
 export class User {
@@ -19,4 +21,7 @@ export class User {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @OneToMany(() => Address, (address) => address.user, { cascade: true })
+  addresses: Address[];
 }

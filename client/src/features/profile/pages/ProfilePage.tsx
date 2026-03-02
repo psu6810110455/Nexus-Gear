@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LogOut, Trash2 } from 'lucide-react';
 
 // นำเข้า Components หลัก
@@ -16,16 +16,43 @@ import { SuccessModal } from '../components/modals/SuccessModal';
 import { StatusModal } from '../components/modals/StatusModal';
 
 // นำเข้าข้อมูลและ Type
-import { initialUserData, initialAddresses, mockOrders } from '../data/mockData';
+import { initialUserData, mockOrders } from '../data/mockData';
 import type { Order } from '../types/profile.types';
+
+// นำเข้า API Service
+import * as profileApi from '../services/profile.service';
 
 export const ProfilePage = () => {
   // ─── 1. State สำหรับข้อมูลหลัก ───
   const [activeTab, setActiveTab] = useState('orders');
   const [userData, setUserData] = useState(initialUserData);
-  const [addresses, setAddresses] = useState(initialAddresses);
+  const [addresses, setAddresses] = useState<any[]>([]); // ให้ค่าเริ่มต้นเป็น Array ว่างรอรับข้อมูลจาก API
   const [orders] = useState(mockOrders);
   const [ratings, setRatings] = useState<Record<string, number>>({});
+
+  // 1.5 ใช้ useEffect โหลดข้อมูลจริงจาก Database
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // โหลดข้อมูลส่วนตัว
+        const profile = await profileApi.fetchProfile();
+        setUserData(prev => ({ 
+          ...prev, 
+          name: profile.name, 
+          email: profile.email, 
+          phone: profile.phone || '' 
+        }));
+
+        // โหลดข้อมูลที่อยู่
+        const addrs = await profileApi.fetchAddresses();
+        setAddresses(addrs);
+      } catch (error) {
+        console.error('ไม่สามารถดึงข้อมูลได้:', error);
+      }
+    };
+
+    loadData();
+  }, []);
 
   // ─── 2. State สำหรับควบคุมการเปิด/ปิด Modals ───
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -48,6 +75,16 @@ export const ProfilePage = () => {
     setShowSuccessModal(true);
   };
 
+  // เพิ่มฟังก์ชันบันทึกข้อมูลส่วนตัว (ชื่อ, เบอร์โทร) ลง Database
+  const saveProfileInfo = async () => {
+    try {
+      await profileApi.updateProfile({ name: userData.name, phone: userData.phone });
+      triggerSuccess('SAVED!', 'อัปเดตข้อมูลส่วนตัวลงฐานข้อมูลเรียบร้อยแล้ว');
+    } catch (error) {
+      console.error('อัปเดตข้อมูลล้มเหลว:', error);
+    }
+  };
+
   const openAddAddress = () => {
     setEditingAddressId(null);
     setAddressForm({ label: '', address: '', isDefault: false });
@@ -60,21 +97,26 @@ export const ProfilePage = () => {
     setShowAddressModal(true);
   };
 
-  const saveAddress = () => {
-    if (editingAddressId) {
-      setAddresses(addresses.map(a => 
-        a.id === editingAddressId ? { ...a, ...addressForm } : (addressForm.isDefault ? { ...a, isDefault: false } : a)
-      ));
-    } else {
-      const newAddr = { id: Date.now(), ...addressForm };
-      if (addressForm.isDefault) {
-         setAddresses(addresses.map(a => ({...a, isDefault: false})).concat(newAddr));
+  // อัปเดตฟังก์ชันบันทึกที่อยู่ให้ใช้ API
+  const saveAddress = async () => {
+    try {
+      if (editingAddressId) {
+        // อัปเดตที่อยู่เดิม
+        await profileApi.updateAddress(editingAddressId, addressForm);
       } else {
-         setAddresses([...addresses, newAddr]);
+        // เพิ่มที่อยู่ใหม่
+        await profileApi.createAddress(addressForm);
       }
+      
+      // ดึงข้อมูลที่อยู่ล่าสุดจาก Database มาแสดงใหม่
+      const addrs = await profileApi.fetchAddresses();
+      setAddresses(addrs);
+      
+      setShowAddressModal(false);
+      triggerSuccess('SAVED!', 'บันทึกที่อยู่เรียบร้อยแล้ว');
+    } catch (error) {
+      console.error('บันทึกที่อยู่ล้มเหลว:', error);
     }
-    setShowAddressModal(false);
-    triggerSuccess('SAVED!', 'บันทึกที่อยู่เรียบร้อยแล้ว');
   };
 
   const confirmDeleteAddress = (id: number) => {
@@ -82,10 +124,20 @@ export const ProfilePage = () => {
     setShowDeleteAddrModal(true);
   };
 
-  const deleteAddress = () => {
-    setAddresses(addresses.filter(a => a.id !== addrToDelete));
-    setShowDeleteAddrModal(false);
-    triggerSuccess('DELETED!', 'ลบที่อยู่เรียบร้อยแล้ว');
+  // อัปเดตฟังก์ชันลบที่อยู่ให้ใช้ API
+  const deleteAddress = async () => {
+    if (!addrToDelete) return;
+    try {
+      await profileApi.deleteAddress(addrToDelete);
+      
+      // เอาที่อยู่ที่ลบออกจากหน้าจอ
+      setAddresses(addresses.filter(a => a.id !== addrToDelete));
+      
+      setShowDeleteAddrModal(false);
+      triggerSuccess('DELETED!', 'ลบที่อยู่เรียบร้อยแล้ว');
+    } catch (error) {
+      console.error('ลบที่อยู่ล้มเหลว:', error);
+    }
   };
 
   const handleUpdatePassword = () => {
@@ -128,8 +180,6 @@ export const ProfilePage = () => {
       </div>
 
       <div className="relative z-10">
-        {/* ลบ <header> ที่ซ้อนกันออกไปแล้ว */}
-
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             
@@ -149,6 +199,7 @@ export const ProfilePage = () => {
                   userData={userData} 
                   setUserData={setUserData} 
                   onOpenPasswordModal={() => setShowPasswordModal(true)} 
+                  onSave={saveProfileInfo} // ส่งฟังก์ชันไปให้ปุ่มบันทึกทำงาน
                 />
               )}
               {activeTab === 'addresses' && (
@@ -211,7 +262,6 @@ export const ProfilePage = () => {
         detail={successMessage.detail} 
       />
 
-      {/* Reuse ConfirmModal สำหรับออกจากระบบ */}
       <ConfirmModal 
         isOpen={showLogoutModal} 
         onClose={() => setShowLogoutModal(false)} 
@@ -221,7 +271,6 @@ export const ProfilePage = () => {
         icon={<LogOut className="w-8 h-8 text-[#FF0000]" />} 
       />
 
-      {/* Reuse ConfirmModal สำหรับลบที่อยู่ */}
       <ConfirmModal 
         isOpen={showDeleteAddrModal} 
         onClose={() => setShowDeleteAddrModal(false)} 

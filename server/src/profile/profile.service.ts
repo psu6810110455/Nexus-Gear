@@ -1,0 +1,64 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '../users/user.entity';
+import { Address } from './entities/address.entity';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { CreateAddressDto, UpdateAddressDto } from './dto/address.dto';
+
+@Injectable()
+export class ProfileService {
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    @InjectRepository(Address)
+    private readonly addressRepository: Repository<Address>,
+  ) {}
+
+  // 1. ดึงข้อมูลส่วนตัว (ไม่ดึงรหัสผ่านออกมา)
+  async getProfile(userId: number) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      select: ['id', 'name', 'email', 'phone'], 
+    });
+    if (!user) throw new NotFoundException('ไม่พบข้อมูลผู้ใช้');
+    return user;
+  }
+
+  // 2. อัปเดตข้อมูลส่วนตัว
+  async updateProfile(userId: number, dto: UpdateProfileDto) {
+    await this.userRepository.update(userId, dto);
+    return this.getProfile(userId);
+  }
+
+  // 3. ดึงที่อยู่ทั้งหมดของผู้ใช้
+  async getAddresses(userId: number) {
+    return this.addressRepository.find({ where: { userId }, order: { id: 'DESC' } });
+  }
+
+  // 4. เพิ่มที่อยู่ใหม่
+  async createAddress(userId: number, dto: CreateAddressDto) {
+    // ถ้าตั้งเป็นค่าเริ่มต้น (Default) ต้องไปปลด Default ของที่อยู่อื่นออกก่อน
+    if (dto.isDefault) {
+      await this.addressRepository.update({ userId }, { isDefault: false });
+    }
+    const newAddress = this.addressRepository.create({ ...dto, userId });
+    return this.addressRepository.save(newAddress);
+  }
+
+  // 5. อัปเดตที่อยู่
+  async updateAddress(userId: number, addressId: number, dto: UpdateAddressDto) {
+    if (dto.isDefault) {
+      await this.addressRepository.update({ userId }, { isDefault: false });
+    }
+    await this.addressRepository.update({ id: addressId, userId }, dto);
+    return this.addressRepository.findOne({ where: { id: addressId } });
+  }
+
+  // 6. ลบที่อยู่
+  async deleteAddress(userId: number, addressId: number) {
+    const result = await this.addressRepository.delete({ id: addressId, userId });
+    if (result.affected === 0) throw new NotFoundException('ไม่พบที่อยู่ที่ต้องการลบ');
+    return { message: 'ลบที่อยู่สำเร็จ' };
+  }
+}

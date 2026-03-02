@@ -19,8 +19,12 @@ export class User {
   @Column({ default: 'customer' })
   role: string; // 'customer' | 'admin'
 
+  @Column({ nullable: true })
+  phone: string;
+
   @CreateDateColumn()
   createdAt: Date;
+  
 
   @OneToMany(() => Address, (address) => address.user, { cascade: true })
   addresses: Address[];

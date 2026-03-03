@@ -1,4 +1,5 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, Req, Res } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 
@@ -10,5 +11,28 @@ export class AuthController {
   @Post('login')
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
+  }
+
+  // ---------------------------------------------------------
+  // 🟢 เส้นทางสำหรับ Google OAuth
+  // ---------------------------------------------------------
+
+  // 1. รับการกดปุ่มจากหน้าเว็บ (GET /auth/google) แล้วพาไปหน้าล็อกอิน Google
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleAuth(@Req() req) {
+    // ปล่อยว่างไว้ได้เลยครับ เดี๋ยว Passport.js จะทำหน้าที่ Redirect ให้เอง
+  }
+
+  // 2. รับข้อมูลกลับมาจาก Google (GET /auth/google/callback)
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleAuthRedirect(@Req() req, @Res() res) {
+    // ส่งข้อมูล User ที่ได้จาก Google ไปให้ AuthService สร้าง Token หรือ User ใหม่
+    const result = await this.authService.googleLogin(req.user);
+    
+    // พาสร้าง Token เสร็จ ให้เด้งกลับไปที่หน้า React ของเรา พร้อมแนบ Token ไปด้วย
+    const frontendUrl = `http://localhost:5173/login-success?token=${result.access_token}`;
+    return res.redirect(frontendUrl);
   }
 }

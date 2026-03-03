@@ -9,6 +9,7 @@ import Login from './features/auth/pages/Login';
 import AdminPage from './features/admin/pages/AdminPage';
 import './App.css';
 import { ProfilePage } from './features/profile/pages/ProfilePage';
+import LoginSuccess from './features/auth/pages/LoginSuccess';
 
 function AppContent() {
   const location = useLocation();
@@ -26,7 +27,9 @@ function AppContent() {
         <Route path="/login"         element={<Login />} />
         <Route path="/admin"         element={<AdminPage />} />
         <Route path="/profile"       element={<ProfilePage />} />
+        <Route path="/login-success" element={<LoginSuccess />} />
         <Route path="*"              element={<Navigate to="/" replace />} />
+
       </Routes>
     </div>
   );

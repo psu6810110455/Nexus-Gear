@@ -3,6 +3,8 @@ import { ShoppingCart, ArrowLeft, User, Square, CheckSquare, Store, Trash2 } fro
 
 // นำเข้า API และ Types (✨ นำเข้าฟังก์ชัน update และ delete เพิ่มเติม)
 import { fetchCartItems, validateCoupon, updateCartQuantity, removeFromCart } from '../services/cart.service';
+// ✨ นำเข้าฟังก์ชันสั่งซื้อจาก order.service
+import { checkout } from '../services/order.service';
 import type { CartItem as CartItemType, CouponData } from '../types/cart.types';
 
 // นำเข้า Components ที่เราเพิ่งหั่นไว้
@@ -118,6 +120,35 @@ export default function CartPage({ onNavigate }: CartProps) {
     setCouponSuccess('');
   };
 
+  // ✨ ฟังก์ชันใหม่: จัดการการสั่งซื้อ (Checkout)
+  const handleCheckout = async () => {
+    if (selectedItems.length === 0) {
+      alert("กรุณาเลือกสินค้าอย่างน้อย 1 ชิ้นเพื่อดำเนินการต่อ");
+      return;
+    }
+
+    try {
+      setIsLoading(true); // แสดงสถานะกำลังโหลดระหว่างยิง API
+
+      // เรียกใช้ Service สั่งซื้อ (ส่งค่าที่อยู่และวิธีจ่ายเงินจำลองไปก่อน)
+      const result = await checkout(
+        "123 อ.หาดใหญ่ จ.สงขลา 90110", 
+        "promptpay"
+      );
+
+      if (result.success) {
+        alert(`🎉 ${result.message}\nเลขที่บิลของคุณคือ: ${result.orderNumber}`);
+        // เมื่อสั่งซื้อสำเร็จ ตะกร้าในหลังบ้านจะถูกล้าง เราจึงควรกลับหน้าหลัก
+        onNavigate?.('home'); 
+      }
+    } catch (error) {
+      alert("❌ ไม่สามารถดำเนินการสั่งซื้อได้ในขณะนี้");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // ─── 4. CALCULATIONS ───
   const selectedCartItems = cartItems.filter(i => selectedItems.includes(i.id));
   const subtotal = selectedCartItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
@@ -136,7 +167,7 @@ export default function CartPage({ onNavigate }: CartProps) {
   if (isLoading) {
     return (
       <main className="min-h-screen bg-[#000000] flex justify-center items-center">
-        <p className="text-[#FF0000] font-['Orbitron'] animate-pulse text-2xl tracking-widest">กำลังโหลดตะกร้าสินค้า...</p>
+        <p className="text-[#FF0000] font-['Orbitron'] animate-pulse text-2xl tracking-widest">กำลังดำเนินการ...</p>
       </main>
     );
   }
@@ -201,7 +232,7 @@ export default function CartPage({ onNavigate }: CartProps) {
           </nav>
         </header>
 
-        {/* ✨ ย้าย Page Header เข้ามาไว้ใน <div className="relative z-10"> ให้ถูกต้อง */}
+        {/* Page Header */}
         <section aria-labelledby="cart-heading" className="max-w-7xl mx-auto px-4 pt-8 pb-4">
           <button onClick={() => onNavigate?.('products')} className="flex items-center gap-2 text-[#F2F4F6]/40 hover:text-[#FF0000] transition text-sm mb-6 group" aria-label="กลับไปหน้าสินค้า">
             <ArrowLeft aria-hidden="true" className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> กลับไปคลังสินค้า
@@ -239,7 +270,6 @@ export default function CartPage({ onNavigate }: CartProps) {
             </header>
 
             <div className="space-y-4">
-              {/* เรียกใช้ Component ย่อย CartItem ที่เราสร้างไว้ */}
               {cartItems.map((item) => (
                 <CartItem 
                   key={item.id}
@@ -270,7 +300,8 @@ export default function CartPage({ onNavigate }: CartProps) {
             couponSuccess={couponSuccess}
             showCouponInput={showCouponInput}
             setShowCouponInput={setShowCouponInput}
-            onCheckout={() => onNavigate?.('payment')}
+            // ✨ เชื่อมฟังก์ชัน handleCheckout เข้าที่นี่
+            onCheckout={handleCheckout} 
           />
         </main>
       </div>

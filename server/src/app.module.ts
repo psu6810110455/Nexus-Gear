@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { CartModule } from './cart/cart.module';
 import { DatabaseService } from './database/database.service';
 import { CategoriesModule } from './categories/categories.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Global()
 @Module({
@@ -27,6 +28,7 @@ import { CategoriesModule } from './categories/categories.module';
     AuthModule,
     CartModule,
     CategoriesModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [

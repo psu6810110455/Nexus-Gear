@@ -78,7 +78,6 @@ const Login = () => {
           <form onSubmit={handleSubmit} noValidate>
             {/* Email */}
             <div style={{ marginBottom: '1.5rem' }}>
-              {/* ✅ เพิ่ม textAlign: 'left' ตรงนี้ */}
               <label htmlFor="email" style={{ display: 'block', color: '#fff', marginBottom: '0.5rem', textAlign: 'left' }}>อีเมล</label>
               <div className="auth-input-wrap">
                 <input
@@ -95,7 +94,6 @@ const Login = () => {
 
             {/* Password */}
             <div style={{ marginBottom: '1.25rem' }}>
-              {/* ✅ เพิ่ม textAlign: 'left' ตรงนี้ */}
               <label htmlFor="password" style={{ display: 'block', color: '#fff', marginBottom: '0.5rem', textAlign: 'left' }}>รหัสผ่าน</label>
               <div className="auth-input-wrap">
                 <input
@@ -108,7 +106,15 @@ const Login = () => {
                   required
                 />
                 <span style={{ display: 'flex', gap: '6px', alignItems: 'center', color: '#888' }}>
-                  <IconInfo />
+                  
+                  {/* ✅ เพิ่ม title (Tooltip) และเปลี่ยน cursor เป็น help เมื่อวางเมาส์ */}
+                  <span 
+                    title="รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร ประกอบด้วยตัวอักษรภาษาอังกฤษและตัวเลข" 
+                    style={{ cursor: 'help', display: 'flex', alignItems: 'center' }}
+                  >
+                    <IconInfo />
+                  </span>
+                  
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
@@ -139,7 +145,7 @@ const Login = () => {
             </button>
           </form>
 
-          {/* ✅ ส่วนที่เพิ่มใหม่: ปุ่ม Login with Google */}
+          {/* ส่วนที่เพิ่มใหม่: ปุ่ม Login with Google */}
           <div style={{ display: 'flex', alignItems: 'center', margin: '1.5rem 0', color: '#555' }}>
             <hr style={{ flex: 1, border: 'none', borderTop: '1px solid #333' }} />
             <span style={{ padding: '0 10px', fontSize: '0.9rem' }}>หรือ</span>
@@ -159,7 +165,6 @@ const Login = () => {
           >
             <IconGoogle /> ล็อกอินด้วย Google
           </button>
-          {/* ✅ จบส่วนที่เพิ่มใหม่ */}
 
           <p style={{ textAlign: 'center', marginTop: '1.5rem', color: '#fff' }}>
             ยังไม่มีบัญชี?{' '}

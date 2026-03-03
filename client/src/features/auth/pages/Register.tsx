@@ -30,7 +30,6 @@ interface PasswordFieldProps {
 }
 const PasswordField = ({ id, label, value, show, onChange, onToggle }: PasswordFieldProps) => (
   <div style={{ marginBottom: '1.75rem' }}>
-    {/* ✅ เพิ่ม textAlign: 'left' ตรงนี้ */}
     <label htmlFor={id} style={{ display: 'block', color: '#fff', marginBottom: '0.625rem', textAlign: 'left' }}>{label}</label>
     <div className="auth-input-wrap">
       <input
@@ -43,7 +42,13 @@ const PasswordField = ({ id, label, value, show, onChange, onToggle }: PasswordF
         required
       />
       <span style={{ display: 'flex', gap: '6px', alignItems: 'center', color: '#888' }}>
-        <IconInfo />
+        {/* ✅ เพิ่ม title (Tooltip) และเปลี่ยน cursor เป็น help เมื่อวางเมาส์ */}
+        <span 
+          title="รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร ประกอบด้วยตัวอักษรภาษาอังกฤษและตัวเลข" 
+          style={{ cursor: 'help', display: 'flex', alignItems: 'center' }}
+        >
+          <IconInfo />
+        </span>
         <button
           type="button"
           onClick={onToggle}
@@ -110,7 +115,6 @@ const Register = () => {
           <form onSubmit={handleSubmit} noValidate>
             {/* ชื่อผู้ใช้ */}
             <div style={{ marginBottom: '1.75rem' }}>
-              {/* ✅ เพิ่ม textAlign: 'left' ตรงนี้ */}
               <label htmlFor="username" style={{ display: 'block', color: '#fff', marginBottom: '0.625rem', textAlign: 'left' }}>ชื่อผู้ใช้</label>
               <div className="auth-input-wrap">
                 <input id="username" type="text" placeholder="ชื่อผู้ใช้" className="auth-input" value={username} onChange={(e) => setUsername(e.target.value)} required />
@@ -119,7 +123,6 @@ const Register = () => {
 
             {/* อีเมล */}
             <div style={{ marginBottom: '1.75rem' }}>
-              {/* ✅ เพิ่ม textAlign: 'left' ตรงนี้ */}
               <label htmlFor="reg-email" style={{ display: 'block', color: '#fff', marginBottom: '0.625rem', textAlign: 'left' }}>อีเมล</label>
               <div className="auth-input-wrap">
                 <input id="reg-email" type="email" placeholder="ที่อยู่อีเมล" className="auth-input" value={email} onChange={(e) => setEmail(e.target.value)} required />

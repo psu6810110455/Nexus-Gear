@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Delete, Param } from '@nestjs/common'; // ✅ เพิ่ม Delete, Param
+import { Controller, Post, Body, Get, Delete, Param, Patch } from '@nestjs/common'; // ✅ เพิ่ม Patch ตรงนี้
 import { CartService } from './cart.service';
 
 @Controller('cart')
@@ -19,11 +19,20 @@ export class CartController {
     return this.cartService.getCart(userId);
   }
 
-  // ✅ 3. ลบสินค้าออกจากตะกร้า (เพิ่มใหม่)
-  @Delete(':itemId') // รับค่า itemId จาก URL เช่น /cart/5
+  // ✅ 3. ลบสินค้าออกจากตะกร้า
+  @Delete(':itemId')
   async removeFromCart(@Param('itemId') itemId: string) {
     const userId = 1;
-    // แปลง itemId เป็นตัวเลขก่อนส่งไปให้ Service
     return this.cartService.removeFromCart(userId, Number(itemId));
+  }
+
+  // ✅ 4. อัปเดตจำนวนสินค้า (สำหรับปุ่ม + / - ในหน้าเว็บ)
+  @Patch(':itemId')
+  async updateQuantity(
+    @Param('itemId') itemId: string, 
+    @Body('quantity') quantity: number
+  ) {
+    const userId = 1;
+    return this.cartService.updateQuantity(userId, Number(itemId), quantity);
   }
 }

@@ -53,14 +53,23 @@ export class CartService {
     return this.db.query(sql, [userId]);
   }
 
-  // ✅ ฟังก์ชันที่ 3: ลบสินค้าออกจากตะกร้า (removeFromCart) -- [เพิ่มใหม่ตรงนี้ครับ]
+  // ✅ ฟังก์ชันที่ 3: ลบสินค้าออกจากตะกร้า (removeFromCart)
   async removeFromCart(userId: number, cartItemId: number) {
     // ลบเฉพาะรายการที่เป็นของ User คนนี้เท่านั้น (เพื่อความปลอดภัย)
-    // ถ้าคนอื่นพยายามลบของคนอื่น มันจะหาไม่เจอและไม่ลบอะไร
     await this.db.query(
       'DELETE FROM cart_items WHERE id = ? AND user_id = ?',
       [cartItemId, userId],
     );
     return { message: 'ลบสินค้าออกจากตะกร้าเรียบร้อย' };
+  }
+
+  // ✅ ฟังก์ชันที่ 4: อัปเดตจำนวนสินค้า (updateQuantity) -- [✨ เพิ่มใหม่ตรงนี้ครับ ✨]
+  async updateQuantity(userId: number, cartItemId: number, quantity: number) {
+    // อัปเดตจำนวน (quantity) โดยอ้างอิงจาก ID ของตะกร้า และเช็คความปลอดภัยด้วย User ID
+    await this.db.query(
+      'UPDATE cart_items SET quantity = ? WHERE id = ? AND user_id = ?',
+      [quantity, cartItemId, userId],
+    );
+    return { message: 'อัปเดตจำนวนสินค้าเรียบร้อย' };
   }
 }

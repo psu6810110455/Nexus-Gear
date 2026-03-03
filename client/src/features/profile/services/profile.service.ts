@@ -74,3 +74,23 @@ export const updateAddress = async (id: number, data: { label?: string; address?
   if (!res.ok) throw new Error('Failed to update address');
   return res.json();
 };
+
+// ✅ 7. เพิ่มฟังก์ชันสำหรับเปลี่ยนรหัสผ่าน (Step 2)
+export const changePassword = async (data: { currentPassword: string; newPassword: string }) => {
+  const res = await fetch(`${API_URL}/change-password`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(), // แนบ Token ไปยืนยันตัวตนด้วย
+    body: JSON.stringify(data),
+  });
+
+  // ถ้า Backend ส่ง Error กลับมา (เช่น รหัสผ่านผิด, สั้นไป) ให้ดึงข้อความออกมาโชว์
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const errorMessage = Array.isArray(errorData.message)
+      ? errorData.message.join('\n') // ถ้ามีหลาย Error ให้ขึ้นบรรทัดใหม่
+      : errorData.message || 'ไม่สามารถเปลี่ยนรหัสผ่านได้';
+    throw new Error(errorMessage);
+  }
+
+  return res.json(); // ถ้าผ่านฉลุย ส่งข้อความ "อัปเดตรหัสผ่านสำเร็จเรียบร้อย" กลับไป
+};

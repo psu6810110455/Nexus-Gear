@@ -2,13 +2,13 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from '@nestjs/
 import { ProfileService } from './profile.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CreateAddressDto, UpdateAddressDto } from './dto/address.dto';
+import { ChangePasswordDto } from './dto/change-password.dto'; // ✅ นำเข้า DTO ถูกต้องแล้ว
 
 @Controller('profile')
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
   // 💡 ฟังก์ชันจำลองการดึง User ID (ของจริงจะดึงจาก Token ที่ล็อกอินมา)
-  // สมมติว่าตอนนี้ใช้ User ID = 1 ไปก่อน เพื่อให้คุณทดสอบ API ได้เลย
   private getUserId(req: any): number {
     return req.user?.id || 1; 
   }
@@ -21,6 +21,12 @@ export class ProfileController {
   @Patch()
   updateProfile(@Req() req: any, @Body() dto: UpdateProfileDto) {
     return this.profileService.updateProfile(this.getUserId(req), dto);
+  }
+
+  // ✅ เพิ่ม Endpoint สำหรับรับคำขอ "เปลี่ยนรหัสผ่าน"
+  @Patch('change-password')
+  changePassword(@Req() req: any, @Body() dto: ChangePasswordDto) {
+    return this.profileService.changePassword(this.getUserId(req), dto);
   }
 
   @Get('addresses')

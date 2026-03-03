@@ -1,16 +1,20 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UseGuards } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CreateAddressDto, UpdateAddressDto } from './dto/address.dto';
-import { ChangePasswordDto } from './dto/change-password.dto'; // ✅ นำเข้า DTO ถูกต้องแล้ว
+import { ChangePasswordDto } from './dto/change-password.dto'; 
+// ✅ 1. นำเข้า UseGuards และ JwtAuthGuard 
+import { JwtAuthGuard } from '../auth/jwt-auth.guard'; // ⚠️ หมายเหตุ: เช็ก Path โฟลเดอร์ auth ของคุณให้ตรงด้วยนะครับ
 
 @Controller('profile')
+@UseGuards(JwtAuthGuard) // ✅ 2. ติดตั้งยาม บังคับว่าต้องมี Token ถึงจะเข้ามาใช้งานได้
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
-  // 💡 ฟังก์ชันจำลองการดึง User ID (ของจริงจะดึงจาก Token ที่ล็อกอินมา)
+  // ✅ 3. ดึง ID จาก Token ของจริง (เลิกใช้ || 1 แล้ว)
   private getUserId(req: any): number {
-    return req.user?.id || 1; 
+    // โค้ดนี้จะรองรับทั้ง req.user.id, userId หรือ sub (ขึ้นอยู่กับตอนที่คุณสร้าง Token)
+    return req.user?.id || req.user?.userId || req.user?.sub; 
   }
 
   @Get()
@@ -23,7 +27,6 @@ export class ProfileController {
     return this.profileService.updateProfile(this.getUserId(req), dto);
   }
 
-  // ✅ เพิ่ม Endpoint สำหรับรับคำขอ "เปลี่ยนรหัสผ่าน"
   @Patch('change-password')
   changePassword(@Req() req: any, @Body() dto: ChangePasswordDto) {
     return this.profileService.changePassword(this.getUserId(req), dto);

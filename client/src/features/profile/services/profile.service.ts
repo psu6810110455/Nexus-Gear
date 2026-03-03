@@ -46,7 +46,6 @@ export const deleteAddress = async (id: number) => {
   });
   if (!res.ok) throw new Error('Failed to delete address');
   return res.json();
-
 };
 
 // 6. อัปเดตที่อยู่

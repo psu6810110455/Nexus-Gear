@@ -36,4 +36,10 @@ export class UsersService {
   async findById(id: number): Promise<User | null> {
     return this.usersRepository.findOne({ where: { id } });
   }
+
+  // ✅ แก้จาก data: any เป็น data: Partial<User> เพื่อป้องกัน TypeORM สร้างเป็น Array
+  async create(data: Partial<User>): Promise<User> {
+    const newUser = this.usersRepository.create(data);
+    return await this.usersRepository.save(newUser);
+  }
 }

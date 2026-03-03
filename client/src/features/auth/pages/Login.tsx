@@ -78,7 +78,8 @@ const Login = () => {
           <form onSubmit={handleSubmit} noValidate>
             {/* Email */}
             <div style={{ marginBottom: '1.5rem' }}>
-              <label htmlFor="email" style={{ display: 'block', color: '#fff', marginBottom: '0.5rem' }}>อีเมล</label>
+              {/* ✅ เพิ่ม textAlign: 'left' ตรงนี้ */}
+              <label htmlFor="email" style={{ display: 'block', color: '#fff', marginBottom: '0.5rem', textAlign: 'left' }}>อีเมล</label>
               <div className="auth-input-wrap">
                 <input
                   id="email"
@@ -94,7 +95,8 @@ const Login = () => {
 
             {/* Password */}
             <div style={{ marginBottom: '1.25rem' }}>
-              <label htmlFor="password" style={{ display: 'block', color: '#fff', marginBottom: '0.5rem' }}>รหัสผ่าน</label>
+              {/* ✅ เพิ่ม textAlign: 'left' ตรงนี้ */}
+              <label htmlFor="password" style={{ display: 'block', color: '#fff', marginBottom: '0.5rem', textAlign: 'left' }}>รหัสผ่าน</label>
               <div className="auth-input-wrap">
                 <input
                   id="password"

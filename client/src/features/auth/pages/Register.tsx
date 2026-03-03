@@ -30,7 +30,8 @@ interface PasswordFieldProps {
 }
 const PasswordField = ({ id, label, value, show, onChange, onToggle }: PasswordFieldProps) => (
   <div style={{ marginBottom: '1.75rem' }}>
-    <label htmlFor={id} style={{ display: 'block', color: '#fff', marginBottom: '0.625rem' }}>{label}</label>
+    {/* ✅ เพิ่ม textAlign: 'left' ตรงนี้ */}
+    <label htmlFor={id} style={{ display: 'block', color: '#fff', marginBottom: '0.625rem', textAlign: 'left' }}>{label}</label>
     <div className="auth-input-wrap">
       <input
         id={id}
@@ -109,7 +110,8 @@ const Register = () => {
           <form onSubmit={handleSubmit} noValidate>
             {/* ชื่อผู้ใช้ */}
             <div style={{ marginBottom: '1.75rem' }}>
-              <label htmlFor="username" style={{ display: 'block', color: '#fff', marginBottom: '0.625rem' }}>ชื่อผู้ใช้</label>
+              {/* ✅ เพิ่ม textAlign: 'left' ตรงนี้ */}
+              <label htmlFor="username" style={{ display: 'block', color: '#fff', marginBottom: '0.625rem', textAlign: 'left' }}>ชื่อผู้ใช้</label>
               <div className="auth-input-wrap">
                 <input id="username" type="text" placeholder="ชื่อผู้ใช้" className="auth-input" value={username} onChange={(e) => setUsername(e.target.value)} required />
               </div>
@@ -117,7 +119,8 @@ const Register = () => {
 
             {/* อีเมล */}
             <div style={{ marginBottom: '1.75rem' }}>
-              <label htmlFor="reg-email" style={{ display: 'block', color: '#fff', marginBottom: '0.625rem' }}>อีเมล</label>
+              {/* ✅ เพิ่ม textAlign: 'left' ตรงนี้ */}
+              <label htmlFor="reg-email" style={{ display: 'block', color: '#fff', marginBottom: '0.625rem', textAlign: 'left' }}>อีเมล</label>
               <div className="auth-input-wrap">
                 <input id="reg-email" type="email" placeholder="ที่อยู่อีเมล" className="auth-input" value={email} onChange={(e) => setEmail(e.target.value)} required />
               </div>
@@ -127,7 +130,7 @@ const Register = () => {
             <PasswordField id="confirmPassword" label="ยืนยันรหัสผ่าน" value={confirmPassword} show={showConfirmPassword} onChange={setConfirmPassword} onToggle={() => setShowConfirmPassword(p => !p)} />
 
             {/* Terms */}
-            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.75rem', color: '#ccc', fontSize: '0.9rem', cursor: 'pointer' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.75rem', color: '#ccc', fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left' }}>
               <input type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} />
               <span>
                 ฉันยอมรับ{' '}

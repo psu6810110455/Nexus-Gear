@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { LogOut, Trash2 } from 'lucide-react';
 
+// ✅ 1. นำเข้า useAuth จาก Context ของเรา
+import { useAuth } from '../../auth/context/AuthContext';
+
 // นำเข้า Components หลัก
 import { ProfileSidebar } from '../components/ProfileSidebar';
 import { ProfileInfoTab } from '../components/tabs/ProfileInfoTab';
@@ -23,38 +26,54 @@ import type { Order } from '../types/profile.types';
 import * as profileApi from '../services/profile.service';
 
 export const ProfilePage = () => {
-  // ─── 1. State สำหรับข้อมูลหลัก ───
+  // ✅ 2. ดึงข้อมูล user จากระบบ
+  const { user, logout } = useAuth(); 
+
   const [activeTab, setActiveTab] = useState('orders');
   const [userData, setUserData] = useState(initialUserData);
-  const [addresses, setAddresses] = useState<any[]>([]); // ให้ค่าเริ่มต้นเป็น Array ว่างรอรับข้อมูลจาก API
+  const [addresses, setAddresses] = useState<any[]>([]); 
   const [orders] = useState(mockOrders);
   const [ratings, setRatings] = useState<Record<string, number>>({});
 
-  // 1.5 ใช้ useEffect โหลดข้อมูลจริงจาก Database
+  // ✅ 3. อัปเดต useEffect ให้ดึงข้อมูลสดจาก Database ก่อน ถ้าไม่มีค่อยดึงจาก Google
   useEffect(() => {
     const loadData = async () => {
       try {
-        // โหลดข้อมูลส่วนตัว
+        // 1. วิ่งไปดึงข้อมูลโปรไฟล์ล่าสุดจาก Database
         const profile = await profileApi.fetchProfile();
+        
         setUserData(prev => ({ 
           ...prev, 
-          name: profile.name, 
-          email: profile.email, 
+          // ✅ สลับเอา user (Google) ขึ้นก่อน เพื่อไม่ให้ Mock Data มาทับ!
+          name: user?.name || profile.name || '', 
+          email: user?.email || profile.email || '', 
           phone: profile.phone || '' 
         }));
 
-        // โหลดข้อมูลที่อยู่
+        // 2. โหลดข้อมูลที่อยู่
         const addrs = await profileApi.fetchAddresses();
         setAddresses(addrs);
       } catch (error) {
-        console.error('ไม่สามารถดึงข้อมูลได้:', error);
+        console.error('ไม่สามารถดึงข้อมูลสดจาก DB ได้:', error);
+        
+        // แผนสำรอง: ถ้าดึง Database ไม่ได้จริงๆ ให้หยิบข้อมูลพื้นฐานจาก Google มาโชว์แก้ขัด
+        if (user) {
+          setUserData(prev => ({
+            ...prev,
+            name: user.name || '',
+            email: user.email || '',
+          }));
+        }
       }
     };
 
-    loadData();
-  }, []);
+    // จะโหลดข้อมูลก็ต่อเมื่อผู้ใช้ล็อกอิน (มีข้อมูล user) แล้วเท่านั้น
+    if (user) {
+      loadData();
+    }
+  }, [user]);
 
-  // ─── 2. State สำหรับควบคุมการเปิด/ปิด Modals ───
+  // ─── State สำหรับควบคุมการเปิด/ปิด Modals ───
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -63,19 +82,18 @@ export const ProfilePage = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [statusModal, setStatusModal] = useState<{ title: string; items: Order[] } | null>(null);
 
-  // ─── 3. State สำหรับข้อมูลชั่วคราวใน Modals ───
+  // ─── State สำหรับข้อมูลชั่วคราวใน Modals ───
   const [editingAddressId, setEditingAddressId] = useState<number | null>(null);
   const [addressForm, setAddressForm] = useState({ label: '', address: '', isDefault: false });
   const [addrToDelete, setAddrToDelete] = useState<number | null>(null);
   const [successMessage, setSuccessMessage] = useState({ title: '', detail: '' });
 
-  // ─── 4. Logic Functions ───
+  // ─── Logic Functions ───
   const triggerSuccess = (title: string, detail: string) => {
     setSuccessMessage({ title, detail });
     setShowSuccessModal(true);
   };
 
-  // เพิ่มฟังก์ชันบันทึกข้อมูลส่วนตัว (ชื่อ, เบอร์โทร) ลง Database
   const saveProfileInfo = async () => {
     try {
       await profileApi.updateProfile({ name: userData.name, phone: userData.phone });
@@ -97,21 +115,15 @@ export const ProfilePage = () => {
     setShowAddressModal(true);
   };
 
-  // อัปเดตฟังก์ชันบันทึกที่อยู่ให้ใช้ API
   const saveAddress = async () => {
     try {
       if (editingAddressId) {
-        // อัปเดตที่อยู่เดิม
         await profileApi.updateAddress(editingAddressId, addressForm);
       } else {
-        // เพิ่มที่อยู่ใหม่
         await profileApi.createAddress(addressForm);
       }
-      
-      // ดึงข้อมูลที่อยู่ล่าสุดจาก Database มาแสดงใหม่
       const addrs = await profileApi.fetchAddresses();
       setAddresses(addrs);
-      
       setShowAddressModal(false);
       triggerSuccess('SAVED!', 'บันทึกที่อยู่เรียบร้อยแล้ว');
     } catch (error) {
@@ -124,15 +136,11 @@ export const ProfilePage = () => {
     setShowDeleteAddrModal(true);
   };
 
-  // อัปเดตฟังก์ชันลบที่อยู่ให้ใช้ API
   const deleteAddress = async () => {
     if (!addrToDelete) return;
     try {
       await profileApi.deleteAddress(addrToDelete);
-      
-      // เอาที่อยู่ที่ลบออกจากหน้าจอ
       setAddresses(addresses.filter(a => a.id !== addrToDelete));
-      
       setShowDeleteAddrModal(false);
       triggerSuccess('DELETED!', 'ลบที่อยู่เรียบร้อยแล้ว');
     } catch (error) {
@@ -145,9 +153,10 @@ export const ProfilePage = () => {
     triggerSuccess('SUCCESS!', 'เปลี่ยนรหัสผ่านเรียบร้อยแล้ว');
   };
 
+  // ✅ 4. ใช้ฟังก์ชัน logout จาก AuthContext
   const handleLogout = () => {
     setShowLogoutModal(false);
-    triggerSuccess('LOGGED OUT', 'ออกจากระบบเรียบร้อยแล้ว');
+    logout(); 
   };
 
   const handleRating = (orderId: string, score: number) => {
@@ -199,7 +208,7 @@ export const ProfilePage = () => {
                   userData={userData} 
                   setUserData={setUserData} 
                   onOpenPasswordModal={() => setShowPasswordModal(true)} 
-                  onSave={saveProfileInfo} // ส่งฟังก์ชันไปให้ปุ่มบันทึกทำงาน
+                  onSave={saveProfileInfo}
                 />
               )}
               {activeTab === 'addresses' && (
@@ -223,7 +232,7 @@ export const ProfilePage = () => {
         </div>
       </div>
 
-      {/* ─── 5. Render Modals ทั้งหมด ─── */}
+      {/* ─── Render Modals ทั้งหมด ─── */}
       <AddressModal 
         isOpen={showAddressModal} 
         onClose={() => setShowAddressModal(false)} 

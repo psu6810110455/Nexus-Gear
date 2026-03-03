@@ -35,4 +35,14 @@ export class AuthController {
     const frontendUrl = `http://localhost:5173/login-success?token=${result.access_token}`;
     return res.redirect(frontendUrl);
   }
+
+  // ---------------------------------------------------------
+  // 🔵 เส้นทางสำหรับดึงข้อมูลผู้ใช้ปัจจุบัน (ด้วย JWT Token)
+  // ---------------------------------------------------------
+  @Get('me')
+  @UseGuards(AuthGuard('jwt')) // ✅ ใช้ JWT Guard เพื่อป้องกันคนไม่มี Token
+  getProfile(@Req() req) {
+    // คืนค่าข้อมูล User ที่ถอดรหัสได้จาก Token กลับไปให้ Frontend (AuthContext)
+    return req.user;
+  }
 }

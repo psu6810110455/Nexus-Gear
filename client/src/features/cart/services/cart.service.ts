@@ -1,27 +1,54 @@
 // src/features/cart/services/cart.service.ts
+import axios from 'axios';
 import type { CartItem, CouponData } from '../types/cart.types';
 
-const mockCartItems: CartItem[] = [
-  { id: 1, name: 'ROG Phone 7 Ultimate', category: 'Mobile Gaming', image: '/rog-phone.png', price: 45990, originalPrice: 49990, quantity: 1, maxQty: 5 },
-  { id: 2, name: 'HyperX Cloud Alpha', category: 'Headset', image: '/headset.png', price: 3990, originalPrice: 3990, quantity: 2, maxQty: 10 },
-  { id: 3, name: 'Razer Kishi V2', category: 'Controller', image: '/controller.png', price: 3490, originalPrice: 4200, quantity: 1, maxQty: 3 },
-];
+// 📍 ตั้งค่า Base URL ให้ชี้ไปที่ NestJS Backend ของคุณ
+// (ปรับแก้ http://localhost:3000 ให้ตรงกับพอร์ตจริงของ Backend นะครับ)
+const API_URL = 'http://localhost:3000/api';
 
-const couponsDB: Record<string, CouponData> = {
-  NEXUS10: { type: 'percent', value: 10, label: 'ลด 10%' },
-  GAMING200: { type: 'fixed', value: 200, label: 'ลด 200 บาท' },
-  NEWUSER: { type: 'percent', value: 15, label: 'ลด 15% (ลูกค้าใหม่)' },
-};
-
+/**
+ * ฟังก์ชันดึงข้อมูลตะกร้าสินค้าจาก Database
+ */
 export const fetchCartItems = async (): Promise<CartItem[]> => {
-  return new Promise((resolve) => setTimeout(() => resolve([...mockCartItems]), 500));
+  try {
+    // ยิง GET Request ไปที่ Backend เพื่อขอข้อมูลตะกร้า
+    const response = await axios.get(`${API_URL}/cart`);
+    return response.data;
+  } catch (error) {
+    console.error('❌ เกิดข้อผิดพลาดในการดึงข้อมูลตะกร้า:', error);
+    return []; // ถ้าพัง หรือ Backend ยังไม่เปิด ให้ส่งตะกร้าว่างกลับไปก่อนเว็บจะได้ไม่ค้าง
+  }
 };
 
+/**
+ * ฟังก์ชันตรวจสอบโค้ดส่วนลดจาก Database
+ */
 export const validateCoupon = async (code: string): Promise<CouponData | null> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const validCode = code.trim().toUpperCase();
-      resolve(couponsDB[validCode] || null);
-    }, 300);
-  });
+  try {
+    const validCode = code.trim().toUpperCase();
+    
+    // ยิง POST Request เพื่อเช็คคูปอง
+    const response = await axios.post(`${API_URL}/coupons/validate`, { code: validCode });
+    return response.data;
+  } catch (error) {
+    console.error(`❌ เกิดข้อผิดพลาดในการตรวจสอบคูปอง "${code}":`, error);
+    return null; // ถ้าโค้ดผิด หมดอายุ หรือ API พัง ให้ตอบกลับเป็น null
+  }
+};
+
+// ฟังก์ชันเสริม (เผื่อต้องใช้): อัปเดตจำนวนสินค้า หรือลบสินค้า
+export const updateCartItem = async (id: number, quantity: number) => {
+  try {
+    await axios.patch(`${API_URL}/cart/${id}`, { quantity });
+  } catch (error) {
+    console.error('❌ อัปเดตจำนวนสินค้าไม่สำเร็จ:', error);
+  }
+};
+
+export const deleteCartItem = async (id: number) => {
+  try {
+    await axios.delete(`${API_URL}/cart/${id}`);
+  } catch (error) {
+    console.error('❌ ลบสินค้าไม่สำเร็จ:', error);
+  }
 };

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { ShoppingCart, ArrowLeft, User, Square, CheckSquare, Store, Trash2 } from 'lucide-react';
 
-// นำเข้า API และ Types
-import { fetchCartItems, validateCoupon } from '../services/cart.service';
+// นำเข้า API และ Types (✨ นำเข้าฟังก์ชัน update และ delete เพิ่มเติม)
+import { fetchCartItems, validateCoupon, updateCartQuantity, removeFromCart } from '../services/cart.service';
 import type { CartItem as CartItemType, CouponData } from '../types/cart.types';
 
 // นำเข้า Components ที่เราเพิ่งหั่นไว้
@@ -54,21 +54,43 @@ export default function CartPage({ onNavigate }: CartProps) {
     setSelectedItems(selectedItems.length === cartItems.length && cartItems.length > 0 ? [] : cartItems.map(i => i.id));
   };
 
-  const updateQty = (id: number, delta: number) => {
-    setCartItems(prev => prev.map(item => 
-      item.id === id ? { ...item, quantity: Math.max(1, Math.min(item.maxQty, item.quantity + delta)) } : item
-    ));
+  // ✨ อัปเดตฟังก์ชันนี้: ให้ยิง API ไปเซฟจำนวนลง Database ด้วย
+  const updateQty = async (id: number, delta: number) => {
+    const item = cartItems.find(i => i.id === id);
+    if (!item) return;
+
+    const newQty = Math.max(1, Math.min(item.maxQty || 99, item.quantity + delta));
+    
+    // 1. อัปเดตหน้าจอก่อนเพื่อให้ผู้ใช้รู้สึกว่าเว็บเร็ว (Optimistic Update)
+    setCartItems(prev => prev.map(i => (i.id === id ? { ...i, quantity: newQty } : i)));
+    
+    // 2. ยิง API ไปอัปเดตหลังบ้าน
+    try {
+      await updateCartQuantity(id, newQty);
+    } catch (error) {
+      console.error("อัปเดต Database ไม่สำเร็จ", error);
+      // ถ้ายิงไม่ผ่าน ให้ดึงข้อมูลที่ถูกต้องจาก Database กลับมาใหม่
+      const freshItems = await fetchCartItems();
+      setCartItems(freshItems);
+    }
   };
 
   const openDeleteModal = (type: 'single' | 'all', id: number | null = null) => {
     setDeleteModal({ show: true, type, id });
   };
 
-  const confirmDelete = () => {
-    if (deleteModal.type === 'single') {
-      setCartItems(prev => prev.filter(item => item.id !== deleteModal.id));
-      setSelectedItems(prev => prev.filter(i => i !== deleteModal.id));
+  // ✨ อัปเดตฟังก์ชันนี้: ให้ยิง API ลบของใน Database ออกจริงๆ
+  const confirmDelete = async () => {
+    if (deleteModal.type === 'single' && deleteModal.id) {
+      try {
+        await removeFromCart(deleteModal.id);
+        setCartItems(prev => prev.filter(item => item.id !== deleteModal.id));
+        setSelectedItems(prev => prev.filter(i => i !== deleteModal.id));
+      } catch (error) {
+         console.error("ลบข้อมูลใน Database ไม่สำเร็จ", error);
+      }
     } else if (deleteModal.type === 'all') {
+      // (ลบทั้งหมด เดี๋ยวเราค่อยทำ API ลบเหมาในอนาคตครับ ตอนนี้ให้เคลียร์หน้าจอไปก่อน)
       setCartItems([]);
       setSelectedItems([]);
     }
@@ -99,7 +121,7 @@ export default function CartPage({ onNavigate }: CartProps) {
   // ─── 4. CALCULATIONS ───
   const selectedCartItems = cartItems.filter(i => selectedItems.includes(i.id));
   const subtotal = selectedCartItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const totalSaved = selectedCartItems.reduce((sum, i) => sum + (i.originalPrice - i.price) * i.quantity, 0);
+  const totalSaved = selectedCartItems.reduce((sum, i) => sum + ((Number(i.originalPrice) || i.price) - i.price) * i.quantity, 0);
   const shippingFee = selectedCartItems.length > 0 ? (subtotal >= 1500 ? 0 : 150) : 0;
   
   let discountAmount = 0;
@@ -179,7 +201,7 @@ export default function CartPage({ onNavigate }: CartProps) {
           </nav>
         </header>
 
-        {/* Page Header */}
+        {/* ✨ ย้าย Page Header เข้ามาไว้ใน <div className="relative z-10"> ให้ถูกต้อง */}
         <section aria-labelledby="cart-heading" className="max-w-7xl mx-auto px-4 pt-8 pb-4">
           <button onClick={() => onNavigate?.('products')} className="flex items-center gap-2 text-[#F2F4F6]/40 hover:text-[#FF0000] transition text-sm mb-6 group" aria-label="กลับไปหน้าสินค้า">
             <ArrowLeft aria-hidden="true" className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> กลับไปคลังสินค้า

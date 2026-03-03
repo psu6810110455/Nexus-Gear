@@ -1,7 +1,9 @@
-import { Controller, Post, Body, Get, Delete, Param, Patch } from '@nestjs/common'; // ✅ เพิ่ม Patch ตรงนี้
+import { Controller, Post, Body, Get, Delete, Param, Patch } from '@nestjs/common'; 
 import { CartService } from './cart.service';
 
-@Controller('cart')
+// 🚀 [จุดที่แก้ไข]: เปลี่ยนจาก 'cart' เป็น 'api/cart' 
+// เพื่อให้บ้านเลขที่ตรงกับที่หน้าเว็บ React (Frontend) เรียกหาครับ
+@Controller('api/cart')
 export class CartController {
   constructor(private readonly cartService: CartService) {}
 
@@ -19,14 +21,14 @@ export class CartController {
     return this.cartService.getCart(userId);
   }
 
-  // ✅ 3. ลบสินค้าออกจากตะกร้า
+  // ✅ 3. ลบสินค้าออกจากตะกร้า (ของเดิม)
   @Delete(':itemId')
   async removeFromCart(@Param('itemId') itemId: string) {
     const userId = 1;
     return this.cartService.removeFromCart(userId, Number(itemId));
   }
 
-  // ✅ 4. อัปเดตจำนวนสินค้า (สำหรับปุ่ม + / - ในหน้าเว็บ)
+  // ✅ 4. อัปเดตจำนวนสินค้า (สำหรับปุ่ม + / - ในหน้าเว็บ) (ของเดิม)
   @Patch(':itemId')
   async updateQuantity(
     @Param('itemId') itemId: string, 

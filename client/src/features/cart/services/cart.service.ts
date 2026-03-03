@@ -36,19 +36,22 @@ export const validateCoupon = async (code: string): Promise<CouponData | null> =
   }
 };
 
-// ฟังก์ชันเสริม (เผื่อต้องใช้): อัปเดตจำนวนสินค้า หรือลบสินค้า
-export const updateCartItem = async (id: number, quantity: number) => {
+// ✨ จุดที่แก้ไข 1: เปลี่ยนชื่อจาก updateCartItem -> updateCartQuantity ให้ตรงกับที่หน้าเว็บเรียกใช้
+export const updateCartQuantity = async (id: number, quantity: number) => {
   try {
     await axios.patch(`${API_URL}/cart/${id}`, { quantity });
   } catch (error) {
     console.error('❌ อัปเดตจำนวนสินค้าไม่สำเร็จ:', error);
+    throw error; // ✨ เพิ่ม throw error กลับไป เพื่อให้ฟังก์ชันใน CartPage.tsx ดักจับ Error ได้
   }
 };
 
-export const deleteCartItem = async (id: number) => {
+// ✨ จุดที่แก้ไข 2: เปลี่ยนชื่อจาก deleteCartItem -> removeFromCart ให้ตรงกับที่หน้าเว็บเรียกใช้
+export const removeFromCart = async (id: number) => {
   try {
     await axios.delete(`${API_URL}/cart/${id}`);
   } catch (error) {
     console.error('❌ ลบสินค้าไม่สำเร็จ:', error);
+    throw error; // ✨ เพิ่ม throw error กลับไป เพื่อให้ฟังก์ชันใน CartPage.tsx ดักจับ Error ได้
   }
 };

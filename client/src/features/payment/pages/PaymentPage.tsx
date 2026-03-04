@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, Check, MapPin, CreditCard, ShoppingCart, Upload, Loader, ChevronDown, ChevronUp } from 'lucide-react';
+import axios from 'axios'; // ✨ 1. เพิ่ม axios สำหรับยิง API
 
 import { fetchAddresses } from '../services/payment.service';
 import type { Address, OrderSummaryData } from '../types/payment.types';
@@ -30,6 +31,9 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
   const [confirmed, setConfirmed] = useState<boolean>(false);
   const [loadingAction, setLoadingAction] = useState<boolean>(false);
   const [showSummary, setShowSummary] = useState<boolean>(false);
+  
+  // ✨ 2. เพิ่ม State สำหรับเก็บเลขบิลของจริงที่ได้จาก Database
+  const [finalOrderNum, setFinalOrderNum] = useState<string>('');
 
   useEffect(() => {
     const loadData = async () => {
@@ -92,15 +96,36 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
     reader.readAsDataURL(file);
   };
 
-  const handleConfirm = () => {
+  // ✨ 3. เปลี่ยนจากตัวปลอม เป็นการยิงข้อมูลไปหา Database ของจริง
+  const handleConfirm = async () => {
     setLoadingAction(true);
-    setTimeout(() => { 
-      // เมื่อสั่งซื้อสำเร็จ ให้ลบข้อมูลตะกร้าออกจาก localStorage เพื่อความปลอดภัย
-      localStorage.removeItem('checkoutSession');
-      setLoadingAction(false); 
-      setConfirmed(true); 
-      window.scrollTo(0,0); 
-    }, 2000);
+    try {
+      // ดึงข้อมูลที่อยู่จากที่ลูกค้าเลือก
+      const addressDetail = savedAddresses.find(a => a.id === selectedAddr)?.detail || 'ไม่ระบุที่อยู่';
+
+      // ยิงข้อมูลไปหา Backend เพื่อสร้างบิลของจริง
+      const response = await axios.post('http://localhost:3000/api/orders/checkout', {
+        userId: 1, // ทดสอบใช้ User ID 1
+        shippingAddress: addressDetail,
+        paymentMethod: payMethod
+      });
+
+      if (response.data.success) {
+        // ✨ บันทึกเลขบิลของจริง (ORD-177...) ที่ backend ส่งกลับมาให้
+        setFinalOrderNum(response.data.orderNumber); 
+        
+        // ล้างข้อมูลตะกร้าออกจาก localStorage เพื่อความปลอดภัย
+        localStorage.removeItem('checkoutSession');
+        
+        setLoadingAction(false); 
+        setConfirmed(true); 
+        window.scrollTo(0,0); 
+      }
+    } catch (error: any) {
+      console.error("Checkout Failed:", error);
+      alert(error.response?.data?.message || "❌ เกิดข้อผิดพลาดในการสั่งซื้อ กรุณาลองใหม่อีกครั้ง");
+      setLoadingAction(false);
+    }
   };
 
   if (isApiLoading || !orderSummary) {
@@ -165,7 +190,8 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                     <p className="text-[#F2F4F6]/50 mb-2 font-['Kanit']">หมายเลขคำสั่งซื้อ (ORDER ID)</p>
                 </header>
                 <div className="bg-[#2E0505]/50 px-6 py-2 rounded-lg border border-[#FF0000]/20 mb-8">
-                    <p className="text-xl font-['Orbitron'] font-bold text-[#F2F4F6] tracking-widest">#ORD-20260203-4821</p>
+                    {/* ✨ 4. นำตัวแปร finalOrderNum มาแสดงแทนข้อความหลอก */}
+                    <p className="text-xl font-['Orbitron'] font-bold text-[#F2F4F6] tracking-widest">{finalOrderNum}</p>
                 </div>
                 <p className="text-[#F2F4F6]/60 text-sm max-w-sm leading-relaxed mb-8">
                     ระบบได้รับคำสั่งซื้อของคุณแล้ว<br/>เราจะส่งรายละเอียดการจัดส่งไปยังอีเมล<br/><span className="text-[#FF0000]">max.gamer@email.com</span>
@@ -272,7 +298,6 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                         </div>
                       </div>
 
-                      {/* ✨ ส่วนแนบสลิป (แสดงทั้งสแกน QR และโอนเงิน) */}
                       {(payMethod === 'transfer' || payMethod === 'qr') && (
                         <div className="bg-[#0a0a0a] border border-[#990000]/20 rounded-xl p-6 relative overflow-hidden">
                           <div aria-hidden="true" className="absolute top-0 left-0 w-1 h-full bg-[#FF0000]"></div>
@@ -285,7 +310,6 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                               </div>
                               <p className="text-sm text-[#F2F4F6]/70 font-bold">คลิกเพื่ออัปโหลดสลิป</p>
                               <p className="text-xs text-[#F2F4F6]/30 mt-1">รองรับไฟล์: JPG, PNG (ขนาดไม่เกิน 5MB)</p>
-                              {/* ผูกฟังก์ชันตรวจสอบไฟล์รูปภาพ */}
                               <input type="file" accept="image/jpeg, image/png, image/jpg" onChange={handleFileUpload} className="hidden" />
                             </label>
                           ) : (
@@ -320,7 +344,6 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                           <>
                             <span className="relative z-10">ยืนยันการสั่งซื้อ</span> 
                             <Check aria-hidden="true" className="w-5 h-5 relative z-10" />
-                            <div aria-hidden="true" className="absolute top-0 -left-full w-full h-full bg-white/20 skew-x-[30deg] group-hover:animate-[shimmer_1s_infinite]"></div>
                           </>
                         )}
                       </button>

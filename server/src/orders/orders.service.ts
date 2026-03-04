@@ -5,8 +5,9 @@ import { DatabaseService } from '../database/database.service';
 export class OrdersService {
   constructor(private readonly db: DatabaseService) {}
   
-  async createOrder(userId: number, shippingAddress: string, paymentMethod: string) {
-    // 1. ดึงข้อมูลสินค้า
+  // ✨ เพิ่ม parameter slipImage มารับค่าชื่อไฟล์
+  async createOrder(userId: number, shippingAddress: string, paymentMethod: string, slipImage: string | null) {
+    // 1. ดึงข้อมูลสินค้าจากตะกร้า
     const cartItems: any = await this.db.query(
       `SELECT c.product_id, c.quantity, p.price, p.name 
        FROM cart_items c 
@@ -25,15 +26,15 @@ export class OrdersService {
     }
 
     const orderNumber = 'ORD-' + Date.now();
-    const shippingName = 'ลูกค้า ทดสอบ';
+    const shippingName = 'ลูกค้า ทดสอบ'; // ตรงนี้ในอนาคตดึงจาก User ได้ครับ
     const shippingPhone = '080-000-0000';
 
-    // 2. สร้างบิลหลัก
+    // 2. สร้างบิลหลัก ✨ เพิ่มคอลัมน์ slip_image และ Value ของมันเข้าไปด้วย
     const orderResult: any = await this.db.query(
       `INSERT INTO orders 
-      (order_number, user_id, shipping_name, shipping_phone, shipping_address, subtotal, total, payment_method) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [orderNumber, userId, shippingName, shippingPhone, shippingAddress, total, total, paymentMethod]
+      (order_number, user_id, shipping_name, shipping_phone, shipping_address, subtotal, total, payment_method, slip_image) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [orderNumber, userId, shippingName, shippingPhone, shippingAddress, total, total, paymentMethod, slipImage]
     );
     const orderId = orderResult.insertId;
 
@@ -46,7 +47,6 @@ export class OrdersService {
       );
 
       // ✨ 3.2 อัปเดตตาราง products เพื่อหักสต็อกสินค้า
-      // คำสั่งนี้จะเอา stock เดิม - จำนวนที่ซื้อ แล้วบันทึกกลับเข้าไปใหม่
       await this.db.query(
         'UPDATE products SET stock = stock - ? WHERE id = ?',
         [item.quantity, item.product_id]

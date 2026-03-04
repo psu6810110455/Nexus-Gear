@@ -1,103 +1,103 @@
 // ============================================================
-// src/components/ProductList.tsx
+// src/features/products/pages/ProductListPage.tsx
 // ============================================================
 
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getProducts } from '../../../shared/services/api';
-import type { Product } from '../../../shared/types';
-import ProductCard from '../components/ProductCard';
-import ProductFilter from '../components/ProductFilter';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { getProducts } from "../../../shared/services/api";
+import type { Product } from "../../../shared/types";
 
 function ProductList() {
-  const [products, setProducts]             = useState<Product[]>([]);
-  const [loading, setLoading]               = useState(true);
-  const [searchTerm, setSearchTerm]         = useState('');
-  const [categories, setCategories]         = useState<string[]>(['All']);
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [minPrice, setMinPrice]             = useState('');
-  const [maxPrice, setMaxPrice]             = useState('');
-  const [appliedMin, setAppliedMin]         = useState(0);
-  const [appliedMax, setAppliedMax]         = useState(Infinity);
-  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categories, setCategories] = useState<string[]>(["All"]);
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [appliedMin, setAppliedMin] = useState(0);
+  const [appliedMax, setAppliedMax] = useState(Infinity);
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>(
+    {},
+  );
   const navigate = useNavigate();
 
-  useEffect(() => { fetchProducts(); }, []);
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
   const fetchProducts = async () => {
     try {
       const data = await getProducts();
-      if (!Array.isArray(data)) { setLoading(false); return; }
-
+      if (!Array.isArray(data)) {
+        setLoading(false);
+        return;
+      }
       setProducts(data);
 
       const counts: Record<string, number> = { All: data.length };
-      const catSet = new Set<string>(['All']);
-
+      const categorySet = new Set<string>(["All"]);
       data.forEach((p: Product) => {
-        const catName =
-          p.category && typeof p.category === 'object' && 'name' in p.category
-            ? p.category.name
-            : typeof p.category === 'string'
-            ? p.category
-            : 'Uncategorized';
-        catSet.add(catName);
+        let catName = "Uncategorized";
+        if (
+          p.category &&
+          typeof p.category === "object" &&
+          "name" in p.category
+        )
+          catName = (p.category as any).name;
+        else if (typeof p.category === "string") catName = p.category;
+        categorySet.add(catName);
         counts[catName] = (counts[catName] || 0) + 1;
       });
-
-      setCategories(Array.from(catSet));
+      setCategories(Array.from(categorySet));
       setCategoryCounts(counts);
-    } catch (err) {
-      console.error('fetchProducts error:', err);
+    } catch (error: any) {
+      console.error("❌ Error:", error.response?.status, error.message);
     } finally {
       setLoading(false);
     }
   };
 
   const handlePriceFilter = () => {
-    setAppliedMin(minPrice === '' ? 0 : Number(minPrice));
-    setAppliedMax(maxPrice === '' ? Infinity : Number(maxPrice));
+    setAppliedMin(minPrice === "" ? 0 : Number(minPrice));
+    setAppliedMax(maxPrice === "" ? Infinity : Number(maxPrice));
   };
 
-  const handleClearFilter = () => {
-    setSelectedCategory('All');
-    setMinPrice('');
-    setMaxPrice('');
-    setAppliedMin(0);
-    setAppliedMax(Infinity);
-    setSearchTerm('');
-  };
-
-  const filteredProducts = products.filter((p) => {
-    const matchSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const catName =
-      typeof p.category === 'object' && p.category !== null
-        ? p.category.name
-        : typeof p.category === 'string'
-        ? p.category
-        : 'Uncategorized';
-    const matchCat = selectedCategory === 'All' || catName === selectedCategory;
-    const price = Number(p.price);
-    const matchPrice = price >= appliedMin && price <= appliedMax;
-    return matchSearch && matchCat && matchPrice;
+  const filteredProducts = products.filter((product) => {
+    const matchesSearch = product.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    let catName = "Uncategorized";
+    if (typeof product.category === "object" && product.category !== null)
+      catName = (product.category as any).name;
+    else if (typeof product.category === "string") catName = product.category;
+    const matchesCategory =
+      selectedCategory === "All" || catName === selectedCategory;
+    const price = Number(product.price);
+    return (
+      matchesSearch &&
+      matchesCategory &&
+      price >= appliedMin &&
+      price <= appliedMax
+    );
   });
 
-  if (loading) {
+  if (loading)
     return (
       <div className="min-h-screen bg-[#0f0f12] flex items-center justify-center text-white">
         Loading...
       </div>
     );
-  }
 
   return (
     <div className="min-h-screen bg-[#0f0f12] text-white font-sans pb-20">
       <div className="container mx-auto px-6 py-8">
-
         {/* Search Bar */}
         <div className="flex justify-center mb-10">
           <div className="relative w-full max-w-3xl">
-            <span className="absolute left-5 top-1/2 -translate-y-1/2 text-white/30 text-xl">🔍</span>
+            <span className="absolute left-5 top-1/2 -translate-y-1/2 text-white/30 text-xl">
+              🔍
+            </span>
             <input
               type="text"
               placeholder="ค้นหาอุปกรณ์เทพของคุณ..."
@@ -109,26 +109,68 @@ function ProductList() {
         </div>
 
         <div className="flex flex-col md:flex-row gap-8">
-
           {/* Sidebar Filter */}
-          <ProductFilter
-            categories={categories}
-            categoryCounts={categoryCounts}
-            selectedCategory={selectedCategory}
-            minPrice={minPrice}
-            maxPrice={maxPrice}
-            onSelectCategory={setSelectedCategory}
-            onMinPriceChange={setMinPrice}
-            onMaxPriceChange={setMaxPrice}
-            onApplyPrice={handlePriceFilter}
-          />
+          <aside className="w-full md:w-1/4">
+            <div className="bg-[#18181b] p-6 rounded-xl border border-white/5 sticky top-24">
+              <h2 className="text-red-600 font-bold text-lg mb-6 flex items-center gap-2 border-l-4 border-red-600 pl-3">
+                FILTER
+              </h2>
+              <div className="space-y-2">
+                <p className="text-gray-500 text-xs font-bold uppercase mb-2">
+                  หมวดหมู่
+                </p>
+                {categories.map((cat, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`w-full text-left py-2 px-3 rounded transition text-sm flex justify-between items-center ${selectedCategory === cat ? "bg-gradient-to-r from-red-900/40 to-transparent text-red-500 font-bold border-l-2 border-red-500" : "text-gray-400 hover:text-white hover:bg-white/5"}`}
+                  >
+                    <span>{cat === "All" ? "ทั้งหมด" : cat}</span>
+                    <span className="text-xs bg-black/30 px-2 py-0.5 rounded-full opacity-70">
+                      {categoryCounts[cat] || 0}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <div className="mt-8 pt-6 border-t border-white/10">
+                <p className="text-gray-500 text-xs font-bold uppercase mb-4">
+                  ช่วงราคา
+                </p>
+                <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <input
+                    type="number"
+                    placeholder="Min"
+                    className="w-full bg-black/50 border border-white/10 rounded px-2 py-1 text-white focus:border-red-500 outline-none"
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(e.target.value)}
+                  />
+                  <span>-</span>
+                  <input
+                    type="number"
+                    placeholder="Max"
+                    className="w-full bg-black/50 border border-white/10 rounded px-2 py-1 text-white focus:border-red-500 outline-none"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(e.target.value)}
+                  />
+                </div>
+                <button
+                  onClick={handlePriceFilter}
+                  className="w-full mt-4 bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2 rounded transition active:scale-95"
+                >
+                  ค้นหาตามราคา
+                </button>
+              </div>
+            </div>
+          </aside>
 
           {/* Product Grid */}
           <div className="w-full md:w-3/4">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold flex items-center gap-2">
-                <span className="w-1 h-6 bg-red-600 block" />
-                {selectedCategory === 'All' ? 'สินค้าทั้งหมด' : selectedCategory}
+                <span className="w-1 h-6 bg-red-600 block"></span>
+                {selectedCategory === "All"
+                  ? "สินค้าทั้งหมด"
+                  : selectedCategory}
                 <span className="text-gray-500 text-base font-normal ml-2">
                   ({filteredProducts.length} รายการ)
                 </span>
@@ -137,12 +179,58 @@ function ProductList() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProducts.map((product) => (
-                <ProductCard
+                <div
                   key={product.id}
-                  product={product}
-                  variant="shop"
                   onClick={() => navigate(`/products/${product.id}`)}
-                />
+                  className="bg-[#18181b] rounded-xl overflow-hidden border border-white/5 hover:border-red-600/50 transition-all duration-300 group cursor-pointer shadow-lg hover:shadow-red-900/10 flex flex-col h-full"
+                >
+                  <div className="h-[220px] bg-white p-6 relative flex items-center justify-center overflow-hidden">
+                    <div className="absolute top-3 right-3 bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow">
+                      HOT
+                    </div>
+                    <img
+                      src={
+                        product.imageUrl ||
+                        product.image_url ||
+                        "https://placehold.co/400x400"
+                      }
+                      alt={product.name}
+                      className="max-h-full max-w-full object-contain group-hover:scale-110 transition duration-500 mix-blend-multiply"
+                      onError={(e) => {
+                        e.currentTarget.src =
+                          "https://placehold.co/400x400/png?text=Nexus";
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition duration-300"></div>
+                  </div>
+                  <div className="p-5 flex flex-col flex-grow">
+                    <p className="text-gray-500 text-xs mb-1">
+                      {typeof product.category === "object"
+                        ? (product.category as any)?.name || "General"
+                        : product.category || "General"}
+                    </p>
+                    <h3 className="font-bold text-lg text-white mb-2 line-clamp-2 leading-snug group-hover:text-red-500 transition">
+                      {product.name}
+                    </h3>
+                    <div className="mt-auto pt-4 flex items-center justify-between border-t border-white/5">
+                      <div>
+                        <p className="text-xs text-gray-500">ราคา</p>
+                        <p className="text-xl font-bold text-red-500">
+                          ฿{Number(product.price).toLocaleString()}
+                        </p>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/products/${product.id}`);
+                        }}
+                        className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-4 py-2 rounded transition shadow-lg shadow-red-900/20 active:scale-95 z-10"
+                      >
+                        ดูรายละเอียด
+                      </button>
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
 
@@ -150,7 +238,14 @@ function ProductList() {
               <div className="text-center py-20 text-gray-500">
                 <p className="text-xl">ไม่พบสินค้าในหมวดหมู่นี้</p>
                 <button
-                  onClick={handleClearFilter}
+                  onClick={() => {
+                    setSelectedCategory("All");
+                    setMinPrice("");
+                    setMaxPrice("");
+                    setAppliedMin(0);
+                    setAppliedMax(Infinity);
+                    setSearchTerm("");
+                  }}
                   className="mt-4 text-red-500 underline hover:text-red-400"
                 >
                   ล้างตัวกรองและดูสินค้าทั้งหมด

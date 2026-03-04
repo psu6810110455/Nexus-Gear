@@ -6,7 +6,7 @@ import {
   CreditCard,
   CheckCircle,
 } from "lucide-react";
-import { type Order } from "../../../shared/services/api"; // Import Type Order
+import { type Order } from "../../../shared/types"; // Import Type Order
 
 interface OrderDetailModalProps {
   isOpen: boolean;
@@ -86,7 +86,7 @@ const OrderDetailModal = ({
       {/* Modal Card */}
       <div className="bg-[#0f0f0f] border border-red-500/30 w-full max-w-4xl rounded-2xl shadow-[0_0_30px_rgba(220,38,38,0.2)] overflow-hidden animate-fade-in relative">
         {/* Header */}
-        <div className="p-6 border-b border-white/10 flex justify-between items-center bg-linear-to-r from-red-900/20 to-transparent">
+        <div className="p-6 border-b border-white/10 flex justify-between items-center bg-gradient-to-r from-red-900/20 to-transparent">
           <div>
             <div className="flex items-center gap-3">
               <h2 className="text-2xl font-bold text-white tracking-wider">
@@ -169,7 +169,7 @@ const OrderDetailModal = ({
               <div className="flex items-center gap-2 text-red-500 mb-3 font-bold text-sm uppercase">
                 <FileText size={16} /> หลักฐานการโอนเงิน
               </div>
-              <div className="flex-1 bg-black/40 rounded-lg border-2 border-dashed border-zinc-800 flex flex-col items-center justify-center text-zinc-600 p-8 min-h-50">
+              <div className="flex-1 bg-black/40 rounded-lg border-2 border-dashed border-zinc-800 flex flex-col items-center justify-center text-zinc-600 p-8 min-h-[200px]">
                 <CreditCard size={40} className="mb-2 opacity-50" />
                 <span className="text-sm">ยังไม่มีหลักฐานการชำระเงิน</span>
                 <span className="text-xs text-zinc-700">(ยังไม่มีข้อมูล)</span>

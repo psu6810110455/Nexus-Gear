@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, Check, MapPin, CreditCard, ShoppingCart, Upload, Loader, ChevronDown, ChevronUp } from 'lucide-react';
 
-// นำเข้า API, Types และ Components
 import { fetchAddresses, fetchOrderSummary } from '../services/payment.service';
 import type { Address, OrderSummaryData } from '../types/payment.types';
 import StepBar from '../components/StepBar';
@@ -20,7 +19,6 @@ interface UploadedSlip {
 const fmt = (n: number) => n.toLocaleString('th-TH');
 
 export default function PaymentPage({ onNavigate }: PaymentProps) {
-  // ─── STATE MANAGEMENT ───
   const [isApiLoading, setIsApiLoading] = useState<boolean>(true);
   const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
   const [orderSummary, setOrderSummary] = useState<OrderSummaryData | null>(null);
@@ -33,7 +31,6 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
   const [loadingAction, setLoadingAction] = useState<boolean>(false);
   const [showSummary, setShowSummary] = useState<boolean>(false);
 
-  // ─── LIFECYCLE ───
   useEffect(() => {
     const loadData = async () => {
       setIsApiLoading(true);
@@ -51,7 +48,6 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
     loadData();
   }, []);
 
-  // ─── LOGIC FUNCTIONS ───
   const goNext = () => { 
     window.scrollTo({ top: 0, behavior: 'smooth' }); 
     setStep((s) => Math.min(3, s + 1)); 
@@ -59,13 +55,31 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
   
   const goBack = () => setStep((s) => Math.max(1, s - 1));
 
+  // ✨ ฟังก์ชันจัดการอัปโหลดสลิปแบบ Secure (เช็คประเภทไฟล์ + ขนาดไม่เกิน 5MB)
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setUploadedSlip({ name: file.name, preview: reader.result });
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // 🛡️ 1. ดักประเภทไฟล์รูปภาพเท่านั้น
+    const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    if (!validTypes.includes(file.type)) {
+        alert('❌ ระบบรองรับเฉพาะไฟล์รูปภาพ (JPG, PNG) เท่านั้นครับ');
+        e.target.value = ''; // ล้างค่าทิ้ง
+        return;
     }
+
+    // 🛡️ 2. ดักขนาดไฟล์ไม่เกิน 5MB
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > maxSize) {
+        alert('❌ ขนาดไฟล์ใหญ่เกินไป! กรุณาอัปโหลดรูปภาพขนาดไม่เกิน 5MB ครับ');
+        e.target.value = ''; // ล้างค่าทิ้ง
+        return;
+    }
+
+    // ถ้ารูปผ่านเงื่อนไข ให้บันทึกและแสดง Preview
+    const reader = new FileReader();
+    reader.onloadend = () => setUploadedSlip({ name: file.name, preview: reader.result });
+    reader.readAsDataURL(file);
   };
 
   const handleConfirm = () => {
@@ -77,7 +91,6 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
     }, 2000);
   };
 
-  // ─── RENDER STATES ───
   if (isApiLoading || !orderSummary) {
     return (
       <main className="min-h-screen bg-[#000000] flex justify-center items-center">
@@ -88,7 +101,6 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
 
   const grandTotal = orderSummary.subtotal - orderSummary.discount + orderSummary.shipping;
 
-  // ─── MAIN RENDER ───
   return (
     <div className="min-h-screen bg-[#000000] text-[#F2F4F6] font-['Kanit'] relative overflow-x-hidden selection:bg-[#990000] selection:text-white pb-20">
       
@@ -167,7 +179,6 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
               </header>
             </section>
 
-            {/* เรียกใช้ Component หลอดสถานะ */}
             <StepBar current={step} />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-12">
@@ -182,15 +193,12 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                         <div aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></div> 
                         <h3 className="text-xl font-['Kanit'] font-bold">เลือกที่อยู่จัดส่ง</h3>
                       </header>
-
-                      {/* เรียกใช้ Component เลือกที่อยู่ */}
                       <AddressSelect 
                         addresses={savedAddresses} 
                         selectedAddr={selectedAddr} 
                         onSelect={setSelectedAddr} 
                       />
                     </div>
-
                     <button onClick={goNext} disabled={!selectedAddr} className="w-full bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] disabled:opacity-50 disabled:cursor-not-allowed text-white py-4 rounded-xl font-['Kanit'] font-bold tracking-wide text-sm transition-all shadow-[0_0_20px_rgba(153,0,0,0.4)] hover:shadow-[0_0_30px_rgba(255,0,0,0.6)] flex items-center justify-center gap-3 active:scale-95 group">
                       ดำเนินการชำระเงิน <ArrowRight aria-hidden="true" className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </button>
@@ -206,15 +214,12 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                         <div aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></div>
                         <h3 className="text-xl font-['Kanit'] font-bold">เลือกวิธีชำระเงิน</h3>
                       </header>
-
-                      {/* เรียกใช้ Component เลือกวิธีจ่ายเงิน */}
                       <PaymentMethod 
                         payMethod={payMethod} 
                         onSelectMethod={setPayMethod} 
                         grandTotal={grandTotal} 
                       />
                     </div>
-
                     <footer className="flex gap-4 pt-4">
                       <button onClick={goBack} className="flex-1 border border-[#990000]/50 text-[#F2F4F6]/60 hover:text-[#FF0000] hover:border-[#FF0000] py-4 rounded-xl font-['Kanit'] text-xs font-bold tracking-wide transition flex items-center justify-center gap-2 group">
                         <ArrowLeft aria-hidden="true" className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> ย้อนกลับ
@@ -226,14 +231,14 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                   </article>
                 )}
 
-                {/* STEP 3: Confirm */}
+                {/* STEP 3: Confirm & Upload Slip */}
                 {step === 3 && (
                   <article className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
                     <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl relative overflow-hidden">
                       <div aria-hidden="true" className="absolute top-0 right-0 w-32 h-32 bg-[#FF0000]/5 blur-[50px] rounded-full pointer-events-none"></div>
                       <header>
                         <h3 className="text-xl font-['Kanit'] font-bold flex items-center gap-3 mb-2"><span className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></span> ยืนยันคำสั่งซื้อ</h3>
-                        <p className="text-[#F2F4F6]/40 text-sm mb-8 pl-5 font-light">โปรดตรวจสอบรายละเอียดให้ถูกต้องก่อนกดยืนยัน</p>
+                        <p className="text-[#F2F4F6]/40 text-sm mb-8 pl-5 font-light">โปรดตรวจสอบรายละเอียดและแนบสลิปชำระเงินก่อนกดยืนยัน</p>
                       </header>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -255,11 +260,11 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                         </div>
                       </div>
 
-                      {/* ส่วนแนบสลิป (แสดงเฉพาะเมื่อเลือกโอนเงิน) */}
-                      {payMethod === 'transfer' && (
+                      {/* ✨ ส่วนแนบสลิป (แสดงทั้งสแกน QR และโอนเงิน) */}
+                      {(payMethod === 'transfer' || payMethod === 'qr') && (
                         <div className="bg-[#0a0a0a] border border-[#990000]/20 rounded-xl p-6 relative overflow-hidden">
                           <div aria-hidden="true" className="absolute top-0 left-0 w-1 h-full bg-[#FF0000]"></div>
-                          <h4 className="text-sm font-['Kanit'] text-[#F2F4F6] tracking-wide mb-4 flex items-center gap-2"><Upload aria-hidden="true" className="w-4 h-4 text-[#FF0000]" /> อัปโหลดสลิปโอนเงิน</h4>
+                          <h4 className="text-sm font-['Kanit'] text-[#F2F4F6] tracking-wide mb-4 flex items-center gap-2"><Upload aria-hidden="true" className="w-4 h-4 text-[#FF0000]" /> อัปโหลดสลิปชำระเงิน</h4>
                           
                           {!uploadedSlip ? (
                             <label className="flex flex-col items-center justify-center border-2 border-dashed border-[#990000]/30 hover:border-[#FF0000] hover:bg-[#FF0000]/5 rounded-xl p-10 cursor-pointer transition-all group">
@@ -268,7 +273,8 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                               </div>
                               <p className="text-sm text-[#F2F4F6]/70 font-bold">คลิกเพื่ออัปโหลดสลิป</p>
                               <p className="text-xs text-[#F2F4F6]/30 mt-1">รองรับไฟล์: JPG, PNG (ขนาดไม่เกิน 5MB)</p>
-                              <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+                              {/* ผูกฟังก์ชันตรวจสอบไฟล์รูปภาพ */}
+                              <input type="file" accept="image/jpeg, image/png, image/jpg" onChange={handleFileUpload} className="hidden" />
                             </label>
                           ) : (
                             <div className="flex items-start gap-4 bg-[#2E0505]/40 border border-[#990000]/30 rounded-xl p-4 animate-in fade-in">
@@ -292,7 +298,8 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                       </button>
                       <button 
                         onClick={handleConfirm} 
-                        disabled={(payMethod === 'transfer' && !uploadedSlip) || loadingAction} 
+                        // ✨ ต้องอัปโหลดสลิปก่อนถึงจะกดปุ่มยืนยันได้
+                        disabled={!uploadedSlip || loadingAction} 
                         className="flex-[2] bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] disabled:opacity-30 disabled:cursor-not-allowed text-white py-4 rounded-xl font-['Kanit'] font-bold tracking-wide text-sm transition-all shadow-[0_0_18px_rgba(153,0,0,0.5)] flex items-center justify-center gap-3 active:scale-95 group relative overflow-hidden"
                       >
                         {loadingAction ? (
@@ -325,7 +332,6 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                   </header>
 
                   <div className={`mt-5 space-y-4 ${showSummary ? 'block' : 'hidden'} lg:block animate-in slide-in-from-top-2`}>
-                    
                     <div className="space-y-3 max-h-60 overflow-y-auto pr-6 custom-scrollbar">
                         {orderSummary.items.map((item, i) => (
                         <article key={i} className="flex items-start justify-between group">

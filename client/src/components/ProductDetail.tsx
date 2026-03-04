@@ -65,16 +65,20 @@ const ProductDetail: React.FC = () => {
     window.scrollTo(0, 0);
   }, [id]);
 
-  // ✨ ฟังก์ชันสำหรับกดปุ่ม "เพิ่มลงตะกร้า"
+  // ✨ แยกฟังก์ชันยิง API ออกมา เพื่อให้ใช้ร่วมกันได้โดยที่ Alert ไม่ตีกัน
+  const addToCartAPI = async () => {
+    await axios.post('http://localhost:3000/api/cart/add', {
+      userId: 1, 
+      productId: product!.id,
+      quantity: quantity
+    });
+  };
+
+  // 🛒 ฟังก์ชันสำหรับกดปุ่ม "ใส่ตะกร้า" (มี Alert แจ้งเตือน)
   const handleAddToCart = async () => {
     if (!product) return;
     try {
-      // ยิง API ไปบันทึกลงตาราง cart_items (สมมติว่า user_id = 1 สำหรับการทดสอบ)
-      await axios.post('http://localhost:3000/api/cart/add', {
-        userId: 1, 
-        productId: product.id,
-        quantity: quantity
-      });
+      await addToCartAPI();
       alert('✅ เพิ่มสินค้าลงตะกร้าเรียบร้อยแล้ว!');
     } catch (error) {
       console.error("❌ ไม่สามารถเพิ่มสินค้าลงตะกร้าได้:", error);
@@ -82,10 +86,15 @@ const ProductDetail: React.FC = () => {
     }
   };
 
-  // ✨ ฟังก์ชันสำหรับกดปุ่ม "ซื้อเลย" (หยิบใส่ตะกร้าแล้ววาร์ปไปหน้าชำระเงิน)
+  // ⚡ ฟังก์ชันสำหรับกดปุ่ม "ซื้อเลย" (ไม่มี Alert เด้งไปตะกร้าเลยแบบสมูทๆ)
   const handleBuyNow = async () => {
-    await handleAddToCart(); // รอให้เพิ่มลงตะกร้าเสร็จก่อน
-    navigate('/cart');       // แล้วค่อยพาไปหน้าตะกร้า
+    if (!product) return;
+    try {
+      await addToCartAPI(); 
+      navigate('/cart'); // วาร์ปไปหน้าตะกร้าทันที
+    } catch (error) {
+      console.error("❌ ไม่สามารถดำเนินการได้:", error);
+    }
   };
 
   if (loading) return <div className="min-h-screen bg-[#0f0f12] flex items-center justify-center text-white">กำลังโหลด...</div>;
@@ -152,7 +161,6 @@ const ProductDetail: React.FC = () => {
                 </div>
 
                 <div className="flex gap-4 mt-auto">
-                    {/* ✨ ผูกฟังก์ชันเข้ากับปุ่ม */}
                     <button onClick={handleAddToCart} className="flex-1 bg-[#18181b] border border-white/20 hover:bg-white hover:text-black text-white py-3.5 rounded-lg font-bold transition flex items-center justify-center gap-2 group">
                         <span className="group-hover:scale-110 transition">🛒</span> ใส่ตะกร้า
                     </button>

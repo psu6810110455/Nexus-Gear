@@ -38,7 +38,7 @@ const Sidebar = () => {
               to={item.path}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                 isActive
-                  ? "bg-linear-to-r from-red-900/50 to-transparent text-red-400 border-l-4 border-red-500"
+                  ? "bg-gradient-to-r from-red-900/50 to-transparent text-red-400 border-l-4 border-red-500"
                   : "hover:bg-zinc-900 hover:text-white"
               }`}
             >

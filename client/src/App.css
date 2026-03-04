@@ -1,6 +1,58 @@
-/* src/App.css */
+/* ============================================================
+   src/App.css — Global CSS Variables & Base Styles
+   ============================================================ */
+
 #root {
   width: 100%;
   margin: 0;
   padding: 0;
 }
+
+/* ── Color Tokens ─────────────────────────────────────────────
+   ใช้งาน: var(--clr-primary), var(--clr-bg-dark) ฯลฯ
+   ---------------------------------------------------------- */
+:root {
+  /* Brand */
+  --clr-primary:        #ff0000;
+  --clr-primary-dark:   #cc0000;
+  --clr-primary-hover:  #dc2626;   /* red-600 */
+  --clr-primary-deep:   #b91c1c;   /* red-700 */
+
+  /* Dark backgrounds */
+  --clr-bg-base:        #050505;
+  --clr-bg-dark:        #0a0a0a;
+  --clr-bg-darker:      #0d0000;
+  --clr-bg-card:        #121212;
+  --clr-bg-panel:       #18181b;
+  --clr-bg-input:       #150000;
+
+  /* Borders */
+  --clr-border-red:     rgba(185, 28, 28, 0.3);   /* red-900/30 */
+  --clr-border-zinc:    rgba(63, 63, 70, 0.8);    /* zinc-800/80 */
+
+  /* Text */
+  --clr-text-muted:     #71717a;   /* zinc-500 */
+  --clr-text-dim:       #52525b;   /* zinc-600 */
+
+  /* Status */
+  --clr-success:        #16a34a;   /* green-700 */
+  --clr-error:          #b91c1c;   /* red-700 */
+}
+
+/* ── Utility: hide scrollbar ──────────────────────────────── */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Animations ───────────────────────────────────────────── */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in { animation: fade-in 0.3s ease forwards; }
+
+@keyframes bounce-in {
+  0%   { opacity: 0; transform: scale(0.9); }
+  60%  { transform: scale(1.03); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.animate-bounce-in { animation: bounce-in 0.35s ease forwards; }

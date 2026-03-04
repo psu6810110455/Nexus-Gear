@@ -1,141 +1,82 @@
 // ============================================================
-// src/services/api.ts
-// Service Layer — API calls ทั้งหมดอยู่ที่นี่
+// src/shared/services/api.ts
 // ============================================================
 
 import axios from 'axios';
-import type { Order, OrderItem, Product, CartItem, Category, SalesData } from '../types/index';
 
+const BASE_URL = 'http://localhost:3000';
 
-const api = axios.create({
-  baseURL: 'http://localhost:3000',
-  headers: { 'Content-Type': 'application/json' },
-});
+const api = axios.create({ baseURL: BASE_URL });
 
-// ── Auth Token interceptor ──────────────────────────────────
+// ── Auto-attach token ─────────────────────────────────────────
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
-// ══════════════════════════════════════════════════════════════
-// ORDERS
-// ══════════════════════════════════════════════════════════════
-export const getOrders = async (): Promise<Order[]> => {
-  const res = await api.get<Order[]>('/orders');
-  return res.data;
-};
+// ── Auth ──────────────────────────────────────────────────────
+export const loginApi = (email: string, password: string) =>
+  api.post('/auth/login', { email, password }).then((r) => r.data);
 
-export const updateOrderStatus = async (id: number, status: string): Promise<Order> => {
-  const res = await api.patch<Order>(`/orders/${id}/status`, { status });
-  return res.data;
-};
+export const registerApi = (name: string, email: string, password: string) =>
+  api.post('/users/register', { name, email, password }).then((r) => r.data);
 
-export const getUserOrders = async (userId: number): Promise<Order[]> => {
-  const res = await api.get<Order[]>(`/orders/user/${userId}`);
-  return res.data;
-};
+// ── Products ──────────────────────────────────────────────────
+export const getProducts = () =>
+  api.get('/products').then((r) => r.data);
 
-export const submitOrderRating = async (
-  orderId: number,
-  ratings: Record<number, number>
-): Promise<void> => {
-  await api.post(`/orders/${orderId}/rate`, { ratings });
-};
+export const getProductById = (id: string | number) =>
+  api.get(`/products/${id}`).then((r) => r.data);
 
-// ══════════════════════════════════════════════════════════════
-// PRODUCTS
-// ══════════════════════════════════════════════════════════════
-export const getProducts = async (): Promise<Product[]> => {
-  const res = await api.get<Product[]>(`/products?t=${Date.now()}`);
-  return res.data;
-};
+export const createProduct = (data: object) =>
+  api.post('/products', data).then((r) => r.data);
 
-export const createProduct = async (payload: Omit<Product, 'id'>): Promise<Product> => {
-  const res = await api.post<Product>('/products', payload);
-  return res.data;
-};
+export const updateProduct = (id: number, data: object) =>
+  api.patch(`/products/${id}`, data).then((r) => r.data);
 
-export const updateProduct = async (id: number, payload: Partial<Product>): Promise<Product> => {
-  const res = await api.patch<Product>(`/products/${id}`, payload);
-  return res.data;
-};
+export const deleteProduct = (id: number) =>
+  api.delete(`/products/${id}`).then((r) => r.data);
 
-export const deleteProduct = async (id: number): Promise<void> => {
-  await api.delete(`/products/${id}`);
-};
+// ── Categories ────────────────────────────────────────────────
+export const getCategories = () =>
+  api.get('/categories').then((r) => r.data);
 
-export const getProductById = async (id: number): Promise<Product> => {
-  const res = await api.get<Product>(`/products/${id}`);
-  return res.data;
-};
+export const createCategory = (name: string) =>
+  api.post('/categories', { name }).then((r) => r.data);
 
-// ══════════════════════════════════════════════════════════════
-// CATEGORIES
-// ══════════════════════════════════════════════════════════════
-export const getCategories = async (): Promise<Category[]> => {
-  const res = await api.get<Category[]>('/categories');
-  return res.data;
-};
+export const updateCategory = (id: number, name: string) =>
+  api.patch(`/categories/${id}`, { name }).then((r) => r.data);
 
-export const createCategory = async (name: string): Promise<Category> => {
-  const res = await api.post<Category>('/categories', { name });
-  return res.data;
-};
+export const deleteCategory = (id: number) =>
+  api.delete(`/categories/${id}`).then((r) => r.data);
 
-export const updateCategory = async (id: number, name: string): Promise<Category> => {
-  const res = await api.patch<Category>(`/categories/${id}`, { name });
-  return res.data;
-};
+// ── Orders ────────────────────────────────────────────────────
+export const getOrders = () =>
+  api.get('/orders').then((r) => r.data);
 
-export const deleteCategory = async (id: number): Promise<void> => {
-  await api.delete(`/categories/${id}`);
-};
+export const getUserOrders = (userId: number) =>
+  api.get(`/orders/user/${userId}`).then((r) => r.data);
 
-// ══════════════════════════════════════════════════════════════
-// CART
-// ══════════════════════════════════════════════════════════════
-export const getCart = async (): Promise<CartItem[]> => {
-  const res = await api.get<CartItem[]>('/cart');
-  return res.data;
-};
+export const updateOrderStatus = (id: number, status: string) =>
+  api.patch(`/orders/${id}/status`, { status }).then((r) => r.data);
 
-export const addToCart = async (productId: number, quantity: number): Promise<void> => {
-  await api.post('/cart/add', { productId, quantity });
-};
+export const submitOrderRating = (orderId: number, ratings: Record<number, number>) =>
+  api.post(`/orders/${orderId}/rating`, { ratings }).then((r) => r.data);
 
-export const removeFromCart = async (cartItemId: number): Promise<void> => {
-  await api.delete(`/cart/${cartItemId}`);
-};
+// ── Cart ──────────────────────────────────────────────────────
+export const getCart = () =>
+  api.get('/cart').then((r) => r.data);
 
-// ══════════════════════════════════════════════════════════════
-// DASHBOARD
-// ══════════════════════════════════════════════════════════════
-export const getSalesData = async (): Promise<SalesData[]> => {
-  const res = await api.get<SalesData[]>('/sales-data');
-  return res.data;
-};
+export const addToCart = (productId: number, quantity: number) =>
+  api.post('/cart/add', { productId, quantity }).then((r) => r.data);
 
-// ══════════════════════════════════════════════════════════════
-// AUTH
-// ══════════════════════════════════════════════════════════════
-export const login = async (
-  email: string,
-  password: string
-): Promise<{ access_token: string }> => {
-  const res = await api.post('/auth/login', { email, password });
-  return res.data;
-};
+export const removeFromCart = (id: number) =>
+  api.delete(`/cart/${id}`).then((r) => r.data);
 
-export const register = async (
-  name: string,
-  email: string,
-  password: string
-): Promise<{ message: string }> => {
-  const res = await api.post('/users/register', { name, email, password });
-  return res.data;
-};
+// ── Sales ─────────────────────────────────────────────────────
+export const getSalesData = () =>
+  api.get('/sales-data').then((r) => r.data);
 
-export default api;
-export type { Order, OrderItem, Product, CartItem, Category, SalesData };
+// ── Re-export types (for backward compat) ────────────────────
+export type { Order, OrderItem, Product, Category } from '../types';

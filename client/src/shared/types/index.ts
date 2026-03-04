@@ -1,22 +1,12 @@
 // ============================================================
-// src/types/index.ts
-// รวม Types / Interfaces ทั้งหมดไว้ที่เดียว
+// src/shared/types/index.ts
 // ============================================================
 
-// ---------- AUTH ----------
-export interface AuthUser {
-  id: number;
-  username: string;
-  email: string;
-}
-
-// ---------- CATEGORY ----------
 export interface Category {
   id: number;
   name: string;
 }
 
-// ---------- PRODUCT ----------
 export interface Product {
   id: number;
   name: string;
@@ -28,16 +18,25 @@ export interface Product {
   category?: Category | string;
 }
 
-export interface ProductFormData {
-  name: string;
-  description: string;
-  price: string;
-  stock: string;
-  imageUrl: string;
-  categoryId: string;
+export interface OrderItem {
+  id: number;
+  quantity: number;
+  price_at_purchase: string;
+  product: { name: string; image_url: string };
+  rating?: number;
 }
 
-// ---------- CART ----------
+export interface Order {
+  id: number;
+  total_price: string;
+  status: string;
+  created_at: string;
+  shipping_address: string;
+  items: OrderItem[];
+  is_rated?: boolean;
+  user?: { username: string };
+}
+
 export interface CartItem {
   cart_item_id: number;
   product_id: number;
@@ -48,42 +47,6 @@ export interface CartItem {
   total_price: string;
 }
 
-// ---------- ORDER ----------
-export type OrderStatus =
-  | 'pending'
-  | 'paid'
-  | 'to_ship'
-  | 'shipped'
-  | 'completed'
-  | 'cancelled';
-
-export interface OrderItem {
-  id: number;
-  quantity: number;
-  price_at_purchase: string;
-  product: {
-    name: string;
-    price?: string;
-    image_url?: string;
-  };
-  rating?: number;
-}
-
-export interface Order {
-  id: number;
-  user?: {
-    username: string;
-    email: string;
-  };
-  total_price: string;
-  status: OrderStatus;
-  shipping_address: string;
-  created_at: string;
-  items: OrderItem[];
-  is_rated?: boolean;
-}
-
-// ---------- DASHBOARD ----------
 export interface SalesData {
   name: string;
   sales: number;

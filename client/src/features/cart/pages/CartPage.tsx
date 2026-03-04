@@ -114,16 +114,6 @@ export default function CartPage({ onNavigate }: CartProps) {
     setCouponSuccess('');
   };
 
-  // ✨ จัดการเมื่อกดปุ่มชำระเงิน (พาไปหน้า Payment)
-  const handleCheckout = () => {
-    if (selectedItems.length === 0) {
-      alert("กรุณาเลือกสินค้าอย่างน้อย 1 ชิ้นเพื่อดำเนินการต่อ");
-      return;
-    }
-    // เปลี่ยนหน้าไปที่ Payment
-    onNavigate?.('payment'); 
-  };
-
   // ─── 4. CALCULATIONS ───
   const selectedCartItems = cartItems.filter(i => selectedItems.includes(i.id));
   const subtotal = selectedCartItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
@@ -137,6 +127,34 @@ export default function CartPage({ onNavigate }: CartProps) {
       : appliedCoupon.value;
   }
   const grandTotal = Math.max(0, subtotal - discountAmount + shippingFee);
+
+  // ✨ จัดการเมื่อกดปุ่มชำระเงิน (แพ็คข้อมูลใส่ localStorage แล้วพาไปหน้า Payment)
+  const handleCheckout = () => {
+    if (selectedItems.length === 0) {
+      alert("กรุณาเลือกสินค้าอย่างน้อย 1 ชิ้นเพื่อดำเนินการต่อ");
+      return;
+    }
+
+    // สร้างแพ็กเกจข้อมูลที่ลูกค้าเลือกไว้ (ใส่ : any เพื่อแก้ปัญหา TypeScript แดง)
+    const checkoutData = {
+      items: selectedCartItems.map((item: any) => ({
+        name: item.name,
+        price: item.price,
+        qty: item.quantity,
+        imageUrl: item.imageUrl || item.image_url
+      })),
+      subtotal: subtotal,
+      discount: discountAmount,
+      shipping: shippingFee,
+      coupon: appliedCoupon ? appliedCoupon.code : 'ไม่มี'
+    };
+
+    // ยัดใส่กระเป๋า (localStorage)
+    localStorage.setItem('checkoutSession', JSON.stringify(checkoutData));
+
+    // เปลี่ยนหน้าไปที่ Payment
+    onNavigate?.('payment'); 
+  };
 
   // ─── 5. RENDER STATES ───
   if (isLoading) {

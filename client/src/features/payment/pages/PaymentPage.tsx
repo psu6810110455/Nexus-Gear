@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, Check, MapPin, CreditCard, ShoppingCart, Upload, Loader, ChevronDown, ChevronUp } from 'lucide-react';
 
-import { fetchAddresses, fetchOrderSummary } from '../services/payment.service';
+import { fetchAddresses } from '../services/payment.service';
 import type { Address, OrderSummaryData } from '../types/payment.types';
 import StepBar from '../components/StepBar';
 import AddressSelect from '../components/AddressSelect';
@@ -34,19 +34,29 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
   useEffect(() => {
     const loadData = async () => {
       setIsApiLoading(true);
-      const [addrs, summary] = await Promise.all([
-        fetchAddresses(),
-        fetchOrderSummary()
-      ]);
+      
+      // ดึงแค่ที่อยู่มาก็พอ (ไม่ต้องดึง Mock Data)
+      const addrs = await fetchAddresses();
       setSavedAddresses(addrs);
-      setOrderSummary(summary);
+      
+      // ✨ เปิดกระเป๋า (localStorage) เอาข้อมูลตะกร้าของจริงออกมาโชว์
+      const sessionData = localStorage.getItem('checkoutSession');
+      if (sessionData) {
+        setOrderSummary(JSON.parse(sessionData));
+      } else {
+        // ถ้าไม่มีข้อมูลแปลว่าแอบพิมพ์ URL เข้ามาตรงๆ ให้เด้งกลับไปหน้าตะกร้า
+        alert('ไม่พบข้อมูลคำสั่งซื้อ กรุณาเลือกสินค้าในตะกร้าใหม่ครับ');
+        if (onNavigate) onNavigate('cart');
+        return;
+      }
       
       const defaultAddr = addrs.find(a => a.isDefault);
       if (defaultAddr) setSelectedAddr(defaultAddr.id);
+      
       setIsApiLoading(false);
     };
     loadData();
-  }, []);
+  }, [onNavigate]);
 
   const goNext = () => { 
     window.scrollTo({ top: 0, behavior: 'smooth' }); 
@@ -55,7 +65,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
   
   const goBack = () => setStep((s) => Math.max(1, s - 1));
 
-  // ✨ ฟังก์ชันจัดการอัปโหลดสลิปแบบ Secure (เช็คประเภทไฟล์ + ขนาดไม่เกิน 5MB)
+  // ฟังก์ชันจัดการอัปโหลดสลิปแบบ Secure
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -85,6 +95,8 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
   const handleConfirm = () => {
     setLoadingAction(true);
     setTimeout(() => { 
+      // เมื่อสั่งซื้อสำเร็จ ให้ลบข้อมูลตะกร้าออกจาก localStorage เพื่อความปลอดภัย
+      localStorage.removeItem('checkoutSession');
       setLoadingAction(false); 
       setConfirmed(true); 
       window.scrollTo(0,0); 
@@ -333,11 +345,12 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
 
                   <div className={`mt-5 space-y-4 ${showSummary ? 'block' : 'hidden'} lg:block animate-in slide-in-from-top-2`}>
                     <div className="space-y-3 max-h-60 overflow-y-auto pr-6 custom-scrollbar">
-                        {orderSummary.items.map((item, i) => (
+                        {/* ใส่ : any เพื่อแก้ปัญหา TypeScript แดง */}
+                        {orderSummary.items.map((item: any, i) => (
                         <article key={i} className="flex items-start justify-between group">
                             <div className="flex items-start gap-3">
-                                <figure className="w-8 h-8 rounded bg-[#1a1a1a] border border-[#990000]/20 flex items-center justify-center text-[10px] text-[#F2F4F6]/30 m-0">
-                                  IMG
+                                <figure className="w-8 h-8 rounded bg-[#1a1a1a] border border-[#990000]/20 flex items-center justify-center text-[10px] text-[#F2F4F6]/30 m-0 overflow-hidden">
+                                  {item.imageUrl ? <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover opacity-80" /> : 'IMG'}
                                 </figure>
                                 <div>
                                   <p className="text-sm text-[#F2F4F6]/90 truncate font-bold w-32 group-hover:text-[#FF0000] transition-colors">{item.name}</p>

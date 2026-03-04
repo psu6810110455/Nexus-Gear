@@ -124,7 +124,7 @@ function HomePage() {
           background: linear-gradient(to bottom, transparent, #dc2626, transparent);
         }
         .hero-content {
-          position: relative; z-index: 10; width: 100%; max-width: 1400px;
+          position: relative; z-index: 10; width: 100%; padding: 0 4rem;
           margin: 0 auto; padding: 0 2rem;
           display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 4rem;
         }
@@ -402,7 +402,7 @@ function HomePage() {
         <div className="hero-content" style={{ paddingTop: '4rem' }}>
           {/* Text */}
           <div className="hero-text-side">
-            <div className="hero-tag">NEXUS GEAR — FEATURED PRODUCT</div>
+            <div className="hero-tag">NEXUS GEAR — MUST-HAVE PRODUCT</div>
             <h1 className={`hero-product-name ${isAnimating ? 'slide-exit' : 'slide-enter'}`}>
               {current.name}
             </h1>
@@ -451,7 +451,7 @@ function HomePage() {
       <div className="red-divider"></div>
 
       {/* ── Featured Products Grid ── */}
-      <section style={{ padding: '5rem 2rem', maxWidth: 1400, margin: '0 auto' }}>
+      <section style={{ padding: '5rem 2rem'}}>
         <div className="section-label">— {language === 'TH' ? 'คัดสรรมาเพื่อคุณ' : 'HAND PICKED'} —</div>
         <h2 className="section-title">{t.promo}</h2>
 

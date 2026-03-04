@@ -57,7 +57,7 @@ const Navbar = () => {
         }
         .nb-inner {
           display: flex; align-items: center; justify-content: space-between;
-          padding: 0 2.5rem; height: 64px; max-width: 1400px; margin: 0 auto;
+          padding: 0 2.5rem; height: 64px;
         }
         .nb-logo-text {
           font-family: 'Orbitron', sans-serif; font-weight: 900;

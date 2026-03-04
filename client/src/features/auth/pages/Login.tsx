@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '../../auth/context/AuthContext';
 
-/* ไอคอน SVG แยกออกมาจาก JSX หลักให้อ่านง่ายขึ้น */
 const IconInfo = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
@@ -22,6 +22,7 @@ const IconEyeOff = () => (
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail]               = useState('');
   const [password, setPassword]         = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -30,7 +31,7 @@ const Login = () => {
     e.preventDefault();
     try {
       const { data } = await axios.post('http://localhost:3000/auth/login', { email, password });
-      localStorage.setItem('token', data.access_token);
+      login(data.access_token);
       alert('ยินดีต้อนรับกลับสู่ Nexus Gear!');
       navigate('/');
     } catch (err: any) {
@@ -42,9 +43,7 @@ const Login = () => {
     <div className="auth-page-wrapper">
       <div className="auth-container">
         <div className="auth-bg-lines" aria-hidden="true" />
-
         <div className="auth-card">
-          {/* Header */}
           <div style={{ position: 'relative', marginBottom: '0.5rem' }}>
             <Link
               to="/"
@@ -59,42 +58,30 @@ const Login = () => {
             <h1 className="auth-title">เข้าสู่ระบบ</h1>
           </div>
 
-          {/* Form */}
           <form onSubmit={handleSubmit} noValidate>
-            {/* Email */}
             <div style={{ marginBottom: '1.5rem' }}>
               <label htmlFor="email" style={{ display: 'block', color: '#fff', marginBottom: '0.5rem' }}>อีเมล</label>
               <div className="auth-input-wrap">
                 <input
-                  id="email"
-                  type="email"
-                  placeholder="ที่อยู่อีเมล"
-                  className="auth-input"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
+                  id="email" type="email" placeholder="ที่อยู่อีเมล"
+                  className="auth-input" value={email}
+                  onChange={(e) => setEmail(e.target.value)} required
                 />
               </div>
             </div>
 
-            {/* Password */}
             <div style={{ marginBottom: '1.25rem' }}>
               <label htmlFor="password" style={{ display: 'block', color: '#fff', marginBottom: '0.5rem' }}>รหัสผ่าน</label>
               <div className="auth-input-wrap">
                 <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="กรอกรหัสผ่านของคุณ"
-                  className="auth-input"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
+                  id="password" type={showPassword ? 'text' : 'password'}
+                  placeholder="กรอกรหัสผ่านของคุณ" className="auth-input"
+                  value={password} onChange={(e) => setPassword(e.target.value)} required
                 />
                 <span style={{ display: 'flex', gap: '6px', alignItems: 'center', color: '#888' }}>
                   <IconInfo />
                   <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
+                    type="button" onClick={() => setShowPassword(!showPassword)}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888', display: 'flex', alignItems: 'center' }}
                     aria-label={showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}
                   >
@@ -104,7 +91,6 @@ const Login = () => {
               </div>
             </div>
 
-            {/* Remember + Forgot */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', color: '#ccc', fontSize: '0.9rem' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                 <input type="checkbox" />
@@ -114,8 +100,7 @@ const Login = () => {
             </div>
 
             <button
-              type="submit"
-              className="btn-primary"
+              type="submit" className="btn-primary"
               style={{ width: '100%', padding: '14px', fontFamily: 'Orbitron, sans-serif', fontSize: '1.4rem', textTransform: 'lowercase' }}
             >
               เข้าสู่ระบบ
@@ -128,7 +113,6 @@ const Login = () => {
           </p>
         </div>
       </div>
-
       <div className="auth-bottom-bar" aria-hidden="true" />
     </div>
   );

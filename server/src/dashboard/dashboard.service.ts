@@ -22,12 +22,24 @@ export class DashboardService {
        LIMIT 5`
     );
 
+    // ✨ 3. ดึงยอดขายย้อนหลัง 7 วัน (จัดกลุ่มตามวัน สำหรับทำกราฟ)
+    const salesChartData: any = await this.db.query(
+      `SELECT 
+        DATE_FORMAT(created_at, '%d/%m') as label,
+        SUM(total) as amount
+       FROM orders
+       WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+       GROUP BY DATE(created_at), DATE_FORMAT(created_at, '%d/%m')
+       ORDER BY DATE(created_at) ASC`
+    );
+
     return {
       success: true,
       data: {
-        totalOrders: summaryResult[0].totalOrders,
-        totalSales: summaryResult[0].totalSales,
-        recentOrders: recentOrders
+        totalOrders: Number(summaryResult[0]?.totalOrders) || 0,
+        totalSales: Number(summaryResult[0]?.totalSales) || 0,
+        recentOrders: recentOrders,
+        salesChart: salesChartData // ✨ ส่งข้อมูลกราฟออกไปให้หน้าเว็บ
       }
     };
   }

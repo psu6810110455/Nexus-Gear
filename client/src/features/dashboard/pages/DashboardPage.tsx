@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Package, DollarSign, Users, Activity, ArrowLeft } from 'lucide-react';
 
-// นำเข้า Components ที่เราเพิ่งสร้าง
+// นำเข้า Components
 import StatCard from '../components/StatCard';
 import SalesChart from '../components/SalesChart';
 import RecentActivity from '../components/RecentActivity';
@@ -16,7 +16,8 @@ export default function DashboardPage({ onNavigate }: DashboardProps) {
   const [dashboardData, setDashboardData] = useState({
     totalSales: 0,
     totalOrders: 0,
-    recentOrders: []
+    recentOrders: [],
+    salesChart: [] // ✨ เพิ่ม state สำหรับเก็บข้อมูลกราฟ
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -73,7 +74,6 @@ export default function DashboardPage({ onNavigate }: DashboardProps) {
           
           {/* แถวที่ 1: การ์ดสถิติ 4 ใบ */}
           <section aria-label="สถิติภาพรวม" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* ✨ จุดที่แก้ไข: เปลี่ยนมาใช้ข้อมูลจริงจาก Database */}
             <StatCard 
               title="ยอดขายรวมทั้งหมด" 
               value={`฿${Number(dashboardData.totalSales).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} 
@@ -86,16 +86,16 @@ export default function DashboardPage({ onNavigate }: DashboardProps) {
               trend={0} 
               icon={Package} 
             />
-            {/* 2 อันล่างนี้ใส่ไว้เป็น Mock ไปก่อน เพราะเรายังไม่ได้ทำระบบ User/Traffic */}
+            {/* 2 อันล่างนี้ใส่ไว้เป็น Mock ไปก่อน */}
             <StatCard title="ลูกค้าสมัครใหม่" value="1,204" trend={-2.4} icon={Users} />
             <StatCard title="อัตราการเข้าชม" value="45.2K" trend={15.0} icon={Activity} />
           </section>
 
           {/* แถวที่ 2: กราฟ และ กิจกรรมล่าสุด */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <SalesChart />
+            {/* ✨ จุดสำคัญ: ส่งข้อมูลยอดขายรายวันไปให้กราฟแท่ง */}
+            <SalesChart data={dashboardData.salesChart} />
             
-            {/* ✨ ส่งข้อมูล orders จริงๆ ลงไปให้ Component นี้ */}
             <RecentActivity orders={dashboardData.recentOrders} />
           </div>
 

@@ -10,7 +10,7 @@ interface Product {
   stock: number;
   imageUrl?: string;
   image_url?: string;
-  category?: { id: number; name: string };
+  category?: { id: number; name: string } | string;
 }
 
 const ProductDetail: React.FC = () => {
@@ -20,6 +20,7 @@ const ProductDetail: React.FC = () => {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+
   const handleQuantityChange = (type: 'increase' | 'decrease') => {
     if (type === 'decrease' && quantity > 1) {
       setQuantity(quantity - 1);
@@ -38,7 +39,6 @@ const ProductDetail: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // ดึง Token เผื่อ API ต้องการ Auth
         const token = localStorage.getItem('token');
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
@@ -47,9 +47,11 @@ const ProductDetail: React.FC = () => {
         setProduct(currentProduct);
 
         const allProductsRes = await axios.get('http://localhost:3000/products', { headers });
-        const related = allProductsRes.data.filter((p: Product) => 
-          p.category?.name === currentProduct.category?.name && p.id !== currentProduct.id
-        ).slice(0, 4);
+        const related = allProductsRes.data.filter((p: Product) => {
+           const catName1 = typeof p.category === 'object' ? p.category?.name : p.category;
+           const catName2 = typeof currentProduct.category === 'object' ? currentProduct.category?.name : currentProduct.category;
+           return catName1 === catName2 && p.id !== currentProduct.id;
+        }).slice(0, 4);
 
         setRelatedProducts(related);
         setLoading(false);
@@ -62,6 +64,29 @@ const ProductDetail: React.FC = () => {
     fetchData();
     window.scrollTo(0, 0);
   }, [id]);
+
+  // ✨ ฟังก์ชันสำหรับกดปุ่ม "เพิ่มลงตะกร้า"
+  const handleAddToCart = async () => {
+    if (!product) return;
+    try {
+      // ยิง API ไปบันทึกลงตาราง cart_items (สมมติว่า user_id = 1 สำหรับการทดสอบ)
+      await axios.post('http://localhost:3000/api/cart/add', {
+        userId: 1, 
+        productId: product.id,
+        quantity: quantity
+      });
+      alert('✅ เพิ่มสินค้าลงตะกร้าเรียบร้อยแล้ว!');
+    } catch (error) {
+      console.error("❌ ไม่สามารถเพิ่มสินค้าลงตะกร้าได้:", error);
+      alert('เกิดข้อผิดพลาด ไม่สามารถเพิ่มสินค้าลงตะกร้าได้ครับ');
+    }
+  };
+
+  // ✨ ฟังก์ชันสำหรับกดปุ่ม "ซื้อเลย" (หยิบใส่ตะกร้าแล้ววาร์ปไปหน้าชำระเงิน)
+  const handleBuyNow = async () => {
+    await handleAddToCart(); // รอให้เพิ่มลงตะกร้าเสร็จก่อน
+    navigate('/cart');       // แล้วค่อยพาไปหน้าตะกร้า
+  };
 
   if (loading) return <div className="min-h-screen bg-[#0f0f12] flex items-center justify-center text-white">กำลังโหลด...</div>;
   if (!product) return <div className="min-h-screen bg-[#0f0f12] flex items-center justify-center text-white">ไม่พบสินค้า</div>;
@@ -91,7 +116,9 @@ const ProductDetail: React.FC = () => {
 
             <div className="w-full md:w-2/5 flex flex-col">
                 <div className="mb-2">
-                    <span className="text-red-500 text-xs font-bold tracking-widest uppercase border border-red-500/30 px-2 py-1 rounded">{product.category?.name || 'GAMING GEAR'}</span>
+                    <span className="text-red-500 text-xs font-bold tracking-widest uppercase border border-red-500/30 px-2 py-1 rounded">
+                        {typeof product.category === 'object' ? product.category?.name : product.category || 'GAMING GEAR'}
+                    </span>
                 </div>
                 <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">{product.name}</h1>
                 
@@ -125,30 +152,26 @@ const ProductDetail: React.FC = () => {
                 </div>
 
                 <div className="flex gap-4 mt-auto">
-                    <button className="flex-1 bg-[#18181b] border border-white/20 hover:bg-white hover:text-black text-white py-3.5 rounded-lg font-bold transition flex items-center justify-center gap-2 group">
+                    {/* ✨ ผูกฟังก์ชันเข้ากับปุ่ม */}
+                    <button onClick={handleAddToCart} className="flex-1 bg-[#18181b] border border-white/20 hover:bg-white hover:text-black text-white py-3.5 rounded-lg font-bold transition flex items-center justify-center gap-2 group">
                         <span className="group-hover:scale-110 transition">🛒</span> ใส่ตะกร้า
                     </button>
-                    <button className="flex-1 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white py-3.5 rounded-lg font-bold shadow-lg shadow-red-900/40 transition transform active:scale-95">
+                    <button onClick={handleBuyNow} className="flex-1 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white py-3.5 rounded-lg font-bold shadow-lg shadow-red-900/40 transition transform active:scale-95">
                         ซื้อเลย
                     </button>
                 </div>
                 
                 <div className="mt-8 pt-6 border-t border-white/10">
-                    <p className="text-xs text-gray-500 uppercase font-bold mb-3 flex items-center gap-2">
-                         อุปกรณ์ภายในกล่อง 📦
-                    </p>
+                    <p className="text-xs text-gray-500 uppercase font-bold mb-3 flex items-center gap-2">อุปกรณ์ภายในกล่อง 📦</p>
                     <div className="flex gap-3 opacity-60">
                          <div className="w-12 h-12 bg-white/5 border border-white/10 rounded flex flex-col items-center justify-center text-[8px] gap-1">
-                            <span>📄</span>
-                            <span>Manual</span>
+                            <span>📄</span><span>Manual</span>
                          </div>
                          <div className="w-12 h-12 bg-white/5 border border-white/10 rounded flex flex-col items-center justify-center text-[8px] gap-1">
-                            <span>🔌</span>
-                            <span>Cable</span>
+                            <span>🔌</span><span>Cable</span>
                          </div>
                          <div className="w-12 h-12 bg-white/5 border border-white/10 rounded flex flex-col items-center justify-center text-[8px] gap-1">
-                            <span>🛡️</span>
-                            <span>Warranty</span>
+                            <span>🛡️</span><span>Warranty</span>
                          </div>
                     </div>
                 </div>
@@ -183,65 +206,6 @@ const ProductDetail: React.FC = () => {
                 </div>
             </div>
         </div>
-
-        <div className="mb-16">
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
-                <span className="w-1.5 h-8 bg-gray-600 rounded-full block"></span> รีวิวจากลูกค้า (Customer Reviews)
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                 {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="bg-[#18181b] p-6 rounded-xl border border-white/5 flex gap-4 hover:border-white/10 transition">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-700 to-black border border-white/10 flex items-center justify-center font-bold text-gray-500">U{i}</div>
-                        <div>
-                            <div className="flex items-center gap-2 mb-1">
-                                <span className="font-bold text-sm text-white">Pro_Gamer_{i}</span>
-                                <div className="flex text-[10px]">{renderStars(5)}</div>
-                            </div>
-                            <p className="text-sm text-gray-400 italic">
-                                "{i % 2 === 0 ? "จัดส่งไวมาก แพ็คของมาดี สินค้าตรงปกครับ" : "ใช้งานดีมาก เสียงเงียบ ปุ่มนิ่ม คุ้มราคาที่สุด"}"
-                            </p>
-                        </div>
-                    </div>
-                 ))}
-            </div>
-        </div>
-
-        <div className="border-t border-white/10 pt-10">
-            <h3 className="text-2xl font-bold mb-8 text-white flex items-center gap-2">
-                สินค้าที่คุณอาจจะชอบ <span className="text-red-600 text-sm font-normal cursor-pointer hover:underline">ดูทั้งหมด →</span>
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {relatedProducts.length > 0 ? relatedProducts.map((relProduct) => (
-                    <div 
-                        key={relProduct.id} 
-                        onClick={() => navigate(`/products/${relProduct.id}`)}
-                        className="cursor-pointer group bg-[#18181b] border border-white/5 rounded-xl overflow-hidden hover:border-red-600/50 transition-all shadow-lg hover:shadow-red-900/10"
-                    >
-                        <div className="h-48 bg-white p-6 flex items-center justify-center overflow-hidden relative">
-                             <div className="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">-15%</div>
-                            <img 
-                                src={relProduct.imageUrl || relProduct.image_url || 'https://placehold.co/400x400'} 
-                                className="max-h-full object-contain group-hover:scale-110 transition duration-500 mix-blend-multiply"
-                                onError={(e) => { e.currentTarget.src = 'https://placehold.co/400x400/png?text=NEXUS'; }}
-                            />
-                        </div>
-                        <div className="p-4">
-                            <h4 className="font-bold text-sm text-white line-clamp-1 group-hover:text-red-500 transition">{relProduct.name}</h4>
-                                <p className="text-gray-500 text-xs mt-1 mb-2">
-                                    {typeof relProduct.category === 'object' ? relProduct.category?.name : relProduct.category}
-                                </p>
-                            <div className="flex justify-between items-center">
-                                <p className="text-red-500 font-bold">฿{Number(relProduct.price).toLocaleString()}</p>
-                                <button className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-red-600 text-white transition">
-                                    +
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )) : <p className="text-gray-500 col-span-4 text-center py-10">ไม่มีสินค้าแนะนำในหมวดนี้</p>}
-            </div>
-        </div>
-
       </div>
     </div>
   );

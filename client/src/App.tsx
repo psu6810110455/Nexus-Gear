@@ -34,11 +34,14 @@ function AppContent() {
         <Route path="/login" element={<Login />} />
         <Route path="/admin" element={<AdminPage />} />
 
+        {/* ✨ แก้ไขจาก setActiveTab เป็น onNavigate ให้ตรงกับที่ Dashboard ต้องการ */}
         <Route 
             path="/dashboard" 
             element={
                 <NexusGearAdminDashboard 
-                    setActiveTab={(tab: string) => console.log('เปลี่ยนไปหน้า:', tab)} 
+                    onNavigate={(page: string) => {
+                        if (page === 'home') navigate('/');
+                    }} 
                 />
             } 
         />

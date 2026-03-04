@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
 import { ShoppingCart, ArrowLeft, User, Square, CheckSquare, Store, Trash2 } from 'lucide-react';
 
-// นำเข้า API และ Types (✨ นำเข้าฟังก์ชัน update และ delete เพิ่มเติม)
+// นำเข้า API และ Types
 import { fetchCartItems, validateCoupon, updateCartQuantity, removeFromCart } from '../services/cart.service';
-// ✨ นำเข้าฟังก์ชันสั่งซื้อจาก order.service
-import { checkout } from '../services/order.service';
 import type { CartItem as CartItemType, CouponData } from '../types/cart.types';
 
-// นำเข้า Components ที่เราเพิ่งหั่นไว้
+// นำเข้า Components
 import CartItem from '../components/CartItem';
 import OrderSummary from '../components/OrderSummary';
 import DeleteModal from '../components/DeleteModal';
@@ -56,22 +54,20 @@ export default function CartPage({ onNavigate }: CartProps) {
     setSelectedItems(selectedItems.length === cartItems.length && cartItems.length > 0 ? [] : cartItems.map(i => i.id));
   };
 
-  // ✨ อัปเดตฟังก์ชันนี้: ให้ยิง API ไปเซฟจำนวนลง Database ด้วย
   const updateQty = async (id: number, delta: number) => {
     const item = cartItems.find(i => i.id === id);
     if (!item) return;
 
     const newQty = Math.max(1, Math.min(item.maxQty || 99, item.quantity + delta));
     
-    // 1. อัปเดตหน้าจอก่อนเพื่อให้ผู้ใช้รู้สึกว่าเว็บเร็ว (Optimistic Update)
+    // Optimistic Update: อัปเดตหน้าจอก่อนเพื่อให้ผู้ใช้รู้สึกว่าเว็บเร็ว
     setCartItems(prev => prev.map(i => (i.id === id ? { ...i, quantity: newQty } : i)));
     
-    // 2. ยิง API ไปอัปเดตหลังบ้าน
+    // ยิง API ไปอัปเดตหลังบ้าน
     try {
       await updateCartQuantity(id, newQty);
     } catch (error) {
       console.error("อัปเดต Database ไม่สำเร็จ", error);
-      // ถ้ายิงไม่ผ่าน ให้ดึงข้อมูลที่ถูกต้องจาก Database กลับมาใหม่
       const freshItems = await fetchCartItems();
       setCartItems(freshItems);
     }
@@ -81,7 +77,6 @@ export default function CartPage({ onNavigate }: CartProps) {
     setDeleteModal({ show: true, type, id });
   };
 
-  // ✨ อัปเดตฟังก์ชันนี้: ให้ยิง API ลบของใน Database ออกจริงๆ
   const confirmDelete = async () => {
     if (deleteModal.type === 'single' && deleteModal.id) {
       try {
@@ -92,7 +87,6 @@ export default function CartPage({ onNavigate }: CartProps) {
          console.error("ลบข้อมูลใน Database ไม่สำเร็จ", error);
       }
     } else if (deleteModal.type === 'all') {
-      // (ลบทั้งหมด เดี๋ยวเราค่อยทำ API ลบเหมาในอนาคตครับ ตอนนี้ให้เคลียร์หน้าจอไปก่อน)
       setCartItems([]);
       setSelectedItems([]);
     }
@@ -120,33 +114,14 @@ export default function CartPage({ onNavigate }: CartProps) {
     setCouponSuccess('');
   };
 
-  // ✨ ฟังก์ชันใหม่: จัดการการสั่งซื้อ (Checkout)
-  const handleCheckout = async () => {
+  // ✨ จัดการเมื่อกดปุ่มชำระเงิน (พาไปหน้า Payment)
+  const handleCheckout = () => {
     if (selectedItems.length === 0) {
       alert("กรุณาเลือกสินค้าอย่างน้อย 1 ชิ้นเพื่อดำเนินการต่อ");
       return;
     }
-
-    try {
-      setIsLoading(true); // แสดงสถานะกำลังโหลดระหว่างยิง API
-
-      // เรียกใช้ Service สั่งซื้อ (ส่งค่าที่อยู่และวิธีจ่ายเงินจำลองไปก่อน)
-      const result = await checkout(
-        "123 อ.หาดใหญ่ จ.สงขลา 90110", 
-        "promptpay"
-      );
-
-      if (result.success) {
-        alert(`🎉 ${result.message}\nเลขที่บิลของคุณคือ: ${result.orderNumber}`);
-        // เมื่อสั่งซื้อสำเร็จ ตะกร้าในหลังบ้านจะถูกล้าง เราจึงควรกลับหน้าหลัก
-        onNavigate?.('home'); 
-      }
-    } catch (error) {
-      alert("❌ ไม่สามารถดำเนินการสั่งซื้อได้ในขณะนี้");
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
+    // เปลี่ยนหน้าไปที่ Payment
+    onNavigate?.('payment'); 
   };
 
   // ─── 4. CALCULATIONS ───
@@ -300,7 +275,6 @@ export default function CartPage({ onNavigate }: CartProps) {
             couponSuccess={couponSuccess}
             showCouponInput={showCouponInput}
             setShowCouponInput={setShowCouponInput}
-            // ✨ เชื่อมฟังก์ชัน handleCheckout เข้าที่นี่
             onCheckout={handleCheckout} 
           />
         </main>

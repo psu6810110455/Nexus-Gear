@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Package, DollarSign, Users, Activity, ArrowLeft } from 'lucide-react';
 
 // นำเข้า Components ที่เราเพิ่งสร้าง
@@ -10,6 +12,32 @@ interface DashboardProps {
 }
 
 export default function DashboardPage({ onNavigate }: DashboardProps) {
+  // ─── 1. STATE สำหรับเก็บข้อมูลจาก Database ───
+  const [dashboardData, setDashboardData] = useState({
+    totalSales: 0,
+    totalOrders: 0,
+    recentOrders: []
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  // ─── 2. ดึงข้อมูลจาก Backend ตอนเปิดหน้านี้ ───
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/api/dashboard/summary');
+        if (response.data.success) {
+          setDashboardData(response.data.data);
+        }
+      } catch (error) {
+        console.error("❌ ดึงข้อมูล Dashboard ไม่สำเร็จ:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#000000] text-[#F2F4F6] font-['Kanit'] relative overflow-x-hidden selection:bg-[#990000] selection:text-white pb-20">
       
@@ -33,7 +61,11 @@ export default function DashboardPage({ onNavigate }: DashboardProps) {
             </h1>
           </div>
           <div className="text-sm text-[#F2F4F6]/50 bg-[#0a0a0a] px-4 py-2 rounded-lg border border-[#990000]/20">
-            สถานะระบบ: <span className="text-green-500 font-bold ml-1 flex items-center gap-2 inline-flex"><div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div> ออนไลน์</span>
+            สถานะระบบ: {isLoading ? (
+              <span className="text-yellow-500 font-bold ml-1">กำลังโหลด...</span>
+            ) : (
+              <span className="text-green-500 font-bold ml-1 flex items-center gap-2 inline-flex"><div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div> ออนไลน์</span>
+            )}
           </div>
         </header>
 
@@ -41,8 +73,20 @@ export default function DashboardPage({ onNavigate }: DashboardProps) {
           
           {/* แถวที่ 1: การ์ดสถิติ 4 ใบ */}
           <section aria-label="สถิติภาพรวม" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatCard title="ยอดขายรวม (เดือนนี้)" value="฿124,500" trend={12.5} icon={DollarSign} />
-            <StatCard title="คำสั่งซื้อทั้งหมด" value="342" trend={8.2} icon={Package} />
+            {/* ✨ จุดที่แก้ไข: เปลี่ยนมาใช้ข้อมูลจริงจาก Database */}
+            <StatCard 
+              title="ยอดขายรวมทั้งหมด" 
+              value={`฿${Number(dashboardData.totalSales).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} 
+              trend={0} 
+              icon={DollarSign} 
+            />
+            <StatCard 
+              title="คำสั่งซื้อทั้งหมด" 
+              value={dashboardData.totalOrders.toLocaleString()} 
+              trend={0} 
+              icon={Package} 
+            />
+            {/* 2 อันล่างนี้ใส่ไว้เป็น Mock ไปก่อน เพราะเรายังไม่ได้ทำระบบ User/Traffic */}
             <StatCard title="ลูกค้าสมัครใหม่" value="1,204" trend={-2.4} icon={Users} />
             <StatCard title="อัตราการเข้าชม" value="45.2K" trend={15.0} icon={Activity} />
           </section>
@@ -50,7 +94,9 @@ export default function DashboardPage({ onNavigate }: DashboardProps) {
           {/* แถวที่ 2: กราฟ และ กิจกรรมล่าสุด */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <SalesChart />
-            <RecentActivity />
+            
+            {/* ✨ ส่งข้อมูล orders จริงๆ ลงไปให้ Component นี้ */}
+            <RecentActivity orders={dashboardData.recentOrders} />
           </div>
 
         </main>

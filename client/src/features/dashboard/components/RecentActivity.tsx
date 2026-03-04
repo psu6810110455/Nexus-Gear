@@ -1,43 +1,59 @@
 import { Clock, ShoppingBag } from 'lucide-react';
 
-export default function RecentActivity() {
-  const activities = [
-    { id: 1, text: 'คำสั่งซื้อใหม่ #ORD-8821', time: '5 นาทีที่แล้ว', status: 'pending' },
-    { id: 2, text: 'ชำระเงินสำเร็จ #ORD-8820', time: '15 นาทีที่แล้ว', status: 'success' },
-    { id: 3, text: 'คำสั่งซื้อใหม่ #ORD-8819', time: '1 ชั่วโมงที่แล้ว', status: 'pending' },
-    { id: 4, text: 'ระบบ: อัปเดตสต็อกสินค้า', time: '2 ชั่วโมงที่แล้ว', status: 'info' },
-  ];
+// ✨ 1. สร้าง Interface เพื่อบอก TypeScript ว่ากล่อง orders มีหน้าตาแบบนี้นะ
+export interface RecentOrder {
+  id: number;
+  order_number: string;
+  shipping_name: string;
+  total: string | number;
+  payment_method: string;
+}
 
+// ✨ 2. กำหนดว่า Component นี้รับ Props ชื่อ orders เข้ามา
+interface RecentActivityProps {
+  orders?: RecentOrder[];
+}
+
+export default function RecentActivity({ orders = [] }: RecentActivityProps) {
   return (
-    <section className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-xl relative overflow-hidden">
-      <header className="flex items-center justify-between mb-6 border-b border-[#990000]/20 pb-4">
+    <section className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-xl relative overflow-hidden flex flex-col h-full">
+      <header className="flex items-center justify-between mb-6 border-b border-[#990000]/20 pb-4 shrink-0">
         <h3 className="text-lg font-['Kanit'] font-bold flex items-center gap-3 text-[#F2F4F6]">
-          <span aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></span> กิจกรรมล่าสุด
+          <span aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></span> บิลคำสั่งซื้อล่าสุด
         </h3>
       </header>
       
-      <div className="space-y-6">
-        {activities.map((act, i) => (
-          <article key={act.id} className="flex gap-4 relative">
-            {/* เส้นเชื่อม Timeline */}
-            {i !== activities.length - 1 && <div aria-hidden="true" className="absolute left-4 top-8 w-[1px] h-full bg-[#990000]/20"></div>}
-            
-            <div className="relative z-10 w-8 h-8 rounded-full bg-[#2E0505] border border-[#990000]/40 flex items-center justify-center shrink-0">
-              {act.status === 'success' ? (
-                <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_5px_#22c55e]"></div>
-              ) : act.status === 'pending' ? (
+      <div className="space-y-6 flex-1 overflow-y-auto pr-2 custom-scrollbar">
+        {/* ✨ 3. เช็คว่ามีข้อมูลไหม ถ้าไม่มีให้ขึ้นข้อความว่างๆ */}
+        {orders.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-[#F2F4F6]/40">
+            <Clock className="w-8 h-8 mb-2 opacity-50" />
+            <p className="text-sm font-['Kanit']">ยังไม่มีคำสั่งซื้อใหม่</p>
+          </div>
+        ) : (
+          /* ✨ 4. วนลูปเอาข้อมูลบิลจาก Database มาแสดงผล */
+          orders.map((order, i) => (
+            <article key={order.id} className="flex gap-4 relative">
+              {/* เส้นเชื่อม Timeline */}
+              {i !== orders.length - 1 && <div aria-hidden="true" className="absolute left-4 top-8 w-[1px] h-full bg-[#990000]/20"></div>}
+              
+              <div className="relative z-10 w-8 h-8 rounded-full bg-[#2E0505] border border-[#990000]/40 flex items-center justify-center shrink-0">
                 <ShoppingBag aria-hidden="true" className="w-3 h-3 text-[#FF0000]" />
-              ) : (
-                <Clock aria-hidden="true" className="w-3 h-3 text-[#F2F4F6]/60" />
-              )}
-            </div>
-            
-            <div className="flex-1 pt-1">
-              <p className="text-sm font-['Kanit'] text-[#F2F4F6]">{act.text}</p>
-              <p className="text-[10px] text-[#F2F4F6]/40 font-['Kanit'] mt-1">{act.time}</p>
-            </div>
-          </article>
-        ))}
+              </div>
+              
+              <div className="flex-1 pt-1">
+                <p className="text-sm font-['Kanit'] text-[#F2F4F6] font-semibold">
+                  รหัสออเดอร์: <span className="text-[#FF0000] tracking-wider">{order.order_number}</span>
+                </p>
+                {/* เปลี่ยนจากเวลาหลอกๆ เป็นชื่อลูกค้าและยอดเงิน */}
+                <p className="text-xs text-[#F2F4F6]/50 font-['Kanit'] mt-1 flex justify-between">
+                  <span>โดย: {order.shipping_name}</span>
+                  <span className="text-green-400 font-medium">฿{Number(order.total).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                </p>
+              </div>
+            </article>
+          ))
+        )}
       </div>
     </section>
   );

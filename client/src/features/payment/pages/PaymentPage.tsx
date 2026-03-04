@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, Check, MapPin, CreditCard, ShoppingCart, Upload, Loader, ChevronDown, ChevronUp } from 'lucide-react';
-import axios from 'axios'; // ✨ 1. เพิ่ม axios สำหรับยิง API
+import axios from 'axios'; // ✨ 1. นำเข้า axios สำหรับยิง API ของจริง
 
 import { fetchAddresses } from '../services/payment.service';
 import type { Address, OrderSummaryData } from '../types/payment.types';
@@ -20,6 +20,7 @@ interface UploadedSlip {
 const fmt = (n: number) => n.toLocaleString('th-TH');
 
 export default function PaymentPage({ onNavigate }: PaymentProps) {
+  // ─── STATE MANAGEMENT ───
   const [isApiLoading, setIsApiLoading] = useState<boolean>(true);
   const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
   const [orderSummary, setOrderSummary] = useState<OrderSummaryData | null>(null);
@@ -28,18 +29,20 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
   const [selectedAddr, setSelectedAddr] = useState<number | null>(null);
   const [payMethod, setPayMethod] = useState<string | null>(null);
   const [uploadedSlip, setUploadedSlip] = useState<UploadedSlip | null>(null);
+  const [slipFile, setSlipFile] = useState<File | null>(null); // ✨ เพิ่มเพื่อเก็บไฟล์จริงสำหรับส่ง API
   const [confirmed, setConfirmed] = useState<boolean>(false);
   const [loadingAction, setLoadingAction] = useState<boolean>(false);
   const [showSummary, setShowSummary] = useState<boolean>(false);
   
-  // ✨ 2. เพิ่ม State สำหรับเก็บเลขบิลของจริงที่ได้จาก Database
+  // ✨ เพิ่ม State สำหรับเก็บเลขบิลของจริงที่ได้จาก Database
   const [finalOrderNum, setFinalOrderNum] = useState<string>('');
 
+  // ─── LIFECYCLE ───
   useEffect(() => {
     const loadData = async () => {
       setIsApiLoading(true);
       
-      // ดึงแค่ที่อยู่มาก็พอ (ไม่ต้องดึง Mock Data)
+      // ดึงแค่ที่อยู่มาก็พอ
       const addrs = await fetchAddresses();
       setSavedAddresses(addrs);
       
@@ -48,7 +51,6 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
       if (sessionData) {
         setOrderSummary(JSON.parse(sessionData));
       } else {
-        // ถ้าไม่มีข้อมูลแปลว่าแอบพิมพ์ URL เข้ามาตรงๆ ให้เด้งกลับไปหน้าตะกร้า
         alert('ไม่พบข้อมูลคำสั่งซื้อ กรุณาเลือกสินค้าในตะกร้าใหม่ครับ');
         if (onNavigate) onNavigate('cart');
         return;
@@ -62,6 +64,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
     loadData();
   }, [onNavigate]);
 
+  // ─── LOGIC FUNCTIONS ───
   const goNext = () => { 
     window.scrollTo({ top: 0, behavior: 'smooth' }); 
     setStep((s) => Math.min(3, s + 1)); 
@@ -74,47 +77,59 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // 🛡️ 1. ดักประเภทไฟล์รูปภาพเท่านั้น
+    // 🛡️ ดักประเภทไฟล์รูปภาพเท่านั้น
     const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
     if (!validTypes.includes(file.type)) {
         alert('❌ ระบบรองรับเฉพาะไฟล์รูปภาพ (JPG, PNG) เท่านั้นครับ');
-        e.target.value = ''; // ล้างค่าทิ้ง
+        e.target.value = ''; 
         return;
     }
 
-    // 🛡️ 2. ดักขนาดไฟล์ไม่เกิน 5MB
-    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    // 🛡️ ดักขนาดไฟล์ไม่เกิน 5MB
+    const maxSize = 5 * 1024 * 1024; 
     if (file.size > maxSize) {
         alert('❌ ขนาดไฟล์ใหญ่เกินไป! กรุณาอัปโหลดรูปภาพขนาดไม่เกิน 5MB ครับ');
-        e.target.value = ''; // ล้างค่าทิ้ง
+        e.target.value = ''; 
         return;
     }
 
-    // ถ้ารูปผ่านเงื่อนไข ให้บันทึกและแสดง Preview
+    // เซฟไฟล์จริงลง State เพื่อเตรียมส่ง API
+    setSlipFile(file);
+
+    // ทำ Preview ให้ลูกค้าดูบนหน้าจอ
     const reader = new FileReader();
     reader.onloadend = () => setUploadedSlip({ name: file.name, preview: reader.result });
     reader.readAsDataURL(file);
   };
 
-  // ✨ 3. เปลี่ยนจากตัวปลอม เป็นการยิงข้อมูลไปหา Database ของจริง
+  // ✨ อัปเกรด handleConfirm ให้ยิง API ของจริงและส่งไฟล์สลิป
   const handleConfirm = async () => {
     setLoadingAction(true);
     try {
-      // ดึงข้อมูลที่อยู่จากที่ลูกค้าเลือก
       const addressDetail = savedAddresses.find(a => a.id === selectedAddr)?.detail || 'ไม่ระบุที่อยู่';
 
-      // ยิงข้อมูลไปหา Backend เพื่อสร้างบิลของจริง
-      const response = await axios.post('http://localhost:3000/api/orders/checkout', {
-        userId: 1, // ทดสอบใช้ User ID 1
-        shippingAddress: addressDetail,
-        paymentMethod: payMethod
+      // 📦 ใช้ FormData เพราะเราต้องแนบไฟล์รูปภาพส่งไปกับข้อมูลด้วย
+      const formData = new FormData();
+      formData.append('userId', '1'); // ล็อคไว้เป็น User 1 ตามตัวอย่างเดิม
+      formData.append('shippingAddress', addressDetail);
+      formData.append('paymentMethod', payMethod || '');
+      
+      if (slipFile) {
+        formData.append('slipImage', slipFile); // แนบไฟล์รูปสลิป
+      }
+
+      // ยิงข้อมูลไปหา Backend (OrdersController)
+      const response = await axios.post('http://localhost:3000/api/orders/checkout', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
       });
 
       if (response.data.success) {
-        // ✨ บันทึกเลขบิลของจริง (ORD-177...) ที่ backend ส่งกลับมาให้
+        // ✨ บันทึกเลขบิลของจริง (ORD-177...) ที่ได้จากหลังบ้าน
         setFinalOrderNum(response.data.orderNumber); 
         
-        // ล้างข้อมูลตะกร้าออกจาก localStorage เพื่อความปลอดภัย
+        // ล้างข้อมูลตะกร้าชั่วคราว
         localStorage.removeItem('checkoutSession');
         
         setLoadingAction(false); 
@@ -128,6 +143,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
     }
   };
 
+  // ─── RENDER STATES ───
   if (isApiLoading || !orderSummary) {
     return (
       <main className="min-h-screen bg-[#000000] flex justify-center items-center">
@@ -175,7 +191,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
         </header>
 
         {confirmed ? (
-          /* หน้าจอเมื่อสั่งซื้อสำเร็จ */
+          /* ✨ หน้าจอเมื่อสั่งซื้อสำเร็จ (แสดงเลขบิลจริง) */
           <main className="min-h-[80vh] flex items-center justify-center animate-in zoom-in-95 duration-500">
             <article className="max-w-2xl w-full mx-4 px-4 py-16 flex flex-col items-center text-center bg-[#000000]/40 backdrop-blur-xl border border-[#990000]/30 rounded-3xl relative overflow-hidden">
                 <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#FF0000]/10 via-transparent to-transparent opacity-50"></div>
@@ -190,8 +206,8 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                     <p className="text-[#F2F4F6]/50 mb-2 font-['Kanit']">หมายเลขคำสั่งซื้อ (ORDER ID)</p>
                 </header>
                 <div className="bg-[#2E0505]/50 px-6 py-2 rounded-lg border border-[#FF0000]/20 mb-8">
-                    {/* ✨ 4. นำตัวแปร finalOrderNum มาแสดงแทนข้อความหลอก */}
-                    <p className="text-xl font-['Orbitron'] font-bold text-[#F2F4F6] tracking-widest">{finalOrderNum}</p>
+                    {/* ✨ ใช้เลขบิลจากตัวแปร finalOrderNum แทนเลขหลอก */}
+                    <p className="text-xl font-['Orbitron'] font-bold text-[#F2F4F6] tracking-widest">{finalOrderNum || '#ORD-GENERATING...'}</p>
                 </div>
                 <p className="text-[#F2F4F6]/60 text-sm max-w-sm leading-relaxed mb-8">
                     ระบบได้รับคำสั่งซื้อของคุณแล้ว<br/>เราจะส่งรายละเอียดการจัดส่งไปยังอีเมล<br/><span className="text-[#FF0000]">max.gamer@email.com</span>
@@ -334,8 +350,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                       </button>
                       <button 
                         onClick={handleConfirm} 
-                        // ✨ ต้องอัปโหลดสลิปก่อนถึงจะกดปุ่มยืนยันได้
-                        disabled={!uploadedSlip || loadingAction} 
+                        disabled={((payMethod === 'transfer' || payMethod === 'qr') && !uploadedSlip) || loadingAction} 
                         className="flex-[2] bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] disabled:opacity-30 disabled:cursor-not-allowed text-white py-4 rounded-xl font-['Kanit'] font-bold tracking-wide text-sm transition-all shadow-[0_0_18px_rgba(153,0,0,0.5)] flex items-center justify-center gap-3 active:scale-95 group relative overflow-hidden"
                       >
                         {loadingAction ? (
@@ -368,7 +383,6 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
 
                   <div className={`mt-5 space-y-4 ${showSummary ? 'block' : 'hidden'} lg:block animate-in slide-in-from-top-2`}>
                     <div className="space-y-3 max-h-60 overflow-y-auto pr-6 custom-scrollbar">
-                        {/* ใส่ : any เพื่อแก้ปัญหา TypeScript แดง */}
                         {orderSummary.items.map((item: any, i) => (
                         <article key={i} className="flex items-start justify-between group">
                             <div className="flex items-start gap-3">
@@ -403,12 +417,6 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                     <div className="border-t border-[#990000]/30 pt-4 mt-2 flex justify-between items-end bg-[#2E0505]/30 p-4 rounded-xl border border-[#990000]/10">
                       <span className="font-['Kanit'] text-xs text-[#F2F4F6]/50 tracking-wide">ยอดรวมสุทธิ</span>
                       <span className="font-['Orbitron'] text-2xl font-black text-[#FF0000] drop-shadow-[0_0_8px_rgba(255,0,0,0.5)]">฿{fmt(grandTotal)}</span>
-                    </div>
-
-                    <div className="flex justify-center gap-4 pt-2 opacity-50">
-                        {['ปลอดภัย', 'รวดเร็ว', 'รับประกัน'].map(t => (
-                          <span key={t} className="text-[9px] font-['Kanit'] border border-[#F2F4F6]/20 px-2 py-0.5 rounded text-[#F2F4F6]/60">{t}</span>
-                        ))}
                     </div>
                   </div>
                 </div>

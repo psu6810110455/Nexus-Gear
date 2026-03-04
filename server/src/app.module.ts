@@ -9,6 +9,8 @@ import { CartModule } from './cart/cart.module';
 import { DatabaseService } from './database/database.service';
 import { CategoriesModule } from './categories/categories.module';
 import { OrdersModule } from './orders/orders.module';
+// ✨ 1. นำเข้า DashboardModule ที่เราเพิ่งสร้าง
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Global()
 @Module({
@@ -29,6 +31,8 @@ import { OrdersModule } from './orders/orders.module';
     CartModule,
     CategoriesModule,
     OrdersModule,
+    // ✨ 2. เพิ่ม DashboardModule ลงในระบบหลัก
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [

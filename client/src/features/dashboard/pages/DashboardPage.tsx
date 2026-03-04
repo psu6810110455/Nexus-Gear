@@ -6,22 +6,31 @@ import { Package, DollarSign, Users, Activity, ArrowLeft } from 'lucide-react';
 import StatCard from '../components/StatCard';
 import SalesChart from '../components/SalesChart';
 import RecentActivity from '../components/RecentActivity';
+import AISummaryBox from '../components/AISummaryBox';
+import type { AISummaryData } from '../components/AISummaryBox';
 
 interface DashboardProps {
   onNavigate?: (page: string) => void;
 }
 
 export default function DashboardPage({ onNavigate }: DashboardProps) {
-  // ─── 1. STATE สำหรับเก็บข้อมูลจาก Database ───
-  const [dashboardData, setDashboardData] = useState({
+  // ─── 1. STATE ───
+  const [dashboardData, setDashboardData] = useState<{
+    totalSales: number;
+    totalOrders: number;
+    recentOrders: never[];
+    salesChart: never[];
+    aiSummary: AISummaryData | null;
+  }>({
     totalSales: 0,
     totalOrders: 0,
     recentOrders: [],
-    salesChart: [] // ✨ เพิ่ม state สำหรับเก็บข้อมูลกราฟ
+    salesChart: [],
+    aiSummary: null,
   });
   const [isLoading, setIsLoading] = useState(true);
 
-  // ─── 2. ดึงข้อมูลจาก Backend ตอนเปิดหน้านี้ ───
+  // ─── 2. Fetch ข้อมูล (รวม polling ทุก 30 วินาที) ───
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
@@ -37,6 +46,10 @@ export default function DashboardPage({ onNavigate }: DashboardProps) {
     };
 
     fetchDashboardData();
+
+    // Polling ทุก 30 วินาที ให้ AI Summary อัปเดตอัตโนมัติ
+    const interval = setInterval(fetchDashboardData, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -50,7 +63,7 @@ export default function DashboardPage({ onNavigate }: DashboardProps) {
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-8">
         
-        {/* แถบหัวข้อของ Admin */}
+        {/* Header */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10 border-b border-[#990000]/30 pb-6">
           <div>
             <button onClick={() => onNavigate?.('home')} className="flex items-center gap-2 text-[#F2F4F6]/40 hover:text-[#FF0000] transition text-sm mb-4 group">
@@ -65,14 +78,16 @@ export default function DashboardPage({ onNavigate }: DashboardProps) {
             สถานะระบบ: {isLoading ? (
               <span className="text-yellow-500 font-bold ml-1">กำลังโหลด...</span>
             ) : (
-              <span className="text-green-500 font-bold ml-1 flex items-center gap-2 inline-flex"><div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div> ออนไลน์</span>
+              <span className="text-green-500 font-bold ml-1 flex items-center gap-2 inline-flex">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div> ออนไลน์
+              </span>
             )}
           </div>
         </header>
 
         <main className="space-y-8">
           
-          {/* แถวที่ 1: การ์ดสถิติ 4 ใบ */}
+          {/* แถวที่ 1: Stat Cards */}
           <section aria-label="สถิติภาพรวม" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatCard 
               title="ยอดขายรวมทั้งหมด" 
@@ -86,18 +101,18 @@ export default function DashboardPage({ onNavigate }: DashboardProps) {
               trend={0} 
               icon={Package} 
             />
-            {/* 2 อันล่างนี้ใส่ไว้เป็น Mock ไปก่อน */}
             <StatCard title="ลูกค้าสมัครใหม่" value="1,204" trend={-2.4} icon={Users} />
             <StatCard title="อัตราการเข้าชม" value="45.2K" trend={15.0} icon={Activity} />
           </section>
 
-          {/* แถวที่ 2: กราฟ และ กิจกรรมล่าสุด */}
+          {/* แถวที่ 2: กราฟ + Recent Orders */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* ✨ จุดสำคัญ: ส่งข้อมูลยอดขายรายวันไปให้กราฟแท่ง */}
             <SalesChart data={dashboardData.salesChart} />
-            
             <RecentActivity orders={dashboardData.recentOrders} />
           </div>
+
+          {/* ✨ แถวที่ 3: AI Summary Box */}
+          <AISummaryBox data={dashboardData.aiSummary} />
 
         </main>
       </div>

@@ -38,11 +38,11 @@ export class CartService {
   async getCart(userId: number) {
     const sql = `
       SELECT 
-        cart_items.id AS cart_item_id,
+        cart_items.id AS id,                  -- ✨ แก้ตรงนี้! ส่งออกไปในชื่อ id เพื่อให้หน้าบ้านจับคู่ได้ถูกต้อง
         products.id AS product_id,
         products.name,
         products.price,
-        products.image_url,
+        products.image_url AS imageUrl,       -- ✨ แก้ตรงนี้เผื่อไว้ เพื่อให้หน้าบ้านดึงรูปไปโชว์ได้เป๊ะๆ
         cart_items.quantity,
         (products.price * cart_items.quantity) AS total_price
       FROM cart_items
@@ -63,7 +63,7 @@ export class CartService {
     return { message: 'ลบสินค้าออกจากตะกร้าเรียบร้อย' };
   }
 
-  // ✅ ฟังก์ชันที่ 4: อัปเดตจำนวนสินค้า (updateQuantity) -- [✨ เพิ่มใหม่ตรงนี้ครับ ✨]
+  // ✅ ฟังก์ชันที่ 4: อัปเดตจำนวนสินค้า (updateQuantity)
   async updateQuantity(userId: number, cartItemId: number, quantity: number) {
     // อัปเดตจำนวน (quantity) โดยอ้างอิงจาก ID ของตะกร้า และเช็คความปลอดภัยด้วย User ID
     await this.db.query(

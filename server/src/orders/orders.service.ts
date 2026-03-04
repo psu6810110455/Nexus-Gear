@@ -6,7 +6,7 @@ export class OrdersService {
   constructor(private readonly db: DatabaseService) {}
   
   async createOrder(userId: number, shippingAddress: string, paymentMethod: string) {
-    // 1. ดึงข้อมูลสินค้า (เพิ่ม p.name เข้ามาเพื่อให้ได้ชื่อสินค้าด้วย)
+    // 1. ดึงข้อมูลสินค้า
     const cartItems: any = await this.db.query(
       `SELECT c.product_id, c.quantity, p.price, p.name 
        FROM cart_items c 
@@ -16,7 +16,7 @@ export class OrdersService {
     );
 
     if (!cartItems || cartItems.length === 0) {
-      throw new BadRequestException('ตะากล้าสินค้าว่างเปล่า ไม่สามารถสั่งซื้อได้');
+      throw new BadRequestException('ตะกร้าสินค้าว่างเปล่า ไม่สามารถสั่งซื้อได้');
     }
 
     let total = 0;
@@ -37,11 +37,19 @@ export class OrdersService {
     );
     const orderId = orderResult.insertId;
 
-    // 3. 📍 บันทึกรายการสินค้า (เพิ่ม product_name เข้าไปตามที่ Database ต้องการ)
+    // 3. 📍 บันทึกรายการสินค้า และ ✨ ตัดสต็อก!
     for (const item of cartItems) {
+      // 3.1 บันทึกลงตาราง order_items
       await this.db.query(
         'INSERT INTO order_items (order_id, product_id, product_name, quantity, price) VALUES (?, ?, ?, ?, ?)',
         [orderId, item.product_id, item.name, item.quantity, item.price]
+      );
+
+      // ✨ 3.2 อัปเดตตาราง products เพื่อหักสต็อกสินค้า
+      // คำสั่งนี้จะเอา stock เดิม - จำนวนที่ซื้อ แล้วบันทึกกลับเข้าไปใหม่
+      await this.db.query(
+        'UPDATE products SET stock = stock - ? WHERE id = ?',
+        [item.quantity, item.product_id]
       );
     }
 
@@ -56,7 +64,7 @@ export class OrdersService {
 
     return {
       success: true,
-      message: "สั่งซื้อและบันทึกลงฐานข้อมูลสำเร็จ!",
+      message: "สั่งซื้อและตัดสต็อกสินค้าสำเร็จ!",
       orderId: orderId,
       orderNumber: orderNumber,
       totalAmount: total

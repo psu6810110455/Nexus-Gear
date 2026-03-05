@@ -133,7 +133,7 @@ const Login = () => {
                 <input type="checkbox" />
                 <span>จดจำฉัน</span>
               </label>
-              <Link to="/forgot" style={{ color: '#ccc', textDecoration: 'none' }}>ลืมรหัสผ่าน?</Link>
+              <Link to="/forgot-password" style={{ color: '#ccc', textDecoration: 'none' }}>ลืมรหัสผ่าน?</Link>
             </div>
 
             <button

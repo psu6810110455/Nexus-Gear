@@ -24,6 +24,12 @@ export class User {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @Column({ nullable: true })
+  resetPasswordToken: string | null; // เก็บ Token ลับ
+
+  @Column({ type: 'timestamp', nullable: true })
+  resetPasswordExpires: Date | null; // เก็บเวลาหมดอายุ
   
 
   @OneToMany(() => Address, (address) => address.user, { cascade: true })

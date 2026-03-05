@@ -42,4 +42,12 @@ export class UsersService {
     const newUser = this.usersRepository.create(data);
     return await this.usersRepository.save(newUser);
   }
-}
+
+  // ✅ เพิ่มฟังก์ชันสำหรับอัปเดต Token รีเซ็ตรหัสผ่าน
+  async updateResetToken(userId: number, token: string | null, expires: Date | null) {
+    await this.usersRepository.update(userId, { // แก้ไขเป็น usersRepository แล้ว
+      resetPasswordToken: token,
+      resetPasswordExpires: expires,
+    });
+  } // ✅ ปิดฟังก์ชัน updateResetToken
+} // ✅ ปิดคลาส UsersService

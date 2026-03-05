@@ -2,6 +2,7 @@ import { Controller, Post, Body, Get, UseGuards, Req, Res } from '@nestjs/common
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -44,5 +45,11 @@ export class AuthController {
   getProfile(@Req() req) {
     // คืนค่าข้อมูล User ที่ถอดรหัสได้จาก Token กลับไปให้ Frontend (AuthContext)
     return req.user;
+  }
+
+  // ✅ เพิ่ม Endpoint สำหรับขอรีเซ็ตรหัสผ่าน
+  @Post('forgot-password')
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto);
   }
 }

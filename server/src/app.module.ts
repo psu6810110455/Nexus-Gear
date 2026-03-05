@@ -7,8 +7,9 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { CategoriesModule } from './categories/categories.module';
 import { DatabaseService } from './database/database.service';
-import { O } from 'node_modules/@faker-js/faker/dist/airline-Dz1uGqgJ';
 import { OrdersModule } from './orders/orders.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { CartModule } from './cart/cart.module'; // ✨ เพิ่มใหม่
 
 @Global()
 @Module({
@@ -16,19 +17,20 @@ import { OrdersModule } from './orders/orders.module';
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: '127.0.0.1',
-      port: 5433,           // ✅ แก้: MySQL ใช้ port 3306 ไม่ใช่ 5433
+      port: 5433,           // ✅ ตรงกับ docker-compose.yml ที่ map 5433:3306
       username: 'root',
       password: 'rootpassword',
       database: 'ecommerce_db',
       autoLoadEntities: true,
-      synchronize: true,    // ✅ เปิด synchronize เพื่อให้ TypeORM สร้าง table users อัตโนมัติ
-                            //    (ปิดใน production แล้วใช้ migration แทน)
+      synchronize: true,
     }),
     ProductsModule,
     AuthModule,
     UsersModule,
     CategoriesModule,
     OrdersModule,
+    DashboardModule,
+    CartModule,             // ✨ เพิ่มใหม่
   ],
   controllers: [AppController],
   providers: [

@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
-import { User } from '../../users/entities/user.entity'; // เช็ค Path ให้ตรงกับของคุณ
+import { User } from '../../users/entities/user.entity';
 import { OrderItem } from './order-item.entity';
 
 export enum OrderStatus {
@@ -20,6 +20,9 @@ export class Order {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  order_number: string;          // ✨ เพิ่มใหม่
+
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   total_price: number;
 
@@ -32,6 +35,9 @@ export class Order {
 
   @Column({ type: 'text' })
   shipping_address: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  slip_image: string | null;     // ✨ เพิ่มใหม่
 
   @CreateDateColumn()
   created_at: Date;

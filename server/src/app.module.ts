@@ -7,6 +7,8 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { CategoriesModule } from './categories/categories.module';
 import { DatabaseService } from './database/database.service';
+import { O } from 'node_modules/@faker-js/faker/dist/airline-Dz1uGqgJ';
+import { OrdersModule } from './orders/orders.module';
 
 @Global()
 @Module({
@@ -26,6 +28,7 @@ import { DatabaseService } from './database/database.service';
     AuthModule,
     UsersModule,
     CategoriesModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [

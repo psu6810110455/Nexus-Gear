@@ -1,10 +1,15 @@
+// ============================================================
+// src/features/products/pages/ProductListPage.tsx
+// ============================================================
+
 import { useState, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { ProductFilterParams } from '../types/product.types';
 import { useProducts } from '../hooks/useProducts';
 import ProductFilter from '../components/ProductFilter';
 import ProductGrid from '../components/ProductGrid';
 import { Search, AlertTriangle } from 'lucide-react';
-import { productListStyles }   from '../../../styles/productList.styles';
+import { productListStyles } from '../../../styles/productList.styles';
 
 const DEFAULT_FILTERS: ProductFilterParams = { search: '', category: 'All' };
 
@@ -12,6 +17,7 @@ const ProductListPage = () => {
   const [filters, setFilters] = useState<ProductFilterParams>(DEFAULT_FILTERS);
   const { products, loading, error, categories, categoryCounts, refetch } = useProducts();
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const navigate = useNavigate();
 
   const handleFilterChange = useCallback((newFilters: ProductFilterParams) => {
     setFilters(newFilters);
@@ -67,16 +73,31 @@ const ProductListPage = () => {
         <div className="pl-search-wrap" role="search">
           <div className="pl-search-icon"><Search size={20} /></div>
           <label htmlFor="product-search" className="sr-only">ค้นหาสินค้า</label>
-          <input id="product-search" type="text" className="pl-search-input"
+          <input
+            id="product-search"
+            type="text"
+            className="pl-search-input"
             placeholder="ค้นหาอุปกรณ์เทพของคุณ..."
             value={filters.search ?? ''}
-            onChange={e => handleFilterChange({ ...filters, search: e.target.value })} />
+            onChange={e => handleFilterChange({ ...filters, search: e.target.value })}
+          />
         </div>
       </div>
 
       <div className="pl-body">
-        <ProductFilter categories={categories} categoryCounts={categoryCounts} filters={filters} onFilterChange={handleFilterChange} onReset={handleReset} />
-        <ProductGrid products={products} selectedCategory={filters.category ?? 'All'} onReset={handleReset} />
+        <ProductFilter
+          categories={categories}
+          categoryCounts={categoryCounts}
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          onReset={handleReset}
+        />
+        <ProductGrid
+          products={products}
+          selectedCategory={filters.category ?? 'All'}
+          onReset={handleReset}
+          onNavigate={(id) => navigate(`/products/${id}`)}
+        />
       </div>
     </main>
   );

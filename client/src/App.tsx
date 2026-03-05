@@ -35,6 +35,7 @@ import NexusGearOrderStatus from "./features/orders/pages/NexusGearOrderStatus";
 
 import ProductList from "./features/products/pages/ProductListPage";
 import ProductDetailPage from "./features/products/pages/ProductDetailPage";
+import AdminStockPage from './features/admin/pages/AdminStockPage';
 
 import "./App.css";
 
@@ -98,7 +99,7 @@ function AppContent() {
         <Route path="/my-orders" element={<NexusGearOrderStatus />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/admin/orders" element={<NexusGearAdminOrders />} />
-
+        <Route path="/admin/stock" element={<AdminStockPage />} />
         {/* Dashboard — DashboardPage.tsx จะ replace ส่วนนี้ในภายหลัง */}
         <Route
           path="/dashboard"

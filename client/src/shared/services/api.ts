@@ -1,7 +1,4 @@
-// ============================================================
 // src/shared/services/api.ts
-// ============================================================
-
 import axios from 'axios';
 
 const BASE_URL = 'http://localhost:3000';
@@ -53,30 +50,33 @@ export const deleteCategory = (id: number) =>
 
 // ── Orders ────────────────────────────────────────────────────
 export const getOrders = () =>
-  api.get('/api/orders').then((r) => r.data);                    // ✅ แก้ path
+  api.get('/api/orders').then((r) => r.data);
+
+export const getMyOrders = () =>                                 // ✅ ใช้ token แทน userId
+  api.get('/api/orders/my-orders').then((r) => r.data);
 
 export const getUserOrders = (userId: number) =>
-  api.get(`/api/orders/user/${userId}`).then((r) => r.data);    // ✅ แก้ path
+  api.get(`/api/orders/user/${userId}`).then((r) => r.data);
 
 export const updateOrderStatus = (id: number, status: string) =>
-  api.patch(`/api/orders/${id}/status`, { status }).then((r) => r.data); // ✅ แก้ path
+  api.patch(`/api/orders/${id}/status`, { status }).then((r) => r.data);
 
 export const submitOrderRating = (orderId: number, ratings: Record<number, number>) =>
   api.post(`/api/orders/${orderId}/rating`, { ratings }).then((r) => r.data);
 
 // ── Cart ──────────────────────────────────────────────────────
 export const getCart = () =>
-  api.get('/api/cart').then((r) => r.data);                      // ✅ แก้ path
+  api.get('/api/cart').then((r) => r.data);
 
 export const addToCart = (productId: number, quantity: number) =>
-  api.post('/api/cart/add', { productId, quantity }).then((r) => r.data); // ✅ แก้ path
+  api.post('/api/cart/add', { productId, quantity }).then((r) => r.data);
 
 export const removeFromCart = (id: number) =>
-  api.delete(`/api/cart/${id}`).then((r) => r.data);             // ✅ แก้ path
+  api.delete(`/api/cart/${id}`).then((r) => r.data);
 
 // ── Sales ─────────────────────────────────────────────────────
 export const getSalesData = () =>
   api.get('/sales-data').then((r) => r.data);
 
-// ── Re-export types (for backward compat) ────────────────────
+// ── Re-export types ───────────────────────────────────────────
 export type { Order, OrderItem, Product, Category } from '../types';

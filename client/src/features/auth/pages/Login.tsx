@@ -31,7 +31,7 @@ const Login = () => {
     e.preventDefault();
     try {
       const { data } = await axios.post('http://localhost:3000/auth/login', { email, password });
-      login(data.access_token);
+      login(data.access_token, data.user); // ✅ ส่ง user object ไปด้วย
       alert('ยินดีต้อนรับกลับสู่ Nexus Gear!');
       navigate('/');
     } catch (err: any) {

@@ -1,6 +1,7 @@
+// src/orders/orders.controller.ts
 import {
   Controller, Get, Post, Body, Patch, Param,
-  UseInterceptors, UploadedFile,
+  UseInterceptors, UploadedFile, UseGuards, Request,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -8,13 +9,16 @@ import { extname } from 'path';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard, Roles } from '../auth/guards/roles.guard';
 
 @Controller('api/orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
-  // POST /api/orders/checkout — สั่งซื้อจากตะกร้า พร้อม slip upload
+  // ── Customer: Checkout (ต้อง login) ───────────────────────────────────
   @Post('checkout')
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('slipImage', {
     storage: diskStorage({
       destination: './uploads/slips',
@@ -24,39 +28,56 @@ export class OrdersController {
       },
     }),
   }))
-  async checkout(@Body() body: any, @UploadedFile() file: Express.Multer.File) {
-    const { userId = 1, shippingAddress, paymentMethod } = body;
+  async checkout(@Body() body: any, @UploadedFile() file: any, @Request() req: any) {
+    const userId = req.user.userId; // ✅ ดึงจาก JWT ไม่ hardcode อีกต่อไป
+    const { shippingAddress, paymentMethod } = body;
     const slipFilename = file ? file.filename : null;
-    return this.ordersService.checkout(+userId, shippingAddress, paymentMethod, slipFilename);
+    return this.ordersService.checkout(userId, shippingAddress, paymentMethod, slipFilename);
   }
 
-  // POST /api/orders — สร้าง Order แบบ manual
-  @Post()
-  create(@Body() createOrderDto: CreateOrderDto) {
-    return this.ordersService.create(createOrderDto);
+  // ── Customer: ดู Order ของตัวเอง (ต้อง login) ─────────────────────────
+  @Get('my-orders')
+  @UseGuards(JwtAuthGuard)
+  findMyOrders(@Request() req: any) {
+    return this.ordersService.findByUserId(req.user.userId);
   }
 
-  // GET /api/orders — ดึง Order ทั้งหมด (Admin)
+  // ── Admin: ดู Order ทั้งหมด ────────────────────────────────────────────
   @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   findAll() {
     return this.ordersService.findAll();
   }
 
-  // GET /api/orders/user/:userId — ดึง Order ของ User คนนั้น
+  // ── Admin: ดู Order ของ User ใดก็ได้ ──────────────────────────────────
   @Get('user/:userId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   findByUserId(@Param('userId') userId: string) {
     return this.ordersService.findByUserId(+userId);
   }
 
-  // GET /api/orders/:id — ดึง Order เดี่ยว
+  // ── Login required: ดู Order เดี่ยว ───────────────────────────────────
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
   findOne(@Param('id') id: string) {
     return this.ordersService.findOne(+id);
   }
 
-  // PATCH /api/orders/:id/status — อัปเดตสถานะ
+  // ── Admin: อัปเดตสถานะ ────────────────────────────────────────────────
   @Patch(':id/status')
-  updateStatus(@Param('id') id: string, @Body() updateOrderStatusDto: UpdateOrderStatusDto) {
-    return this.ordersService.updateStatus(+id, updateOrderStatusDto.status);
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  updateStatus(@Param('id') id: string, @Body() dto: UpdateOrderStatusDto) {
+    return this.ordersService.updateStatus(+id, dto.status);
+  }
+
+  // ── Admin: Create Order แบบ manual ────────────────────────────────────
+  @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  create(@Body() createOrderDto: CreateOrderDto) {
+    return this.ordersService.create(createOrderDto);
   }
 }

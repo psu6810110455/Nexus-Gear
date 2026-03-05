@@ -1,5 +1,7 @@
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { AuthProvider } from './features/auth/context/AuthContext';
+import PrivateRoute from './features/auth/components/PrivateRoute';
+import AdminRoute from './features/auth/components/AdminRoute';
 
 import Navbar from './features/navigation/components/Navbar';
 import HomePage from './features/home/pages/HomePage';
@@ -38,52 +40,47 @@ function AppContent() {
         <Route path="/products/:id" element={<ProductDetailPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/my-orders" element={<NexusGearOrderStatus />} />
 
-        {/* ── Admin ── */}
-        <Route path="/admin" element={<AdminPage />} />
-        <Route path="/admin/orders" element={<NexusGearAdminOrders />} />
-        <Route path="/admin/stock" element={<AdminStockPage />} />
+        {/* ── Login required ── */}
+        <Route path="/my-orders" element={
+          <PrivateRoute><NexusGearOrderStatus /></PrivateRoute>
+        } />
+        <Route path="/cart" element={
+          <PrivateRoute>
+            <CartPage onNavigate={(page) => {
+              if (page === 'home') navigate('/');
+              else if (page === 'products') navigate('/shop');
+              else if (page === 'profile') navigate('/login');
+              else if (page === 'payment') navigate('/payment');
+            }} />
+          </PrivateRoute>
+        } />
+        <Route path="/payment" element={
+          <PrivateRoute>
+            <PaymentPage onNavigate={(page) => {
+              if (page === 'cart') navigate('/cart');
+              else if (page === 'home') navigate('/');
+            }} />
+          </PrivateRoute>
+        } />
 
-        {/* ── Dashboard ── */}
-        <Route
-          path="/dashboard"
-          element={
-            <DashboardPage
-              onNavigate={(page: string) => {
-                if (page === 'home') navigate('/');
-              }}
-            />
-          }
-        />
-
-        {/* ── Cart ── */}
-        <Route
-          path="/cart"
-          element={
-            <CartPage
-              onNavigate={(page: string) => {
-                if (page === 'home') navigate('/');
-                else if (page === 'products') navigate('/shop');
-                else if (page === 'profile') navigate('/login');
-                else if (page === 'payment') navigate('/payment');
-              }}
-            />
-          }
-        />
-
-        {/* ── Payment ── */}
-        <Route
-          path="/payment"
-          element={
-            <PaymentPage
-              onNavigate={(page: string) => {
-                if (page === 'cart') navigate('/cart');
-                else if (page === 'home') navigate('/');
-              }}
-            />
-          }
-        />
+        {/* ── Admin only ── */}
+        <Route path="/admin" element={
+          <AdminRoute><AdminPage /></AdminRoute>
+        } />
+        <Route path="/admin/orders" element={
+          <AdminRoute><NexusGearAdminOrders /></AdminRoute>
+        } />
+        <Route path="/admin/stock" element={
+          <AdminRoute><AdminStockPage /></AdminRoute>
+        } />
+        <Route path="/dashboard" element={
+          <AdminRoute>
+            <DashboardPage onNavigate={(page) => {
+              if (page === 'home') navigate('/');
+            }} />
+          </AdminRoute>
+        } />
 
         {/* ── Fallback ── */}
         <Route path="*" element={<Navigate to="/" replace />} />

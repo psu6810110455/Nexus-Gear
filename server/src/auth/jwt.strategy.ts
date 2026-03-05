@@ -7,15 +7,14 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
-      // ดึง JWT ออกจาก Header ที่ชื่อว่า Authorization: Bearer <token>
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ignoreExpiration: false, // ถ้าบัตรหมดอายุแล้ว ให้เตะออกทันที
-      secretOrKey: 'MY_SUPER_SECRET_KEY', // 👈 ต้องตรงกับที่ตั้งไว้ใน AuthModule นะครับ
+      ignoreExpiration: false,
+      secretOrKey: 'MY_SUPER_SECRET_KEY',
     });
   }
 
   async validate(payload: any) {
-    // ข้อมูลที่ถูกแกะออกมาจาก Token จะมาอยู่ที่นี่
-    return { userId: payload.sub, email: payload.email };
+    // ✅ เพิ่ม role กลับไปด้วย เพื่อให้ Guard ใช้ตรวจสอบได้
+    return { userId: payload.sub, email: payload.email, role: payload.role };
   }
 }

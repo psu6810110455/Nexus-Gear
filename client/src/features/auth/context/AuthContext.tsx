@@ -1,9 +1,18 @@
+// src/features/auth/context/AuthContext.tsx
 import { createContext, useState, useContext, useEffect } from 'react';
 import type { ReactNode } from 'react';
 
+interface AuthUser {
+  id: number;
+  name: string;
+  email: string;
+  role: 'admin' | 'customer';
+}
+
 interface AuthContextType {
   isLoggedIn: boolean;
-  login: (token: string) => void;
+  user: AuthUser | null;
+  login: (token: string, user: AuthUser) => void;
   logout: () => void;
 }
 
@@ -11,23 +20,34 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [user, setUser] = useState<AuthUser | null>(null);
 
+  // โหลดข้อมูลจาก localStorage เมื่อ refresh หน้า
   useEffect(() => {
-    setIsLoggedIn(!!localStorage.getItem('token'));
+    const token = localStorage.getItem('token');
+    const savedUser = localStorage.getItem('user');
+    if (token && savedUser) {
+      setIsLoggedIn(true);
+      setUser(JSON.parse(savedUser));
+    }
   }, []);
 
-  const login = (token: string) => {
+  const login = (token: string, userData: AuthUser) => {
     localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(userData));
     setIsLoggedIn(true);
+    setUser(userData);
   };
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setIsLoggedIn(false);
+    setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

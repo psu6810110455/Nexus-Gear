@@ -53,26 +53,26 @@ export const deleteCategory = (id: number) =>
 
 // ── Orders ────────────────────────────────────────────────────
 export const getOrders = () =>
-  api.get('/orders').then((r) => r.data);
+  api.get('/api/orders').then((r) => r.data);                    // ✅ แก้ path
 
 export const getUserOrders = (userId: number) =>
-  api.get(`/orders/user/${userId}`).then((r) => r.data);
+  api.get(`/api/orders/user/${userId}`).then((r) => r.data);    // ✅ แก้ path
 
 export const updateOrderStatus = (id: number, status: string) =>
-  api.patch(`/orders/${id}/status`, { status }).then((r) => r.data);
+  api.patch(`/api/orders/${id}/status`, { status }).then((r) => r.data); // ✅ แก้ path
 
 export const submitOrderRating = (orderId: number, ratings: Record<number, number>) =>
-  api.post(`/orders/${orderId}/rating`, { ratings }).then((r) => r.data);
+  api.post(`/api/orders/${orderId}/rating`, { ratings }).then((r) => r.data);
 
 // ── Cart ──────────────────────────────────────────────────────
 export const getCart = () =>
-  api.get('/cart').then((r) => r.data);
+  api.get('/api/cart').then((r) => r.data);                      // ✅ แก้ path
 
 export const addToCart = (productId: number, quantity: number) =>
-  api.post('/cart/add', { productId, quantity }).then((r) => r.data);
+  api.post('/api/cart/add', { productId, quantity }).then((r) => r.data); // ✅ แก้ path
 
 export const removeFromCart = (id: number) =>
-  api.delete(`/cart/${id}`).then((r) => r.data);
+  api.delete(`/api/cart/${id}`).then((r) => r.data);             // ✅ แก้ path
 
 // ── Sales ─────────────────────────────────────────────────────
 export const getSalesData = () =>

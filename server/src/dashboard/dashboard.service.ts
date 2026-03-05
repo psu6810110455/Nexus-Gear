@@ -10,13 +10,13 @@ export class DashboardService {
     const summaryResult: any = await this.db.query(
       `SELECT 
         COUNT(id) as totalOrders, 
-        COALESCE(SUM(total), 0) as totalSales 
+        COALESCE(SUM(total_price), 0) as totalSales 
        FROM orders`
     );
 
     // 2. รายการสั่งซื้อล่าสุด 5 รายการ
     const recentOrders: any = await this.db.query(
-      `SELECT id, order_number, shipping_name, total, payment_method
+      `SELECT id, order_number, shipping_address, total_price, status
        FROM orders 
        ORDER BY id DESC 
        LIMIT 5`
@@ -26,32 +26,31 @@ export class DashboardService {
     const salesChartData: any = await this.db.query(
       `SELECT 
         DATE_FORMAT(created_at, '%d/%m') as label,
-        SUM(total) as amount
+        SUM(total_price) as amount
        FROM orders
        WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
        GROUP BY DATE(created_at), DATE_FORMAT(created_at, '%d/%m')
        ORDER BY DATE(created_at) ASC`
     );
 
-    // ✨ 4. [AI SUMMARY] ยอดขายวันนี้
+    // 4. [AI SUMMARY] ยอดขายวันนี้
     const todayResult: any = await this.db.query(
       `SELECT 
         COUNT(id) as todayOrders,
-        COALESCE(SUM(total), 0) as todaySales
+        COALESCE(SUM(total_price), 0) as todaySales
        FROM orders
        WHERE DATE(created_at) = CURDATE()`
     );
 
-    // ✨ 5. [AI SUMMARY] ยอดขายเมื่อวาน
+    // 5. [AI SUMMARY] ยอดขายเมื่อวาน
     const yesterdayResult: any = await this.db.query(
       `SELECT 
-        COALESCE(SUM(total), 0) as yesterdaySales
+        COALESCE(SUM(total_price), 0) as yesterdaySales
        FROM orders
        WHERE DATE(created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)`
     );
 
-    // ✨ 6. [AI SUMMARY] สินค้าขายดีที่สุด (join กับ order_items และ products)
-    //    ถ้าไม่มีตาราง order_items ให้ comment บรรทัดนี้ออก แล้วใช้ topProductFallback แทน
+    // 6. [AI SUMMARY] สินค้าขายดีที่สุด
     let topProductResult: any = [];
     try {
       topProductResult = await this.db.query(
@@ -65,23 +64,22 @@ export class DashboardService {
          LIMIT 1`
       );
     } catch {
-      // ถ้าไม่มีตาราง order_items ก็ไม่ error — ใช้ค่า fallback แทน
       topProductResult = [];
     }
 
-    // ─── คำนวณ Trend ─────────────────────────────────────────────────────────
-    const todaySales   = Number(todayResult[0]?.todaySales)     || 0;
-    const todayOrders  = Number(todayResult[0]?.todayOrders)    || 0;
+    // ─── คำนวณ Trend ──────────────────────────────────────────────────────────
+    const todaySales     = Number(todayResult[0]?.todaySales)        || 0;
+    const todayOrders    = Number(todayResult[0]?.todayOrders)       || 0;
     const yesterdaySales = Number(yesterdayResult[0]?.yesterdaySales) || 0;
-    const topProduct   = topProductResult[0]?.productName || 'N/A';
+    const topProduct     = topProductResult[0]?.productName          || 'N/A';
 
     let trend: 'up' | 'down' | 'flat' = 'flat';
     let trendPercent = 0;
 
     if (yesterdaySales > 0) {
       trendPercent = Math.abs(((todaySales - yesterdaySales) / yesterdaySales) * 100);
-      if (todaySales > yesterdaySales)       trend = 'up';
-      else if (todaySales < yesterdaySales)  trend = 'down';
+      if (todaySales > yesterdaySales)      trend = 'up';
+      else if (todaySales < yesterdaySales) trend = 'down';
     } else if (todaySales > 0) {
       trend = 'up';
       trendPercent = 100;
@@ -90,12 +88,10 @@ export class DashboardService {
     return {
       success: true,
       data: {
-        totalOrders:  Number(summaryResult[0]?.totalOrders)  || 0,
-        totalSales:   Number(summaryResult[0]?.totalSales)   || 0,
+        totalOrders:  Number(summaryResult[0]?.totalOrders) || 0,
+        totalSales:   Number(summaryResult[0]?.totalSales)  || 0,
         recentOrders: recentOrders,
         salesChart:   salesChartData,
-
-        // ✨ ข้อมูลสำหรับ AI Summary Box
         aiSummary: {
           todaySales,
           todayOrders,
@@ -103,9 +99,9 @@ export class DashboardService {
           topProduct,
           trend,
           trendPercent,
-          peakHour: '14:00-16:00', // mock ไว้ก่อน — ถ้าอยากได้จริงบอกได้
-        }
-      }
+          peakHour: '14:00-16:00',
+        },
+      },
     };
   }
 }

@@ -32,7 +32,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   }
 
   // ฟังก์ชันพระเอก: รับ SQL ไปรันใน Database
-  async query(sql: string, params?: any[]) {
+  async query(sql: string, params: any[]=[]) {
     const [results] = await this.pool.execute(sql, params);
     return results;
   }

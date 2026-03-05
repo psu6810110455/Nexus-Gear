@@ -1,10 +1,9 @@
-// src/users/users.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from './entities/user.entity';
-import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
+import { User } from './user.entity';
+import { RegisterDto } from './dto/register.dto';
 
 @Injectable()
 export class UsersService {
@@ -13,27 +12,28 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async register(createUserDto: CreateUserDto): Promise<User> {
-    const { password, email, name } = createUserDto;
-    console.log("📦 ข้อมูลที่ส่งมาถึง Service: ", createUserDto);
-    // 1. เข้ารหัสรหัสผ่าน
-    const hashedPassword = await bcrypt.hash(password, 10);
-    
-    // 2. สร้าง Instance แบบระบุตัวตนชัดเจน (ช่วยให้ TS ไม่สับสนครับ)
-    const newUser = new User();
-    newUser.email = email;
-    newUser.name = name;
-    newUser.password = hashedPassword;
+  async register(dto: RegisterDto) {
+    // ✅ เช็คว่าอีเมลซ้ำหรือยัง
+    const existing = await this.usersRepository.findOne({ where: { email: dto.email } });
+    if (existing) {
+      throw new ConflictException('อีเมลนี้ถูกใช้งานแล้ว');
+    }
 
-    // 3. บันทึกข้อมูล (ลบ create() ออกไปก่อนเพื่อเช็ค Type ครับ)
-    return await this.usersRepository.save(newUser);
+    const hashed = await bcrypt.hash(dto.password, 10);
+    const user = this.usersRepository.create({
+      ...dto,
+      password: hashed,
+    });
+    await this.usersRepository.save(user);
+
+    return { message: 'สมัครสมาชิกสำเร็จ' };
   }
 
-  // แก้ Error ในรูป image_32339c.png โดยใช้ null และระบุ findOne แบบชัดเจนครับ
-  async findOneByEmail(email: string): Promise<User | null> {
-    const user = await this.usersRepository.findOne({ 
-      where: { email: email } 
-    });
-    return user;
+  async findByEmail(email: string): Promise<User | null> {
+    return this.usersRepository.findOne({ where: { email } });
+  }
+
+  async findById(id: number): Promise<User | null> {
+    return this.usersRepository.findOne({ where: { id } });
   }
 }

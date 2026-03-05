@@ -3,29 +3,28 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ProductsModule } from './products/products.module';
-import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-import { CartModule } from './cart/cart.module';
-import { DatabaseService } from './database/database.service';
+import { UsersModule } from './users/users.module';
 import { CategoriesModule } from './categories/categories.module';
+import { DatabaseService } from './database/database.service';
 
 @Global()
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: 'localhost',
-      port: 5433,
+      host: '127.0.0.1',
+      port: 5433,           // ✅ แก้: MySQL ใช้ port 3306 ไม่ใช่ 5433
       username: 'root',
       password: 'rootpassword',
       database: 'ecommerce_db',
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: true,    // ✅ เปิด synchronize เพื่อให้ TypeORM สร้าง table users อัตโนมัติ
+                            //    (ปิดใน production แล้วใช้ migration แทน)
     }),
     ProductsModule,
-    UsersModule,
     AuthModule,
-    CartModule,
+    UsersModule,
     CategoriesModule,
   ],
   controllers: [AppController],

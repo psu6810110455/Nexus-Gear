@@ -54,3 +54,16 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# Playwright State (กรณีใช้เก็บ session/cookies สำหรับ login)
+auth.json
+user-state.json
+
+# Browser binaries (กรณีติดตั้งแบบ local ใน project)
+/bin/Browsers/

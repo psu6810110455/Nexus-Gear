@@ -1,15 +1,14 @@
-// src/auth/auth.controller.ts
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { LoginDto } from './dto/login.dto';
 
-@Controller('auth') // กำหนด URL หลักเป็น http://localhost:3000/auth
+@Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
-  @HttpCode(HttpStatus.OK) // เปลี่ยน Status Code เป็น 200 OK สำหรับการ Login
-  @Post('login') // สร้าง API Endpoint: POST /auth/login
-  async login(@Body() loginDto: Record<string, any>) {
-    // ส่งอีเมลและรหัสผ่านที่รับมาไปเช็คที่ AuthService
-    return this.authService.login(loginDto.email, loginDto.password);
+  // ✅ POST /auth/login  ← ตรงกับที่ frontend Login.tsx เรียก
+  @Post('login')
+  login(@Body() dto: LoginDto) {
+    return this.authService.login(dto);
   }
 }

@@ -1,8 +1,8 @@
-// src/auth/auth.service.ts
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { UsersService } from '../users/users.service';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
@@ -11,20 +11,23 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async login(email: string, pass: string) {
-    // 1. หา User จาก Email ในฐานข้อมูล MySQL
-    const user = await this.usersService.findOneByEmail(email);
+  async login(dto: LoginDto) {
+    const user = await this.usersService.findByEmail(dto.email);
 
-    // 2. ถ้าเจอ User ให้เช็คว่ารหัสผ่านที่พิมพ์มา ตรงกับที่โดน Hash ไว้ไหม
-    if (user && (await bcrypt.compare(pass, user.password))) {
-      const payload = { sub: user.id, email: user.email };
-      return {
-        access_token: await this.jwtService.signAsync(payload), // ส่งบัตรผ่าน (JWT) กลับไป
-        user: { id: user.id, email: user.email, name: user.name }
-      };
+    // ✅ ตรวจสอบว่ามี user และ password ตรงกัน
+    if (!user || !(await bcrypt.compare(dto.password, user.password))) {
+      throw new UnauthorizedException('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
     }
-    
-    // 3. ถ้าไม่ถูกให้แจ้งเตือนว่าไม่มีสิทธิ์เข้าถึง
-    throw new UnauthorizedException('อีเมลหรือรหัสผ่านไม่ถูกต้องครับ');
+
+    const payload = { sub: user.id, email: user.email, role: user.role };
+    return {
+      access_token: this.jwtService.sign(payload), // ✅ ตรงกับที่ frontend เรียก data.access_token
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    };
   }
 }

@@ -17,11 +17,10 @@ export class ProductsService {
 
   async create(createProductDto: CreateProductDto) {
     const { categoryId, ...productData } = createProductDto;
-
     const product = this.productsRepository.create(productData);
 
     if (categoryId) {
-      const category = await this.categoriesRepository.findOne({ where: { id: Number(categoryId) } });
+      const category = await this.categoriesRepository.findOne({ where: { id: categoryId } });
       if (!category) throw new NotFoundException(`Category #${categoryId} not found`);
       product.category = category;
     }
@@ -29,7 +28,7 @@ export class ProductsService {
     return this.productsRepository.save(product);
   }
 
-  async findAll() {
+  findAll() {
     return this.productsRepository.find({ relations: ['category'] });
   }
 
@@ -42,29 +41,36 @@ export class ProductsService {
     return product;
   }
 
+  // ✅ แก้: update ให้รองรับ categoryId เหมือน create
   async update(id: number, updateProductDto: UpdateProductDto) {
-    const { categoryId, ...productData } = updateProductDto;
-
     const product = await this.productsRepository.findOne({
       where: { id },
       relations: ['category'],
     });
     if (!product) throw new NotFoundException(`Product #${id} not found`);
 
-    Object.assign(product, productData);
+    const { categoryId, ...rest } = updateProductDto;
 
-    if (categoryId) {
-      const category = await this.categoriesRepository.findOne({ where: { id: Number(categoryId) } });
-      if (!category) throw new NotFoundException(`Category #${categoryId} not found`);
-      product.category = category;
-    } else if (categoryId === null) {
-      product.category = null as any;
+    // อัปเดตฟิลด์ปกติ
+    Object.assign(product, rest);
+
+    // อัปเดต category ถ้ามี categoryId ส่งมา
+    if (categoryId !== undefined) {
+      if (categoryId === null) {
+        product.category = null;
+      } else {
+        const category = await this.categoriesRepository.findOne({ where: { id: categoryId } });
+        if (!category) throw new NotFoundException(`Category #${categoryId} not found`);
+        product.category = category;
+      }
     }
 
     return this.productsRepository.save(product);
   }
 
-  remove(id: number) {
-    return this.productsRepository.delete(id);
+  async remove(id: number) {
+    const product = await this.productsRepository.findOne({ where: { id } });
+    if (!product) throw new NotFoundException(`Product #${id} not found`);
+    return this.productsRepository.remove(product);
   }
 }

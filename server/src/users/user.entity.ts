@@ -1,6 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToMany } from 'typeorm';
 import { Address } from '../profile/entities/address.entity';
-import { OneToMany } from 'typeorm';
 
 @Entity('users')
 export class User {
@@ -25,12 +24,12 @@ export class User {
   @CreateDateColumn()
   createdAt: Date;
 
-  @Column({ nullable: true })
+  // 👇 เหลือแค่ชุดนี้ชุดเดียวเท่านั้นครับ (แก้ปัญหา Duplicate และ Object Error)
+  @Column({ type: 'varchar', nullable: true }) 
   resetPasswordToken: string | null; // เก็บ Token ลับ
 
   @Column({ type: 'timestamp', nullable: true })
   resetPasswordExpires: Date | null; // เก็บเวลาหมดอายุ
-  
 
   @OneToMany(() => Address, (address) => address.user, { cascade: true })
   addresses: Address[];

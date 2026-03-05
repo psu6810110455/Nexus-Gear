@@ -6,6 +6,7 @@ import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
 import { MailService } from '../mail/mail.service'; // ✅ นำเข้า MailService
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -91,5 +92,24 @@ export class AuthService {
     await this.mailService.sendPasswordResetEmail(user.email, resetToken);
 
     return { message: 'ระบบได้ส่งลิงก์สำหรับตั้งรหัสผ่านใหม่ไปที่อีเมลของคุณแล้วครับ' };
+  }
+
+  // ✅ 4. ฟังก์ชันตั้งรหัสผ่านใหม่ (Reset Password)
+  async resetPassword(dto: ResetPasswordDto) {
+    // 4.1 หา User ที่มี Token ตรงกับที่ส่งมา
+    const user = await this.usersService.findByResetToken(dto.token);
+
+    // 4.2 เช็กว่ามี User ไหม และ Token หมดอายุหรือยัง (เอาเวลาปัจจุบันไปเทียบ)
+    if (!user || !user.resetPasswordExpires || user.resetPasswordExpires < new Date()) {
+      throw new UnauthorizedException('ลิงก์รีเซ็ตรหัสผ่านไม่ถูกต้อง หรือหมดอายุแล้วครับ');
+    }
+
+    // 4.3 นำรหัสผ่านใหม่ไปเข้ารหัส (Hash)
+    const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
+
+    // 4.4 บันทึกรหัสผ่านใหม่ลงฐานข้อมูล พร้อมล้าง Token และเวลาหมดอายุทิ้ง
+    await this.usersService.updatePassword(user.id, hashedPassword);
+
+    return { message: 'เปลี่ยนรหัสผ่านสำเร็จแล้ว! สามารถเข้าสู่ระบบด้วยรหัสผ่านใหม่ได้เลยครับ' };
   }
 }

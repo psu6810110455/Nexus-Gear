@@ -50,4 +50,26 @@ export class UsersService {
       resetPasswordExpires: expires,
     });
   } // ✅ ปิดฟังก์ชัน updateResetToken
+
+
+  // ✅ ค้นหา User จาก Token ลับ
+  async findByResetToken(token: string): Promise<User | null> {
+    return this.usersRepository.findOne({ where: { resetPasswordToken: token } });
+  }
+
+  // ✅ อัปเดตรหัสผ่านใหม่ และล้าง Token เดิมทิ้งไป (เพื่อความปลอดภัย)
+  async updatePassword(userId: number, hashedPassword: string) {
+    await this.usersRepository.update(userId, {
+      password: hashedPassword,
+      resetPasswordToken: null,
+      resetPasswordExpires: null,
+    });
+  }
+
+
+
+
+
+
+
 } // ✅ ปิดคลาส UsersService

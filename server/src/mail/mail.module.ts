@@ -11,8 +11,8 @@ import { MailService } from './mail.service';
         port: 587,
         secure: false,
         auth: {
-          user: 'YOUR_EMAIL@gmail.com', // ⚠️ ใส่อีเมล Gmail ของคุณ (ที่จะใช้เป็นคนส่ง)
-          pass: 'YOUR_APP_PASSWORD',    // ⚠️ ใส่ App Password (เดี๋ยวผมบอกวิธีเอาด้านล่างครับ)
+          user: 'nexusgear.noreply@gmail.com', // ⚠️ ใส่อีเมล Gmail ของคุณ (ที่จะใช้เป็นคนส่ง)
+          pass: 'poscksiwllhmaqfi',    // ⚠️ ใส่ App Password (เดี๋ยวผมบอกวิธีเอาด้านล่างครับ)
         },
       },
       defaults: {

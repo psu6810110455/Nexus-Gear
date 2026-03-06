@@ -17,10 +17,10 @@ export const ProfileOrdersTab: React.FC<ProfileOrdersTabProps> = ({ orders, onOp
   };
 
   const statusIcons = [
-    { icon: Wallet, label: 'ที่ต้องชำระ', count: 0 },
-    { icon: Package, label: 'ที่ต้องจัดส่ง', count: 1 },
-    { icon: Truck, label: 'ที่ต้องได้รับ', count: 2 },
-    { icon: Star, label: 'ให้คะแนน', count: 0 }
+    { icon: Wallet, label: 'ที่ต้องชำระ', count: orders.filter(o => o.status === 'pending_payment').length },
+    { icon: Package, label: 'ที่ต้องจัดส่ง', count: orders.filter(o => o.status === 'processing').length },
+    { icon: Truck, label: 'ที่ต้องได้รับ', count: orders.filter(o => o.status === 'shipping').length },
+    { icon: Star, label: 'ให้คะแนน', count: orders.filter(o => o.status === 'delivered').length }
   ];
 
   return (

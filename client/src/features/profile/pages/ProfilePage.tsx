@@ -204,7 +204,8 @@ export const ProfilePage = () => {
               <ProfileSidebar 
                 userData={userData} 
                 activeTab={activeTab} 
-                setActiveTab={setActiveTab} 
+                setActiveTab={setActiveTab}
+                picture={user?.picture}
               />
             </div>
 

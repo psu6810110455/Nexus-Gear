@@ -208,7 +208,11 @@ const Navbar = () => {
                   onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
                 >
                   <div style={{ width: 32, height: 32, borderRadius: '50%', backgroundColor: '#2E0505', border: '1px solid #7F1D1D', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#dc2626', fontWeight: 'bold', fontSize: '0.8rem', overflow: 'hidden' }}>
-                    {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                    {user?.picture ? (
+                      <img src={user.picture} alt={user.name || 'Profile'} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} referrerPolicy="no-referrer" />
+                    ) : (
+                      user?.name ? user.name.charAt(0).toUpperCase() : 'U'
+                    )}
                   </div>
                   <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.8rem', fontWeight: 500, fontFamily: "'Kanit', sans-serif" }}>
                     {user?.name || 'ผู้ใช้งาน'}

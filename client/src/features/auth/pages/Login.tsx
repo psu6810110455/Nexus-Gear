@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../../shared/services/api';
+import { useAuth } from '../../auth/context/AuthContext';
+import { toast } from 'sonner';
 
-/* ไอคอน SVG แยกออกมาจาก JSX หลักให้อ่านง่ายขึ้น */
 const IconInfo = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
@@ -32,24 +33,38 @@ const IconGoogle = () => (
 
 const Login = () => {
   const navigate = useNavigate();
-  const [email, setEmail]       = useState('');
-  const [password, setPassword] = useState('');
+  const { login } = useAuth();
+  const [email, setEmail]               = useState('');
+  const [password, setPassword]         = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const { data } = await axios.post('http://localhost:3000/auth/login', { email, password });
-      localStorage.setItem('token', data.access_token);
-      alert('ยินดีต้อนรับกลับสู่ Nexus Gear!');
+      const { data } = await api.post('/auth/login', { email, password });
+      
+      // 💡 ลอง console.log ดูว่า Backend ส่งอะไรมาบ้าง จะได้เห็นชัดๆ ครับ
+      console.log('Login Response:', data);
+
+      // ✅ ดักจับทั้งสองรูปแบบ: เผื่อ backend ส่งมาเป็น token หรือ access_token
+      const actualToken = data.access_token || data.token; 
+
+      if (!actualToken) {
+        toast.error('ระบบไม่ได้รับ Token จากเซิร์ฟเวอร์ กรุณาตรวจสอบ Backend ครับ');
+        return;
+      }
+
+      login(actualToken, data.user); 
+      toast.success('ยินดีต้อนรับกลับสู่ Nexus Gear!');
       navigate('/');
     } catch (err: any) {
-      alert(err.response?.data?.message || 'อีเมลหรือรหัสผ่านไม่ถูกต้องครับ');
+      toast.error(err.response?.data?.message || 'อีเมลหรือรหัสผ่านไม่ถูกต้องครับ');
     }
   };
 
   // ✅ เพิ่มฟังก์ชันสำหรับพาผู้ใช้ไปหน้าล็อกอินของ Google
   const handleGoogleLogin = () => {
+    localStorage.setItem('oauth_action', 'login');
     window.location.href = 'http://localhost:3000/auth/google';
   };
 
@@ -57,9 +72,7 @@ const Login = () => {
     <div className="auth-page-wrapper">
       <div className="auth-container">
         <div className="auth-bg-lines" aria-hidden="true" />
-
         <div className="auth-card">
-          {/* Header */}
           <div style={{ position: 'relative', marginBottom: '0.5rem' }}>
             <Link
               to="/"
@@ -74,36 +87,25 @@ const Login = () => {
             <h1 className="auth-title">เข้าสู่ระบบ</h1>
           </div>
 
-          {/* Form */}
           <form onSubmit={handleSubmit} noValidate>
-            {/* Email */}
             <div style={{ marginBottom: '1.5rem' }}>
               <label htmlFor="email" style={{ display: 'block', color: '#fff', marginBottom: '0.5rem', textAlign: 'left' }}>อีเมล</label>
               <div className="auth-input-wrap">
                 <input
-                  id="email"
-                  type="email"
-                  placeholder="ที่อยู่อีเมล"
-                  className="auth-input"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
+                  id="email" type="email" placeholder="ที่อยู่อีเมล"
+                  className="auth-input" value={email}
+                  onChange={(e) => setEmail(e.target.value)} required
                 />
               </div>
             </div>
 
-            {/* Password */}
             <div style={{ marginBottom: '1.25rem' }}>
               <label htmlFor="password" style={{ display: 'block', color: '#fff', marginBottom: '0.5rem', textAlign: 'left' }}>รหัสผ่าน</label>
               <div className="auth-input-wrap">
                 <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="กรอกรหัสผ่านของคุณ"
-                  className="auth-input"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
+                  id="password" type={showPassword ? 'text' : 'password'}
+                  placeholder="กรอกรหัสผ่านของคุณ" className="auth-input"
+                  value={password} onChange={(e) => setPassword(e.target.value)} required
                 />
                 <span style={{ display: 'flex', gap: '6px', alignItems: 'center', color: '#888' }}>
                   
@@ -116,8 +118,7 @@ const Login = () => {
                   </span>
                   
                   <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
+                    type="button" onClick={() => setShowPassword(!showPassword)}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888', display: 'flex', alignItems: 'center' }}
                     aria-label={showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}
                   >
@@ -127,7 +128,6 @@ const Login = () => {
               </div>
             </div>
 
-            {/* Remember + Forgot */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', color: '#ccc', fontSize: '0.9rem' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                 <input type="checkbox" />
@@ -137,8 +137,7 @@ const Login = () => {
             </div>
 
             <button
-              type="submit"
-              className="btn-primary"
+              type="submit" className="btn-primary"
               style={{ width: '100%', padding: '14px', fontFamily: 'Orbitron, sans-serif', fontSize: '1.4rem', textTransform: 'lowercase' }}
             >
               เข้าสู่ระบบ
@@ -172,7 +171,6 @@ const Login = () => {
           </p>
         </div>
       </div>
-
       <div className="auth-bottom-bar" aria-hidden="true" />
     </div>
   );

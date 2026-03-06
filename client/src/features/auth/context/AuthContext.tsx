@@ -1,20 +1,20 @@
+// src/features/auth/context/AuthContext.tsx
 import { createContext, useState, useContext, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import axios from 'axios';
 
-// ✅ 1. เพิ่ม Type สำหรับเก็บข้อมูล User
-export interface User {
+export interface AuthUser {
   id: number;
   name: string;
   email: string;
-  role: string;
+  role: string | 'admin' | 'customer';
+  picture?: string | null;
 }
 
-// ✅ 2. อัปเดต Type ของ Context ให้มี user พ่วงไปด้วย
 interface AuthContextType {
   isLoggedIn: boolean;
-  user: User | null;
-  login: (token: string) => void;
+  user: AuthUser | null;
+  login: (token: string, user?: AuthUser) => void;
   logout: () => void;
 }
 
@@ -22,7 +22,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
 
   // ✅ 3. ฟังก์ชันลับสำหรับเอา Token ไปแลกข้อมูล User จาก Backend
   const fetchUserProfile = async (token: string) => {
@@ -41,23 +41,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // โหลดข้อมูลจาก localStorage เมื่อ refresh หน้า
   useEffect(() => {
     const token = localStorage.getItem('token');
+    const savedUser = localStorage.getItem('user');
     if (token) {
-      // ถ้าเปิดเว็บมาแล้วมี Token ค้างอยู่ ให้ไปดึงข้อมูล User ทันที
-      fetchUserProfile(token);
+      if (savedUser) {
+        setIsLoggedIn(true);
+        setUser(JSON.parse(savedUser));
+        // refresh profile from backend just in case
+        fetchUserProfile(token);
+      } else {
+        fetchUserProfile(token);
+      }
     }
   }, []);
 
-  const login = (token: string) => {
+  const login = (token: string, userData?: AuthUser) => {
     localStorage.setItem('token', token);
-    fetchUserProfile(token); // ✅ พอได้ Token มาปุ๊บ (ล็อกอินสำเร็จ) ให้ดึงข้อมูล User ทันที
+    if (userData) {
+        localStorage.setItem('user', JSON.stringify(userData));
+        setIsLoggedIn(true);
+        setUser(userData);
+    } else {
+        fetchUserProfile(token); // ✅ พอได้ Token มาปุ๊บ (ล็อกอินสำเร็จ) ให้ดึงข้อมูล User ทันที
+    }
   };
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setIsLoggedIn(false);
-    setUser(null); // เคลียร์ข้อมูล User ทิ้ง
+    setUser(null);
   };
 
   return (

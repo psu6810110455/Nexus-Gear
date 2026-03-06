@@ -4,16 +4,23 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // 1. ตั้งค่า CORS
   app.enableCors({
-    origin: '*', 
+    origin: 'http://localhost:5173',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
 
-  app.useGlobalPipes(new ValidationPipe());
+  // 2. ตั้งค่า Validation
+  app.useGlobalPipes(new ValidationPipe({
+    transform: true,
+    whitelist: true,
+  }));
 
-
-  await app.listen(process.env.PORT ?? 3000);
-  console.log(`🚀 Application is running on: ${await app.getUrl()}`);
+  // 3. รัน Server
+  const port = process.env.PORT ?? 3000;
+  await app.listen(port);
+  console.log(`🚀 Application is running on: http://localhost:${port}`);
 }
 bootstrap();

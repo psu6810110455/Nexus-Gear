@@ -43,33 +43,8 @@ export class UsersService {
     return await this.usersRepository.save(newUser);
   }
 
-  // ✅ เพิ่มฟังก์ชันสำหรับอัปเดต Token รีเซ็ตรหัสผ่าน
-  async updateResetToken(userId: number, token: string | null, expires: Date | null) {
-    await this.usersRepository.update(userId, { // แก้ไขเป็น usersRepository แล้ว
-      resetPasswordToken: token,
-      resetPasswordExpires: expires,
-    });
-  } // ✅ ปิดฟังก์ชัน updateResetToken
-
-
-  // ✅ ค้นหา User จาก Token ลับ
-  async findByResetToken(token: string): Promise<User | null> {
-    return this.usersRepository.findOne({ where: { resetPasswordToken: token } });
+  async update(id: number, data: Partial<User>): Promise<User | null> {
+    await this.usersRepository.update(id, data);
+    return this.findById(id);
   }
-
-  // ✅ อัปเดตรหัสผ่านใหม่ และล้าง Token เดิมทิ้งไป (เพื่อความปลอดภัย)
-  async updatePassword(userId: number, hashedPassword: string) {
-    await this.usersRepository.update(userId, {
-      password: hashedPassword,
-      resetPasswordToken: null,
-      resetPasswordExpires: null,
-    });
-  }
-
-
-
-
-
-
-
-} // ✅ ปิดคลาส UsersService
+}

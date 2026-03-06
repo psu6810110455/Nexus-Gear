@@ -1,3 +1,8 @@
+// ============================================================
+// src/features/products/components/ProductFilter.tsx
+// Sidebar filter แยกออกจาก ProductList
+// ============================================================
+
 import type { ProductFilterParams } from '../types/product.types';
 
 interface ProductFilterProps {

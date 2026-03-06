@@ -32,6 +32,7 @@ export class AuthService {
         name: user.name,
         email: user.email,
         role: user.role,
+        picture: user.picture || null,
       },
     };
   }
@@ -53,6 +54,13 @@ export class AuthService {
       });
     }
 
+    // อัปเดตรูปโปรไฟล์ Google ถ้ามี
+    if (googleUser.picture && user) {
+      user.picture = googleUser.picture;
+      await this.usersService.update(user.id, { picture: googleUser.picture });
+    }
+
+    // ✅ เพิ่มการเช็กอีกครั้งเพื่อให้ TypeScript มั่นใจว่า user ไม่เป็น null แน่นอน
     if (!user) {
       throw new UnauthorizedException('ระบบไม่สามารถระบุตัวตนผู้ใช้งานได้');
     }
@@ -66,6 +74,7 @@ export class AuthService {
         email: user.email,
         name: user.name,
         role: user.role,
+        picture: user.picture || googleUser.picture || null,
       }
     };
   }

@@ -21,6 +21,9 @@ export class Product {
   @Column({ name: 'image_url', nullable: true })
   imageUrl: string;
 
+  @Column({ default: false })
+  isHidden: boolean;
+
   // เชื่อมกับ Category (หลาย Product อยู่ใน 1 Category)
   @ManyToOne(() => Category, (category) => category.products, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'category_id' })
@@ -28,4 +31,7 @@ export class Product {
 
   @Column({ name: 'category_id', nullable: true })
   categoryId: number;
+
+  @Column({ name: 'rating_average', type: 'float', default: 0, nullable: true })
+  rating_average: number;
 }

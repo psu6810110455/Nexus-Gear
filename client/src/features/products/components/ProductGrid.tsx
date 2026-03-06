@@ -5,6 +5,7 @@ interface ProductGridProps {
   products: Product[];
   selectedCategory: string;
   onReset: () => void;
+  onNavigate: (id: number) => void; 
 }
 
 const ProductGrid = ({ products, selectedCategory, onReset }: ProductGridProps) => {

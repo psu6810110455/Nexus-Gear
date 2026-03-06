@@ -37,6 +37,17 @@
   --color-auth-bg:        #050000;
   --color-auth-gradient:  radial-gradient(circle at center, #2b0000 0%, #050000 70%);
   --color-auth-input-bg:  #e8e0e0;
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+:root {
+  /* สีหลัก Nexus Gear */
+  --color-primary: #ff0000;
+  --color-primary-dark: #cc0000;
+  --color-dark-bg: #0a0a0a;
+  --color-dark-card: #141414;
 }
 
 /* ============================================================

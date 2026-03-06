@@ -1,0 +1,172 @@
+/* src/pages/Register.css */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap');
+
+/* ปรับโครงสร้างหน้าเว็บหลัก */
+.register-page-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* หากมีแถบ Scrollbar งอกมา ให้ลองเปลี่ยนเป็น height: 100%; เหมือนหน้า Login นะครับ */
+  background-color: #050000;
+}
+
+/* --- แถบดำล่าง --- */
+.bottom-bar {
+  background-color: #000000;
+  height: 60px;
+  width: 100%;
+  border-top: 1px solid #1a1a1a;
+}
+
+/* --- พื้นที่เนื้อหาตรงกลาง --- */
+.register-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(circle at center, #2b0000 0%, #050000 70%);
+  position: relative;
+  overflow: hidden;
+  padding: 20px 0;
+}
+
+/* ปรับความสวยงามของ Card */
+.register-card {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  padding: 30px;
+  z-index: 10;
+}
+
+.form-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 2.2rem;
+  color: #fff;
+  text-align: center;
+  text-transform: uppercase;
+  margin-bottom: 40px; /* เพิ่มระยะห่างจากหัวข้อลงมาหาฟอร์ม */
+  text-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+}
+
+.btn-back-home {
+  position: absolute;
+  top: -10px;
+  right: 0;
+  background-color: #b91c1c;
+  color: white;
+  padding: 6px 14px;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+/* --- ส่วนที่อัปเดต: ระยะห่างระหว่างช่อง --- */
+.form-group {
+  margin-bottom: 28px; /* 👈 เพิ่มระยะห่างระหว่างแต่ละกลุ่ม Input */
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 10px; /* 👈 เพิ่มระยะห่างระหว่างหัวข้อกับช่องสีขาว */
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* --- ปรับแต่ง Input --- */
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  background-color: #e8e0e0;
+  border-radius: 4px;
+  padding-right: 8px;
+  transition: box-shadow 0.3s;
+}
+
+.input-wrapper:focus-within {
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+}
+
+.form-input {
+  flex: 1;
+  padding: 14px 15px; /* เพิ่ม padding ให้ช่องดูหนาขึ้นเล็กน้อย */
+  background: transparent !important;
+  border: none;
+  outline: none;
+  color: #333;
+  font-size: 1rem;
+}
+
+.icon-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-icon, .icon-info {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  color: #888;
+  transition: color 0.2s;
+}
+
+.btn-icon:hover { color: #ff0000; }
+
+/* Checkbox & Terms */
+.form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 15px;
+  margin-bottom: 30px;
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+.highlight {
+  color: #ff3333;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* Submit Button */
+.btn-submit {
+  width: 100%;
+  padding: 14px;
+  background: #a81818;
+  color: white;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.3rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.btn-submit:hover {
+  background: #d61f1f;
+  transform: translateY(-2px);
+}
+
+.register-footer-text {
+  text-align: center;
+  margin-top: 25px;
+  color: #fff;
+  font-size: 0.95rem;
+}
+
+.link-login {
+  color: #ff0000;
+  text-decoration: none;
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+.link-login:hover {
+  text-decoration: underline;
+}

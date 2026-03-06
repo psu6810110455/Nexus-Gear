@@ -25,6 +25,19 @@ export const AddressModal: React.FC<AddressModalProps> = ({ isOpen, onClose, onS
         <div className="space-y-4">
           <div><label className="block text-xs font-['Orbitron'] text-[#FF0000] mb-2 uppercase">Label (ชื่อเรียก)</label><input value={form.label} onChange={e => setForm({...form, label: e.target.value})} placeholder="เช่น บ้าน, ที่ทำงาน" className="w-full bg-[#000000] border border-[#990000]/30 rounded-xl px-4 py-3 text-[#F2F4F6] focus:border-[#FF0000] outline-none transition-all" /></div>
           <div><label className="block text-xs font-['Orbitron'] text-[#FF0000] mb-2 uppercase">Full Address (ที่อยู่จัดส่ง)</label><textarea value={form.address} onChange={e => setForm({...form, address: e.target.value})} placeholder="รายละเอียดที่อยู่..." rows={3} className="w-full bg-[#000000] border border-[#990000]/30 rounded-xl px-4 py-3 text-[#F2F4F6] focus:border-[#FF0000] outline-none transition-all resize-none" /></div>
+          <div>
+            <label className="block text-xs font-['Orbitron'] text-[#FF0000] mb-2 uppercase">Phone (เบอร์โทรศัพท์)</label>
+            <input 
+              value={(form as any).phone || ''} 
+              onChange={e => {
+                const val = e.target.value.replace(/\D/g, ''); // Allow only numbers
+                setForm({...form, phone: val} as any);
+              }} 
+              placeholder="เช่น 0812345678" 
+              className="w-full bg-[#000000] border border-[#990000]/30 rounded-xl px-4 py-3 text-[#F2F4F6] focus:border-[#FF0000] outline-none transition-all" 
+              maxLength={10} 
+            />
+          </div>
           <label className="flex items-center gap-3 cursor-pointer group">
             <div className={`w-5 h-5 border rounded flex items-center justify-center transition-all ${form.isDefault ? 'bg-[#FF0000] border-[#FF0000]' : 'border-[#F2F4F6]/30 group-hover:border-[#FF0000]'}`}>{form.isDefault && <CheckCircle className="w-3.5 h-3.5 text-white" />}</div>
             <input type="checkbox" checked={form.isDefault} onChange={e => setForm({...form, isDefault: e.target.checked})} className="hidden" />

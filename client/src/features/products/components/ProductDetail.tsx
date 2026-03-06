@@ -1,47 +1,38 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { productDetailStyles } from '../../../styles/productDetail.styles';
 
 interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: string | number;
-  stock: number;
-  imageUrl?: string;
-  image_url?: string;
+  id: number; name: string; description: string; price: string | number;
+  stock: number; imageUrl?: string; image_url?: string;
   category?: { id: number; name: string };
 }
 
-/* ── helpers ─────────────────────────────────────────────── */
 const Stars = ({ rating = 5 }: { rating?: number }) => (
   <span aria-label={`${rating} ดาว`}>
-    {[...Array(5)].map((_, i) => (
-      <span key={i} style={{ color: i < rating ? '#facc15' : '#4b5563' }}>★</span>
-    ))}
+    {[...Array(5)].map((_, i) => <span key={i} style={{ color: i < rating ? '#facc15' : '#374151', fontSize: '1rem' }}>★</span>)}
   </span>
 );
 
 const BoxItem = ({ icon, label }: { icon: string; label: string }) => (
-  <div style={{ width: '3rem', height: '3rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '4px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: '0.5rem', gap: '2px' }}>
-    <span>{icon}</span>
-    <span>{label}</span>
+  <div style={{ width: '3.2rem', height: '3.2rem', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: '0.5rem', gap: '3px', color: 'var(--color-text-muted)' }}>
+    <span style={{ fontSize: '1.1rem' }}>{icon}</span>
+    <span style={{ letterSpacing: '0.05em' }}>{label}</span>
   </div>
 );
 
-/* ── Main Component ───────────────────────────────────────── */
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-
-  const [product, setProduct]                   = useState<Product | null>(null);
-  const [relatedProducts, setRelatedProducts]   = useState<Product[]>([]);
-  const [loading, setLoading]                   = useState(true);
-  const [quantity, setQuantity]                 = useState(1);
+  const [product, setProduct]                 = useState<Product | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [loading, setLoading]                 = useState(true);
+  const [quantity, setQuantity]               = useState(1);
 
   const changeQuantity = (dir: 'inc' | 'dec') => {
-    if (dir === 'dec' && quantity > 1) setQuantity((q) => q - 1);
-    if (dir === 'inc' && product && quantity < product.stock) setQuantity((q) => q + 1);
+    if (dir === 'dec' && quantity > 1) setQuantity(q => q - 1);
+    if (dir === 'inc' && product && quantity < product.stock) setQuantity(q => q + 1);
   };
 
   useEffect(() => {
@@ -50,151 +41,123 @@ const ProductDetail = () => {
         setLoading(true);
         const token = localStorage.getItem('token');
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
         const { data: current } = await axios.get(`http://localhost:3000/products/${id}`, { headers });
         setProduct(current);
-
         const { data: all } = await axios.get('http://localhost:3000/products', { headers });
         setRelatedProducts(all.filter((p: Product) => p.category?.name === current.category?.name && p.id !== current.id).slice(0, 4));
         setQuantity(1);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-        window.scrollTo(0, 0);
-      }
+      } catch (err) { console.error(err); }
+      finally { setLoading(false); window.scrollTo(0, 0); }
     };
     load();
   }, [id]);
 
-  if (loading) return <div className="page-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>กำลังโหลด...</div>;
-  if (!product) return <div className="page-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>ไม่พบสินค้า</div>;
+  if (loading) return (
+    <div style={{ minHeight: '100vh', background: 'var(--color-bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.5rem' }}>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <div style={{ position: 'relative', width: 64, height: 64 }}>
+        <div style={{ position: 'absolute', inset: 0, border: '3px solid rgba(220,38,38,0.2)', borderRadius: '50%' }} />
+        <div style={{ position: 'absolute', inset: 0, border: '3px solid transparent', borderTopColor: 'var(--color-primary)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+      </div>
+      <span style={{ fontFamily: 'Orbitron, sans-serif', fontSize: '0.75rem', letterSpacing: '0.2em', color: 'var(--color-primary)' }}>LOADING...</span>
+    </div>
+  );
+
+  if (!product) return (
+    <div style={{ minHeight: '100vh', background: 'var(--color-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-muted)', fontFamily: 'Orbitron, sans-serif', letterSpacing: '0.1em' }}>ไม่พบสินค้า</div>
+  );
 
   const imgSrc = product.imageUrl ?? product.image_url ?? 'https://placehold.co/600x400?text=No+Image';
 
   return (
-    <main className="page-wrapper" style={{ fontFamily: 'Inter, sans-serif', paddingBottom: '5rem' }}>
-      <div className="page-container" style={{ paddingTop: '1.5rem' }}>
+    <main style={{ width: '100%', minHeight: '100vh', background: 'var(--color-bg)', color: 'var(--color-text)', fontFamily: "'Kanit', sans-serif", paddingBottom: '6rem' }}>
+      {/* ── Inject styles from productDetail.styles.ts ── */}
+      <style>{productDetailStyles}</style>
 
-        {/* Back */}
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-dim)', fontSize: '0.875rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', transition: 'color 0.2s' }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-text)')}
-          onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-text-dim)')}
-        >
+      {/* Back */}
+      <div style={{ padding: '1.25rem 5vw', borderBottom: '1px solid var(--color-border)' }}>
+        <button type="button" onClick={() => navigate(-1)}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', fontSize: '0.82rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'color 0.2s', fontFamily: 'Orbitron, sans-serif', letterSpacing: '0.08em' }}
+          onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-text)')}
+          onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-muted)')}>
           ← กลับหน้ารายการสินค้า
         </button>
+      </div>
 
-        {/* ── Product Hero ── */}
-        <section aria-label="รายละเอียดสินค้า" style={{ display: 'flex', flexDirection: 'column', gap: '3rem', marginBottom: '4rem' }} className="md:flex-row">
-
-          {/* Image */}
-          <figure style={{ flex: '0 0 60%', background: '#fff', borderRadius: '0.75rem', overflow: 'hidden', padding: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', minHeight: '25rem', margin: 0, boxShadow: '0 0 30px rgba(255,255,255,0.05)' }}>
-            <span style={{ position: 'absolute', top: '1rem', left: '1rem', background: 'var(--color-primary)', color: '#fff', fontSize: '0.625rem', fontWeight: 700, padding: '4px 12px', borderRadius: '4px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>New Arrival</span>
-            <img
-              src={imgSrc}
-              alt={product.name}
-              style={{ maxHeight: '22rem', width: 'auto', objectFit: 'contain', transition: 'transform 0.5s' }}
-              onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
-              onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-              onError={(e) => { e.currentTarget.src = 'https://placehold.co/600x400/png?text=Nexus+Gear'; }}
-            />
-          </figure>
-
-          {/* Info */}
-          <div style={{ flex: '0 0 40%', display: 'flex', flexDirection: 'column' }}>
-            {/* Category badge */}
-            <p style={{ marginBottom: '0.5rem' }}>
-              <span style={{ color: 'var(--color-primary)', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', border: '1px solid rgba(220,38,38,0.3)', padding: '4px 8px', borderRadius: '4px' }}>
-                {product.category?.name ?? 'GAMING GEAR'}
-              </span>
-            </p>
-
-            <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '1rem', lineHeight: 1.25 }}>{product.name}</h1>
-
-            {/* Rating row */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.875rem', marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-              <Stars rating={4} />
-              <span style={{ color: 'var(--color-text-muted)' }}>(4.0 Reviews)</span>
-              <span style={{ color: '#4b5563' }}>|</span>
-              <span style={{ color: '#4ade80' }}>ขายแล้ว 1.2k ชิ้น</span>
+      {/* Hero */}
+      <section className="pd-hero" aria-label="รายละเอียดสินค้า">
+        <div className="pd-img-panel">
+          <span className="pd-new-badge">New Arrival</span>
+          <img src={imgSrc} alt={product.name}
+            style={{ maxHeight: '28rem', maxWidth: '100%', objectFit: 'contain', transition: 'transform 0.5s', position: 'relative', zIndex: 1, mixBlendMode: 'multiply' }}
+            onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.05)')}
+            onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
+            onError={e => { e.currentTarget.src = 'https://placehold.co/600x400/png?text=Nexus+Gear'; }} />
+        </div>
+        <div className="pd-info-panel">
+          <span className="pd-category-badge">{product.category?.name ?? 'GAMING GEAR'}</span>
+          <h1 className="pd-title">{product.name}</h1>
+          <div className="pd-rating-row">
+            <Stars rating={4} />
+            <span style={{ color: 'var(--color-text-muted)' }}>4.0 Reviews</span>
+            <span style={{ color: 'var(--color-border)' }}>|</span>
+            <span style={{ color: '#4ade80', fontSize: '0.78rem' }}>ขายแล้ว 1.2k ชิ้น</span>
+          </div>
+          <p className="pd-price-label">ราคาพิเศษ</p>
+          <div className="pd-price-row">
+            <strong className="pd-price">฿{Number(product.price).toLocaleString()}</strong>
+            <s className="pd-price-old">฿{Math.round(Number(product.price) * 1.2).toLocaleString()}</s>
+          </div>
+          <div className="pd-qty-box">
+            <div className="pd-qty-label">
+              <span>จำนวน</span>
+              <span style={{ fontSize: '0.72rem', color: 'var(--color-text-dim)' }}>มีสินค้า {product.stock} ชิ้น</span>
             </div>
-
-            {/* Price */}
-            <div style={{ marginBottom: '2rem' }}>
-              <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>ราคาพิเศษ</p>
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.75rem' }}>
-                <strong style={{ fontSize: '2.5rem', color: 'var(--color-primary)', fontWeight: 700 }}>฿{Number(product.price).toLocaleString()}</strong>
-                <s style={{ color: 'var(--color-text-dim)', fontSize: '1.125rem', marginBottom: '4px' }}>฿{Math.round(Number(product.price) * 1.2).toLocaleString()}</s>
-              </div>
-            </div>
-
-            {/* Quantity picker */}
-            <div className="card" style={{ padding: '1rem', marginBottom: '2rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', color: 'var(--color-text-muted)', marginBottom: '0.75rem' }}>
-                <span>จำนวน</span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--color-text-dim)' }}>มีสินค้า {product.stock} ชิ้น</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', background: '#000', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '0.5rem', width: 'fit-content' }}>
-                <button type="button" onClick={() => changeQuantity('dec')} aria-label="ลดจำนวน" style={{ width: '2.5rem', height: '2.5rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', fontSize: '1.25rem', borderRadius: '0.5rem 0 0 0.5rem', transition: 'background 0.2s' }}>−</button>
-                <output style={{ width: '3rem', textAlign: 'center', fontWeight: 700 }}>{quantity}</output>
-                <button type="button" onClick={() => changeQuantity('inc')} aria-label="เพิ่มจำนวน" style={{ width: '2.5rem', height: '2.5rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', fontSize: '1.25rem', borderRadius: '0 0.5rem 0.5rem 0', transition: 'background 0.2s' }}>+</button>
-              </div>
-            </div>
-
-            {/* CTA buttons */}
-            <div style={{ display: 'flex', gap: '1rem', marginTop: 'auto' }}>
-              <button type="button" style={{ flex: 1, background: 'var(--color-bg-card)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', padding: '0.875rem', borderRadius: '0.5rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', transition: 'background 0.2s' }}>
-                🛒 ใส่ตะกร้า
-              </button>
-              <button type="button" className="btn-primary" style={{ flex: 1, padding: '0.875rem', borderRadius: '0.5rem', fontWeight: 700 }}>
-                ซื้อเลย
-              </button>
-            </div>
-
-            {/* In box */}
-            <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-              <p style={{ fontSize: '0.75rem', color: 'var(--color-text-dim)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '0.75rem' }}>อุปกรณ์ภายในกล่อง 📦</p>
-              <div style={{ display: 'flex', gap: '0.75rem', opacity: 0.6 }}>
-                <BoxItem icon="📄" label="Manual" />
-                <BoxItem icon="🔌" label="Cable" />
-                <BoxItem icon="🛡️" label="Warranty" />
-              </div>
+            <div className="pd-qty-controls">
+              <button type="button" className="pd-qty-btn" onClick={() => changeQuantity('dec')} aria-label="ลดจำนวน">−</button>
+              <output className="pd-qty-val">{quantity}</output>
+              <button type="button" className="pd-qty-btn" onClick={() => changeQuantity('inc')} aria-label="เพิ่มจำนวน">+</button>
             </div>
           </div>
-        </section>
+          <div className="pd-cta-row">
+            <button type="button" className="pd-btn-cart">🛒 ใส่ตะกร้า</button>
+            <button type="button" className="pd-btn-buy">ซื้อเลย</button>
+          </div>
+          <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+            <p style={{ fontSize: '0.7rem', color: 'var(--color-text-dim)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.1em', marginBottom: '0.75rem', fontFamily: 'Orbitron, sans-serif' }}>อุปกรณ์ภายในกล่อง 📦</p>
+            <div style={{ display: 'flex', gap: '0.75rem', opacity: 0.65 }}>
+              <BoxItem icon="📄" label="Manual" /><BoxItem icon="🔌" label="Cable" /><BoxItem icon="🛡️" label="Warranty" />
+            </div>
+          </div>
+        </div>
+      </section>
 
-        {/* ── Description ── */}
-        <section aria-label="รายละเอียดสินค้า" style={{ marginBottom: '3rem' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-            <span style={{ width: '6px', height: '2rem', background: 'var(--color-primary)', borderRadius: '999px', display: 'block', flexShrink: 0 }} aria-hidden="true" />
-            รายละเอียดสินค้า
-          </h2>
+      <div className="red-divider" />
 
-          <div className="card" style={{ padding: '2rem' }}>
-            <p style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '1.5rem' }}>{product.name}</p>
-            <p style={{ color: 'var(--color-text-muted)', marginBottom: '1.5rem', lineHeight: 1.7 }}>
-              {product.description || 'สัมผัสประสบการณ์การเล่นเกมที่เหนือกว่าด้วยอุปกรณ์ Gaming Gear ระดับโปร...'}
+      <div className="pd-content">
+        {/* Description */}
+        <section aria-label="รายละเอียดสินค้า" style={{ marginBottom: '3.5rem' }}>
+          <h2 className="pd-section-title"><span className="pd-section-bar" aria-hidden="true" />รายละเอียดสินค้า</h2>
+          <div style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border-subtle)', borderRadius: '12px', padding: '2rem' }}>
+            <p style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }}>{product.name}</p>
+            <p style={{ color: 'var(--color-text-muted)', lineHeight: 1.8, marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+              {product.description || 'สัมผัสประสบการณ์การเล่นเกมที่เหนือกว่าด้วยอุปกรณ์ Gaming Gear ระดับโปร'}
             </p>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '0.5rem', border: '1px solid var(--color-border-subtle)' }}>
-                <h3 style={{ fontWeight: 700, marginBottom: '0.5rem' }}>Key Features</h3>
-                <ul style={{ paddingLeft: '1.25rem', color: 'var(--color-text-muted)', fontSize: '0.875rem', lineHeight: 2 }}>
+            <div className="pd-desc-grid">
+              <div className="pd-desc-card">
+                <h3>Key Features</h3>
+                <ul style={{ paddingLeft: '1.25rem', color: 'var(--color-text-muted)', fontSize: '0.82rem', lineHeight: 2, margin: 0 }}>
                   <li>การเชื่อมต่อความเร็วสูง (Low Latency)</li>
                   <li>วัสดุพรีเมียม ทนทานพิเศษ</li>
                   <li>RGB Lighting ปรับแต่งได้ 16.8 ล้านสี</li>
                 </ul>
               </div>
-              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '0.5rem', border: '1px solid var(--color-border-subtle)' }}>
-                <h3 style={{ fontWeight: 700, marginBottom: '0.5rem' }}>Technical Specs</h3>
-                <dl style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
-                  {[['Warranty', '2 Years'], ['Weight', '350g'], ['Color', 'Black / Red']].map(([k, v]) => (
+              <div className="pd-desc-card">
+                <h3>Technical Specs</h3>
+                <dl style={{ color: 'var(--color-text-muted)', fontSize: '0.82rem', margin: 0 }}>
+                  {[['Warranty','2 Years'],['Weight','350g'],['Color','Black / Red']].map(([k,v]) => (
                     <div key={k} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <dt>{k}:</dt>
-                      <dd style={{ margin: 0, color: 'var(--color-text)', fontWeight: 500 }}>{v}</dd>
+                      <dt>{k}:</dt><dd style={{ margin: 0, color: 'var(--color-text)', fontWeight: 500 }}>{v}</dd>
                     </div>
                   ))}
                 </dl>
@@ -203,72 +166,63 @@ const ProductDetail = () => {
           </div>
         </section>
 
-        {/* ── Reviews ── */}
-        <section aria-label="รีวิวจากลูกค้า" style={{ marginBottom: '4rem' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-            <span style={{ width: '6px', height: '2rem', background: 'var(--color-text-dim)', borderRadius: '999px', display: 'block', flexShrink: 0 }} aria-hidden="true" />
-            รีวิวจากลูกค้า (Customer Reviews)
-          </h2>
-          <ul style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem', listStyle: 'none', padding: 0, margin: 0 }}>
-            {[1, 2, 3, 4].map((i) => (
-              <li key={i} className="card" style={{ padding: '1.5rem', display: 'flex', gap: '1rem', transition: 'border-color 0.2s' }}>
-                <div style={{ width: '3rem', height: '3rem', borderRadius: '50%', background: 'linear-gradient(135deg, #374151, #000)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: 'var(--color-text-dim)', flexShrink: 0 }}>U{i}</div>
+        {/* Reviews */}
+        <section aria-label="รีวิวจากลูกค้า" style={{ marginBottom: '3.5rem' }}>
+          <h2 className="pd-section-title"><span className="pd-section-bar" style={{ background: 'var(--color-text-dim)' }} aria-hidden="true" />รีวิวจากลูกค้า</h2>
+          <div className="pd-reviews">
+            {[1,2,3,4].map(i => (
+              <div key={i} className="pd-review-card">
+                <div className="pd-avatar">U{i}</div>
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                    <strong style={{ fontSize: '0.875rem' }}>Pro_Gamer_{i}</strong>
-                    <Stars rating={5} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
+                    <strong style={{ fontSize: '0.82rem' }}>Pro_Gamer_{i}</strong><Stars rating={5} />
                   </div>
-                  <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', fontStyle: 'italic', margin: 0 }}>
+                  <p style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)', fontStyle: 'italic', margin: 0, lineHeight: 1.6 }}>
                     "{i % 2 === 0 ? 'จัดส่งไวมาก แพ็คของมาดี สินค้าตรงปกครับ' : 'ใช้งานดีมาก เสียงเงียบ ปุ่มนิ่ม คุ้มราคาที่สุด'}"
                   </p>
                 </div>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         </section>
 
-        {/* ── Related Products ── */}
-        <section aria-label="สินค้าที่คุณอาจจะชอบ" style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2.5rem' }}>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem' }}>
-            สินค้าที่คุณอาจจะชอบ
-            <button type="button" onClick={() => navigate('/shop')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-primary)', fontSize: '0.875rem', fontWeight: 400, textDecoration: 'underline' }}>ดูทั้งหมด →</button>
+        {/* Related */}
+        <section aria-label="สินค้าที่คุณอาจจะชอบ" style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '2.5rem' }}>
+          <h2 className="pd-section-title" style={{ justifyContent: 'space-between' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}><span className="pd-section-bar" aria-hidden="true" />สินค้าที่คุณอาจจะชอบ</span>
+            <button type="button" onClick={() => navigate('/shop')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-primary)', fontSize: '0.78rem', textDecoration: 'underline', fontFamily: 'inherit' }}>ดูทั้งหมด →</button>
           </h2>
-
           {relatedProducts.length === 0
-            ? <p style={{ color: 'var(--color-text-dim)', textAlign: 'center', padding: '2.5rem 0' }}>ไม่มีสินค้าแนะนำในหมวดนี้</p>
-            : (
-              <ul style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', listStyle: 'none', padding: 0, margin: 0 }}>
-                {relatedProducts.map((rel) => (
-                  <li key={rel.id}>
-                    <article
-                      onClick={() => navigate(`/products/${rel.id}`)}
-                      className="card"
-                      style={{ cursor: 'pointer', overflow: 'hidden', transition: 'border-color 0.3s' }}
-                      onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'rgba(220,38,38,0.5)')}
-                      onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--color-border-subtle)')}
-                    >
-                      <figure style={{ height: '12rem', background: '#fff', padding: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', margin: 0, overflow: 'hidden' }}>
-                        <span style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'var(--color-primary)', color: '#fff', fontSize: '0.625rem', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>-15%</span>
-                        <img src={rel.imageUrl ?? rel.image_url ?? 'https://placehold.co/400x400'} alt={rel.name} style={{ maxHeight: '100%', objectFit: 'contain', transition: 'transform 0.5s', mixBlendMode: 'multiply' }} onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.1)')} onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')} onError={(e) => { e.currentTarget.src = 'https://placehold.co/400x400/png?text=NEXUS'; }} />
-                      </figure>
-                      <div style={{ padding: '1rem' }}>
-                        <h3 style={{ fontWeight: 700, fontSize: '0.875rem', marginBottom: '0.25rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', transition: 'color 0.2s' }}>{rel.name}</h3>
-                        <p style={{ color: 'var(--color-text-dim)', fontSize: '0.75rem', marginBottom: '0.5rem' }}>
-                          {typeof rel.category === 'object' ? rel.category?.name : rel.category}
-                        </p>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <strong style={{ color: 'var(--color-primary)' }}>฿{Number(rel.price).toLocaleString()}</strong>
-                          <button type="button" aria-label={`เพิ่ม ${rel.name} ในตะกร้า`} style={{ width: '2rem', height: '2rem', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s' }} onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-primary)')} onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}>+</button>
-                        </div>
+            ? <p style={{ color: 'var(--color-text-dim)', textAlign: 'center', padding: '2.5rem 0', fontFamily: 'Orbitron, sans-serif', fontSize: '0.78rem', letterSpacing: '0.1em' }}>ไม่มีสินค้าแนะนำในหมวดนี้</p>
+            : <div className="pd-related-grid">
+                {relatedProducts.map(rel => (
+                  <div key={rel.id} className="pd-rel-card" onClick={() => navigate(`/products/${rel.id}`)}>
+                    <div style={{ height: '11rem', background: '#fff', padding: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+                      <span style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'var(--color-primary)', color: '#fff', fontSize: '0.58rem', fontWeight: 700, padding: '2px 7px', borderRadius: '3px', fontFamily: 'Orbitron, sans-serif' }}>-15%</span>
+                      <img src={rel.imageUrl ?? rel.image_url ?? 'https://placehold.co/400x400'} alt={rel.name}
+                        style={{ maxHeight: '100%', objectFit: 'contain', transition: 'transform 0.5s', mixBlendMode: 'multiply' }}
+                        onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.1)')}
+                        onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
+                        onError={e => { e.currentTarget.src = 'https://placehold.co/400x400/png?text=NEXUS'; }}
+                        onClick={e => e.stopPropagation()} />
+                    </div>
+                    <div style={{ padding: '0.9rem' }}>
+                      <h3 style={{ fontWeight: 700, fontSize: '0.82rem', marginBottom: '0.2rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'Orbitron, sans-serif' }}>{rel.name}</h3>
+                      <p style={{ color: 'var(--color-text-dim)', fontSize: '0.7rem', marginBottom: '0.6rem' }}>{typeof rel.category === 'object' ? rel.category?.name : rel.category}</p>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <strong style={{ color: 'var(--color-primary)', fontFamily: 'Orbitron, sans-serif', fontSize: '0.85rem' }}>฿{Number(rel.price).toLocaleString()}</strong>
+                        <button type="button" aria-label={`เพิ่ม ${rel.name} ในตะกร้า`}
+                          style={{ width: '1.8rem', height: '1.8rem', borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s', fontSize: '1rem' }}
+                          onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-primary)')}
+                          onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
+                          onClick={e => e.stopPropagation()}>+</button>
                       </div>
-                    </article>
-                  </li>
+                    </div>
+                  </div>
                 ))}
-              </ul>
-            )
+              </div>
           }
         </section>
-
       </div>
     </main>
   );

@@ -1,57 +1,41 @@
 // src/features/cart/services/cart.service.ts
-import axios from 'axios';
+import api from '../../../shared/services/api'; // ✅ ใช้ instance ที่ attach token อัตโนมัติ
 import type { CartItem, CouponData } from '../types/cart.types';
 
-// 📍 ตั้งค่า Base URL ให้ชี้ไปที่ NestJS Backend ของคุณ
-// (ปรับแก้ http://localhost:3000 ให้ตรงกับพอร์ตจริงของ Backend นะครับ)
-const API_URL = 'http://localhost:3000/api';
-
-/**
- * ฟังก์ชันดึงข้อมูลตะกร้าสินค้าจาก Database
- */
 export const fetchCartItems = async (): Promise<CartItem[]> => {
   try {
-    // ยิง GET Request ไปที่ Backend เพื่อขอข้อมูลตะกร้า
-    const response = await axios.get(`${API_URL}/cart`);
+    const response = await api.get('/api/cart');
     return response.data;
   } catch (error) {
     console.error('❌ เกิดข้อผิดพลาดในการดึงข้อมูลตะกร้า:', error);
-    return []; // ถ้าพัง หรือ Backend ยังไม่เปิด ให้ส่งตะกร้าว่างกลับไปก่อนเว็บจะได้ไม่ค้าง
+    return [];
   }
 };
 
-/**
- * ฟังก์ชันตรวจสอบโค้ดส่วนลดจาก Database
- */
 export const validateCoupon = async (code: string): Promise<CouponData | null> => {
   try {
-    const validCode = code.trim().toUpperCase();
-    
-    // ยิง POST Request เพื่อเช็คคูปอง
-    const response = await axios.post(`${API_URL}/coupons/validate`, { code: validCode });
+    const response = await api.post('/api/coupons/validate', { code: code.trim().toUpperCase() });
     return response.data;
   } catch (error) {
     console.error(`❌ เกิดข้อผิดพลาดในการตรวจสอบคูปอง "${code}":`, error);
-    return null; // ถ้าโค้ดผิด หมดอายุ หรือ API พัง ให้ตอบกลับเป็น null
+    return null;
   }
 };
 
-// ✨ จุดที่แก้ไข 1: เปลี่ยนชื่อจาก updateCartItem -> updateCartQuantity ให้ตรงกับที่หน้าเว็บเรียกใช้
 export const updateCartQuantity = async (id: number, quantity: number) => {
   try {
-    await axios.patch(`${API_URL}/cart/${id}`, { quantity });
+    await api.patch(`/api/cart/${id}`, { quantity });
   } catch (error) {
     console.error('❌ อัปเดตจำนวนสินค้าไม่สำเร็จ:', error);
-    throw error; // ✨ เพิ่ม throw error กลับไป เพื่อให้ฟังก์ชันใน CartPage.tsx ดักจับ Error ได้
+    throw error;
   }
 };
 
-// ✨ จุดที่แก้ไข 2: เปลี่ยนชื่อจาก deleteCartItem -> removeFromCart ให้ตรงกับที่หน้าเว็บเรียกใช้
 export const removeFromCart = async (id: number) => {
   try {
-    await axios.delete(`${API_URL}/cart/${id}`);
+    await api.delete(`/api/cart/${id}`);
   } catch (error) {
     console.error('❌ ลบสินค้าไม่สำเร็จ:', error);
-    throw error; // ✨ เพิ่ม throw error กลับไป เพื่อให้ฟังก์ชันใน CartPage.tsx ดักจับ Error ได้
+    throw error;
   }
 };

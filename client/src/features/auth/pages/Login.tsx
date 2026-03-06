@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../../shared/services/api';
 import { useAuth } from '../../auth/context/AuthContext';
 
 const IconInfo = () => (
@@ -30,8 +30,20 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const { data } = await axios.post('http://localhost:3000/auth/login', { email, password });
-      login(data.access_token, data.user); // ✅ ส่ง user object ไปด้วย
+      const { data } = await api.post('/auth/login', { email, password });
+      
+      // 💡 ลอง console.log ดูว่า Backend ส่งอะไรมาบ้าง จะได้เห็นชัดๆ ครับ
+      console.log('Login Response:', data);
+
+      // ✅ ดักจับทั้งสองรูปแบบ: เผื่อ backend ส่งมาเป็น token หรือ access_token
+      const actualToken = data.access_token || data.token; 
+
+      if (!actualToken) {
+        alert('ระบบไม่ได้รับ Token จากเซิร์ฟเวอร์ กรุณาตรวจสอบ Backend ครับ');
+        return;
+      }
+
+      login(actualToken, data.user); 
       alert('ยินดีต้อนรับกลับสู่ Nexus Gear!');
       navigate('/');
     } catch (err: any) {

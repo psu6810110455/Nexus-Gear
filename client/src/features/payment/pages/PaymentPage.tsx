@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, Check, MapPin, CreditCard, ShoppingCart, Upload, Loader, ChevronDown, ChevronUp } from 'lucide-react';
-import axios from 'axios'; // ✨ 1. นำเข้า axios สำหรับยิง API ของจริง
+import api from '../../../shared/services/api';
 
 import { fetchAddresses } from '../services/payment.service';
 import type { Address, OrderSummaryData } from '../types/payment.types';
@@ -118,8 +118,8 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
         formData.append('slipImage', slipFile); // แนบไฟล์รูปสลิป
       }
 
-      // ยิงข้อมูลไปหา Backend (OrdersController)
-      const response = await axios.post('http://localhost:3000/api/orders/checkout', formData, {
+      // ยิงข้อมูลไปหา Backend (OrdersController) โดยใช้ api ของเรา
+      const response = await api.post('/api/orders/checkout', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

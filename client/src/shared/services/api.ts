@@ -80,3 +80,5 @@ export const getSalesData = () =>
 
 // ── Re-export types ───────────────────────────────────────────
 export type { Order, OrderItem, Product, Category } from '../types';
+
+export default api;

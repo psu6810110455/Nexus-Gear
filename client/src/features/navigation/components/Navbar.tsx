@@ -15,13 +15,13 @@ const Navbar = () => {
   const { isLoggedIn, logout, user } = useAuth();
   const [showPromoBanner, setShowPromoBanner] = useState(true);
   const [showLangModal, setShowLangModal]     = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [language, setLanguage]               = useState<'TH' | 'EN'>('TH');
 
   const handleLogout = () => {
-    if (confirm('คุณต้องการออกจากระบบหรือไม่?')) {
-      logout();
-      navigate('/login');
-    }
+    setShowLogoutModal(false);
+    logout();
+    navigate('/login');
   };
 
   return (
@@ -218,7 +218,7 @@ const Navbar = () => {
                     {user?.name || 'ผู้ใช้งาน'}
                   </span>
                 </Link>
-                <button type="button" onClick={handleLogout} className="nb-btn-outline">ออกจากระบบ</button>
+                <button type="button" onClick={() => setShowLogoutModal(true)} className="nb-btn-outline">ออกจากระบบ</button>
               </div>
             ) : (
               <>
@@ -256,6 +256,30 @@ const Navbar = () => {
             >
               🇬🇧 ENGLISH
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Logout Confirmation Modal ── */}
+      {showLogoutModal && (
+        <div className="nb-modal-backdrop" onClick={() => setShowLogoutModal(false)}>
+          <div className="nb-modal" onClick={e => e.stopPropagation()}>
+            <button className="nb-modal-close" onClick={() => setShowLogoutModal(false)}>✕</button>
+            <div style={{ width: 48, height: 48, borderRadius: '12px', background: 'rgba(220,38,38,0.12)', border: '1px solid rgba(220,38,38,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: '#dc2626' }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            </div>
+            <div style={{ fontFamily: 'Orbitron', fontWeight: 700, fontSize: '0.85rem', letterSpacing: '0.15em', color: '#fff', marginBottom: '0.5rem' }}>ออกจากระบบ</div>
+            <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.85rem', marginBottom: '1.5rem', fontFamily: 'Kanit' }}>คุณต้องการออกจากระบบหรือไม่?</div>
+            <div style={{ display: 'flex', gap: '0.6rem' }}>
+              <button onClick={() => setShowLogoutModal(false)} style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontFamily: 'Kanit', fontWeight: 500, transition: 'all 0.2s' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = '#fff'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; }}
+              >ยกเลิก</button>
+              <button onClick={handleLogout} style={{ flex: 1, padding: '10px', borderRadius: '6px', border: 'none', background: '#dc2626', color: '#fff', cursor: 'pointer', fontFamily: 'Orbitron', fontWeight: 700, fontSize: '0.72rem', letterSpacing: '0.1em', boxShadow: '0 0 16px rgba(220,38,38,0.4)', transition: 'all 0.2s' }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#b91c1c'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = '#dc2626'; e.currentTarget.style.transform = 'none'; }}
+              >ยืนยัน</button>
+            </div>
           </div>
         </div>
       )}

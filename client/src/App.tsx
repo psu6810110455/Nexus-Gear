@@ -11,6 +11,7 @@ import './App.css';
 import { ProfilePage } from './features/profile/pages/ProfilePage';
 import LoginSuccess from './features/auth/pages/LoginSuccess';
 import ForgotPassword from './features/profile/pages/ForgotPassword'; 
+import ResetPassword from './features/profile/pages/ResetPassword';
 
 function AppContent() {
   const location = useLocation();
@@ -30,6 +31,7 @@ function AppContent() {
         <Route path="/profile"       element={<ProfilePage />} />
         <Route path="/login-success" element={<LoginSuccess />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="*"              element={<Navigate to="/" replace />} />
 
       </Routes>

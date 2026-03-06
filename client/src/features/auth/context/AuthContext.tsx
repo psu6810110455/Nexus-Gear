@@ -1,18 +1,19 @@
 // src/features/auth/context/AuthContext.tsx
 import { createContext, useState, useContext, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import axios from 'axios';
 
-interface AuthUser {
+export interface AuthUser {
   id: number;
   name: string;
   email: string;
-  role: 'admin' | 'customer';
+  role: string | 'admin' | 'customer';
 }
 
 interface AuthContextType {
   isLoggedIn: boolean;
   user: AuthUser | null;
-  login: (token: string, user: AuthUser) => void;
+  login: (token: string, user?: AuthUser) => void;
   logout: () => void;
 }
 
@@ -22,21 +23,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [user, setUser] = useState<AuthUser | null>(null);
 
+  // ✅ 3. ฟังก์ชันลับสำหรับเอา Token ไปแลกข้อมูล User จาก Backend
+  const fetchUserProfile = async (token: string) => {
+    try {
+      const response = await axios.get('http://localhost:3000/auth/me', {
+        headers: { Authorization: `Bearer ${token}` } // แนบ Token ไปเป็นบัตรผ่านประตู
+      });
+      setUser(response.data); // เก็บข้อมูล User (ชื่อ, อีเมล) ไว้ในระบบ
+      setIsLoggedIn(true);
+    } catch (error) {
+      console.error('Token หมดอายุหรือไม่ถูกต้อง', error);
+      // ถ้า Token พัง ให้เตะออกจากระบบ (เคลียร์ข้อมูลทิ้ง)
+      localStorage.removeItem('token');
+      setIsLoggedIn(false);
+      setUser(null);
+    }
+  };
+
   // โหลดข้อมูลจาก localStorage เมื่อ refresh หน้า
   useEffect(() => {
     const token = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
-    if (token && savedUser) {
-      setIsLoggedIn(true);
-      setUser(JSON.parse(savedUser));
+    if (token) {
+      if (savedUser) {
+        setIsLoggedIn(true);
+        setUser(JSON.parse(savedUser));
+        // refresh profile from backend just in case
+        fetchUserProfile(token);
+      } else {
+        fetchUserProfile(token);
+      }
     }
   }, []);
 
-  const login = (token: string, userData: AuthUser) => {
+  const login = (token: string, userData?: AuthUser) => {
     localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(userData));
-    setIsLoggedIn(true);
-    setUser(userData);
+    if (userData) {
+        localStorage.setItem('user', JSON.stringify(userData));
+        setIsLoggedIn(true);
+        setUser(userData);
+    } else {
+        fetchUserProfile(token); // ✅ พอได้ Token มาปุ๊บ (ล็อกอินสำเร็จ) ให้ดึงข้อมูล User ทันที
+    }
   };
 
   const logout = () => {

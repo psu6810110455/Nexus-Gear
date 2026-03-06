@@ -1,7 +1,3 @@
-// ============================================================
-// src/features/products/pages/ProductListPage.tsx
-// ============================================================
-
 import { useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ProductFilterParams } from '../types/product.types';

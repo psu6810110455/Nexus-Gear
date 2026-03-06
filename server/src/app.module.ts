@@ -10,6 +10,7 @@ import { DatabaseService } from './database/database.service';
 import { OrdersModule } from './orders/orders.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { CartModule } from './cart/cart.module'; // ✨ เพิ่มใหม่
+import { ProfileModule } from './profile/profile.module';
 
 @Global()
 @Module({
@@ -31,6 +32,7 @@ import { CartModule } from './cart/cart.module'; // ✨ เพิ่มใหม
     OrdersModule,
     DashboardModule,
     CartModule,             // ✨ เพิ่มใหม่
+    ProfileModule,
   ],
   controllers: [AppController],
   providers: [

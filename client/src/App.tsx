@@ -18,6 +18,8 @@ import CartPage from './features/cart/pages/CartPage';
 import PaymentPage from './features/payment/pages/PaymentPage';
 
 import './App.css';
+import { ProfilePage } from './features/profile/pages/ProfilePage';
+import LoginSuccess from './features/auth/pages/LoginSuccess';
 
 function AppContent() {
   const location = useLocation();
@@ -39,9 +41,13 @@ function AppContent() {
         <Route path="/shop" element={<ProductList />} />
         <Route path="/products/:id" element={<ProductDetailPage />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/login-success" element={<LoginSuccess />} />
         <Route path="/register" element={<Register />} />
 
         {/* ── Login required ── */}
+        <Route path="/profile" element={
+          <PrivateRoute><ProfilePage /></PrivateRoute>
+        } />
         <Route path="/my-orders" element={
           <PrivateRoute><NexusGearOrderStatus /></PrivateRoute>
         } />
@@ -50,7 +56,7 @@ function AppContent() {
             <CartPage onNavigate={(page) => {
               if (page === 'home') navigate('/');
               else if (page === 'products') navigate('/shop');
-              else if (page === 'profile') navigate('/login');
+              else if (page === 'profile') navigate('/profile');
               else if (page === 'payment') navigate('/payment');
             }} />
           </PrivateRoute>

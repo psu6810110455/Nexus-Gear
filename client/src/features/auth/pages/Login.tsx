@@ -72,20 +72,26 @@ const Login = () => {
     <div className="auth-page-wrapper">
       <div className="auth-container">
         <div className="auth-bg-lines" aria-hidden="true" />
-        <div className="auth-card">
-          <div style={{ position: 'relative', marginBottom: '0.5rem' }}>
+        <div className="auth-card" style={{ position: 'relative' }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'flex-end', 
+            marginBottom: '1rem',
+            marginTop: window.innerWidth < 768 ? '0.5rem' : '0' 
+          }}>
             <Link
               to="/"
+              className="auth-back-link"
               style={{
-                position: 'absolute', top: 0, right: 0,
                 background: 'var(--color-primary-hover)', color: '#fff',
-                padding: '6px 14px', borderRadius: '4px', fontSize: '0.85rem', textDecoration: 'none',
+                padding: '6px 14px', borderRadius: '4px', fontSize: '0.8rem', textDecoration: 'none',
+                zIndex: 10
               }}
             >
               กลับสู่หน้าหลัก
             </Link>
-            <h1 className="auth-title">เข้าสู่ระบบ</h1>
           </div>
+          <h1 className="auth-title">เข้าสู่ระบบ</h1>
 
           <form onSubmit={handleSubmit} noValidate>
             <div style={{ marginBottom: '1.5rem' }}>

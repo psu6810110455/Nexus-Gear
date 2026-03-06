@@ -100,8 +100,8 @@ function HomePage() {
       {/* Hero */}
       <section className="hero-wrapper">
         <div className="hero-bg-layer" /><div className="hero-grid" /><div className="hero-accent-left" />
-        <div style={{ position: 'absolute', top: '50%', right: '2rem', transform: 'translateY(-50%)', zIndex: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {products.slice(0, 6).map((_, i) => <div key={i} onClick={() => goTo(i)} className={`slider-dot${i === activeSlide ? ' active' : ''}`} style={{ cursor: 'pointer' }} />)}
+        <div className="hero-dots-vertical">
+          {products.map((_, i) => <div key={i} onClick={() => goTo(i)} className={`slider-dot${i === activeSlide ? ' active' : ''}`} style={{ cursor: 'pointer' }} />)}
         </div>
         <div className="hero-content" style={{ paddingTop: '2rem' }}>
           <div>

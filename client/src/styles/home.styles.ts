@@ -129,14 +129,31 @@ export const homeStyles = `
     font-weight: 900; text-align: center; color: var(--color-text);
     letter-spacing: 0.05em; margin-bottom: 3rem;
   }
+  .hero-dots-vertical {
+    position: absolute; top: 50%; right: 2rem; transform: translateY(-50%);
+    z-index: 20; display: flex; flex-direction: column; gap: 10px;
+  }
   .product-grid {
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5px;
   }
   @media(max-width:900px){ .product-grid { grid-template-columns: repeat(2,1fr); } }
-  @media(max-width:600px){
-    .product-grid { grid-template-columns: repeat(2,1fr); }
-    .hero-content { grid-template-columns: 1fr; }
-    .hero-image-side { height: 40vh; }
+  @media(max-width:768px){
+    .hero-wrapper { height: auto; min-height: 100vh; padding: 4rem 0 3rem; display: flex; flex-direction: column; justify-content: center; }
+    .hero-content { grid-template-columns: 1fr; gap: 2rem; padding: 0 1.5rem; text-align: center; }
+    .hero-image-side { height: 35vh; min-height: 220px; order: -1; margin-bottom: 0.5rem; }
+    .hero-product-name { font-size: 1.75rem !important; margin-bottom: 0.5rem; line-height: 1.2; }
+    .hero-tag { margin-bottom: 1rem; }
+    .hero-tagline { font-size: 0.85rem; margin-bottom: 1rem; }
+    .hero-price { font-size: 1.35rem; margin-top: 1rem; }
+    .hero-btns { justify-content: center; gap: 0.75rem; margin-top: 1.5rem; }
+    .btn-hero-primary, .btn-hero-ghost { padding: 10px 22px; font-size: 0.7rem; }
+    .slider-nav { position: relative; bottom: auto; left: auto; transform: none; margin-top: 2.5rem; gap: 1rem; justify-content: center; width: 100%; }
+    .product-grid { grid-template-columns: repeat(2,1fr); gap: 1px; }
+    .product-tile-info { padding: 1rem 0.5rem 0.5rem; background: linear-gradient(to top, rgba(0,0,0,1) 30%, transparent 100%); }
+    .tile-name { font-size: 0.75rem; line-height: 1.2; }
+    .tile-price { font-size: 0.7rem; margin-top: 2px; }
+    .globe-btn { bottom: 1.5rem; right: 1.5rem; width: 44px; height: 44px; }
+    .hero-dots-vertical { display: flex; top: 15%; transform: none; right: 1rem; }
   }
   .product-tile {
     background: var(--color-bg-card); position: relative; overflow: hidden;

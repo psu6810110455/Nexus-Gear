@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Globe, ShoppingCart, X, Menu } from 'lucide-react';
+import { useAuth } from '../../auth/context/AuthContext';
 import logoImg from '../../../assets/logo.png';
-import { useAuth } from "../../auth/context/AuthContext";
-import { Globe, ShoppingCart, X } from 'lucide-react';
-import type { NavLink } from '../types/nav.types';
 
-const PUBLIC_LINKS: NavLink[] = [
+/* ── Public navigation links ── */
+const PUBLIC_LINKS = [
   { label: 'หน้าแรก', to: '/' },
-  { label: 'สินค้าทั้งหมด', to: '/shop' },
+  { label: 'สินค้าทั้งหมด', to: '/shop' }
 ];
 
 const Navbar = () => {
@@ -16,19 +16,24 @@ const Navbar = () => {
   const [showPromoBanner, setShowPromoBanner] = useState(true);
   const [showLangModal, setShowLangModal]     = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showMobileMenu, setShowMobileMenu]   = useState(false);
   const [language, setLanguage]               = useState<'TH' | 'EN'>('TH');
 
   const handleLogout = () => {
     setShowLogoutModal(false);
+    setShowMobileMenu(false);
     logout();
     navigate('/login');
   };
+
+  const closeMobile = () => setShowMobileMenu(false);
 
   return (
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap');
 
+        /* ── Promo Banner ── */
         .nb-promo {
           position: relative; overflow: hidden;
           background: var(--color-primary, #dc2626);
@@ -50,6 +55,7 @@ const Navbar = () => {
         }
         .nb-promo-close:hover { color: #fff; }
 
+        /* ── Header ── */
         .nb-header {
           position: sticky; top: 0; z-index: 50;
           background: rgba(5,0,0,0.95); backdrop-filter: blur(14px);
@@ -59,13 +65,26 @@ const Navbar = () => {
           display: flex; align-items: center; justify-content: space-between;
           padding: 0 2.5rem; height: 64px; position: relative;
         }
+        @media (max-width: 768px) {
+          .nb-inner { padding: 0 1rem; height: 56px; }
+        }
+
+        /* ── Logo ── */
         .nb-logo-text {
           font-family: 'Orbitron', sans-serif; font-weight: 900;
           font-size: 1.15rem; letter-spacing: 0.18em; color: #fff;
           text-shadow: 0 0 20px rgba(220,38,38,0.4);
         }
         .nb-logo-text span { color: var(--color-primary, #dc2626); }
-        .nb-nav { display: flex; gap: 2.5rem; list-style: none; padding: 0; margin: 0; position: absolute; left: 50%; transform: translateX(-50%); }
+
+        /* ── Desktop Nav Links (hidden on mobile) ── */
+        .nb-nav {
+          display: flex; gap: 2.5rem; list-style: none; padding: 0; margin: 0;
+          position: absolute; left: 50%; transform: translateX(-50%);
+        }
+        @media (max-width: 768px) {
+          .nb-nav { display: none; }
+        }
         .nb-nav-link {
           font-family: 'Orbitron', sans-serif; font-size: 0.7rem; font-weight: 700;
           letter-spacing: 0.12em; color: rgba(255,255,255,0.5);
@@ -82,7 +101,92 @@ const Navbar = () => {
         .nb-nav-link.admin:hover { color: #facc15; }
         .nb-nav-link.admin::after { background: #facc15; }
 
+        /* ── Desktop Actions (hidden on mobile) ── */
         .nb-actions { display: flex; align-items: center; gap: 0.75rem; }
+        @media (max-width: 768px) {
+          .nb-actions { display: none; }
+        }
+
+        /* ── Hamburger (visible on mobile only) ── */
+        .nb-mobile-toggle {
+          display: none; align-items: center; gap: 0.5rem;
+        }
+        @media (max-width: 768px) {
+          .nb-mobile-toggle { display: flex; }
+        }
+        .nb-hamburger {
+          width: 40px; height: 40px; border-radius: 8px;
+          border: 1px solid rgba(127,29,29,0.4); background: rgba(255,255,255,0.03);
+          color: rgba(255,255,255,0.7); cursor: pointer;
+          display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+        }
+        .nb-hamburger:hover { border-color: var(--color-primary, #dc2626); color: #fff; }
+
+        /* ── Mobile Drawer ── */
+        .nb-mobile-backdrop {
+          position: fixed; inset: 0; z-index: 998;
+          background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+          opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        .nb-mobile-backdrop.open { opacity: 1; pointer-events: auto; }
+
+        .nb-mobile-drawer {
+          position: fixed; top: 0; right: -300px; z-index: 999;
+          width: 280px; max-width: 85vw; height: 100vh;
+          background: #0a0000; border-left: 1px solid rgba(127,29,29,0.4);
+          display: flex; flex-direction: column; transition: right 0.3s ease;
+          overflow-y: auto;
+        }
+        .nb-mobile-drawer.open { right: 0; }
+
+        .nb-mobile-header {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 1rem 1.25rem; border-bottom: 1px solid rgba(127,29,29,0.3);
+        }
+        .nb-mobile-close {
+          width: 36px; height: 36px; border-radius: 8px;
+          border: 1px solid rgba(127,29,29,0.4); background: transparent;
+          color: rgba(255,255,255,0.5); cursor: pointer;
+          display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+        }
+        .nb-mobile-close:hover { border-color: #dc2626; color: #fff; }
+
+        .nb-mobile-links {
+          list-style: none; padding: 0.5rem 0; margin: 0;
+        }
+        .nb-mobile-link {
+          display: block; padding: 0.9rem 1.5rem; color: rgba(255,255,255,0.65);
+          text-decoration: none; font-family: 'Kanit', sans-serif;
+          font-size: 0.95rem; transition: all 0.2s;
+          border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+        .nb-mobile-link:hover { background: rgba(220,38,38,0.1); color: #fff; }
+        .nb-mobile-link.admin { color: rgba(250,204,21,0.7); }
+        .nb-mobile-link.admin:hover { background: rgba(250,204,21,0.08); color: #facc15; }
+
+        .nb-mobile-section {
+          padding: 0.75rem 1.5rem; font-family: 'Orbitron', sans-serif;
+          font-size: 0.6rem; letter-spacing: 0.2em; color: rgba(255,255,255,0.25);
+          text-transform: uppercase;
+        }
+        .nb-mobile-btn {
+          display: block; width: calc(100% - 3rem); margin: 0.4rem 1.5rem;
+          padding: 0.75rem; border-radius: 8px; text-align: center;
+          font-family: 'Kanit', sans-serif; font-weight: 600; font-size: 0.9rem;
+          cursor: pointer; transition: all 0.2s; text-decoration: none;
+        }
+        .nb-mobile-btn-primary {
+          background: #dc2626; color: #fff; border: none;
+          box-shadow: 0 0 16px rgba(220,38,38,0.3);
+        }
+        .nb-mobile-btn-primary:hover { background: #b91c1c; }
+        .nb-mobile-btn-outline {
+          background: transparent; color: rgba(255,255,255,0.6);
+          border: 1px solid rgba(127,29,29,0.5);
+        }
+        .nb-mobile-btn-outline:hover { border-color: #dc2626; color: #fff; }
+
+        /* ── Shared button styles ── */
         .nb-icon-btn {
           width: 38px; height: 38px; border-radius: 50%; border: 1px solid rgba(127,29,29,0.4);
           background: rgba(255,255,255,0.03); display: flex; align-items: center;
@@ -119,6 +223,7 @@ const Navbar = () => {
         .nb-btn-primary:hover { background: var(--color-primary-hover, #b91c1c); transform: translateY(-1px); box-shadow: 0 0 24px rgba(220,38,38,0.5); }
         .nb-divider { width: 1px; height: 20px; background: rgba(127,29,29,0.4); flex-shrink: 0; }
 
+        /* ── Modal ── */
         .nb-modal-backdrop {
           position: fixed; inset: 0; z-index: 999;
           background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
@@ -168,7 +273,7 @@ const Navbar = () => {
             <span className="nb-logo-text hidden sm:block">NEXUS<span>GEAR</span></span>
           </Link>
 
-          {/* Nav Links */}
+          {/* Desktop Nav Links */}
           <ul className="nb-nav">
             {PUBLIC_LINKS.map(({ label, to }) => (
               <li key={to}>
@@ -182,7 +287,7 @@ const Navbar = () => {
             )}
           </ul>
 
-          {/* Actions */}
+          {/* Desktop Actions */}
           <div className="nb-actions">
             {/* Language */}
             <div className="nb-icon-btn" role="button" onClick={() => setShowLangModal(true)} title="Select Language">
@@ -229,8 +334,101 @@ const Navbar = () => {
               </>
             )}
           </div>
+
+          {/* Mobile: Cart icon + Hamburger (hidden on desktop) */}
+          <div className="nb-mobile-toggle">
+            {isLoggedIn && (
+              <Link to="/cart" className="nb-hamburger" style={{ textDecoration: 'none' }} title="ตะกร้า">
+                <ShoppingCart size={18} />
+              </Link>
+            )}
+            <button className="nb-hamburger" onClick={() => setShowMobileMenu(true)} aria-label="เปิดเมนู">
+              <Menu size={20} />
+            </button>
+          </div>
         </nav>
       </header>
+
+      {/* ── Mobile Drawer Backdrop ── */}
+      <div className={`nb-mobile-backdrop ${showMobileMenu ? 'open' : ''}`} onClick={closeMobile} />
+
+      {/* ── Mobile Drawer ── */}
+      <div className={`nb-mobile-drawer ${showMobileMenu ? 'open' : ''}`}>
+        <div className="nb-mobile-header">
+          <Link to="/" onClick={closeMobile} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
+            <img src={logoImg} alt="" style={{ height: 28 }} />
+            <span className="nb-logo-text" style={{ fontSize: '0.9rem' }}>NEXUS<span>GEAR</span></span>
+          </Link>
+          <button className="nb-mobile-close" onClick={closeMobile} aria-label="ปิดเมนู">
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* User info */}
+        {isLoggedIn && (
+          <Link to="/profile" onClick={closeMobile} style={{
+            display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1rem 1.5rem',
+            borderBottom: '1px solid rgba(127,29,29,0.2)', textDecoration: 'none'
+          }}>
+            <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: '#2E0505', border: '1px solid #7F1D1D', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#dc2626', fontWeight: 'bold', fontSize: '1rem', overflow: 'hidden', flexShrink: 0 }}>
+              {user?.picture ? (
+                <img src={user.picture} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} referrerPolicy="no-referrer" />
+              ) : (
+                user?.name ? user.name.charAt(0).toUpperCase() : 'U'
+              )}
+            </div>
+            <div>
+              <div style={{ color: '#fff', fontWeight: 600, fontSize: '0.9rem', fontFamily: 'Kanit' }}>{user?.name || 'ผู้ใช้งาน'}</div>
+              <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.75rem' }}>{user?.email}</div>
+            </div>
+          </Link>
+        )}
+
+        {/* Navigation links */}
+        <div className="nb-mobile-section">เมนู</div>
+        <ul className="nb-mobile-links">
+          {PUBLIC_LINKS.map(({ label, to }) => (
+            <li key={to}><Link to={to} className="nb-mobile-link" onClick={closeMobile}>{label}</Link></li>
+          ))}
+          {isLoggedIn && (
+            <>
+              <li><Link to="/cart" className="nb-mobile-link" onClick={closeMobile}>🛒 ตะกร้าสินค้า</Link></li>
+              <li><Link to="/profile" className="nb-mobile-link" onClick={closeMobile}>👤 โปรไฟล์</Link></li>
+            </>
+          )}
+          {isLoggedIn && user?.role === 'admin' && (
+            <li><Link to="/admin" className="nb-mobile-link admin" onClick={closeMobile}>⚙️ จัดการสินค้า</Link></li>
+          )}
+        </ul>
+
+        {/* Settings */}
+        <div className="nb-mobile-section">ตั้งค่า</div>
+        <ul className="nb-mobile-links">
+          <li>
+            <button className="nb-mobile-link" onClick={() => { closeMobile(); setShowLangModal(true); }} style={{ width: '100%', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', font: 'inherit' }}>
+              🌐 {language === 'TH' ? 'ภาษาไทย' : 'English'}
+            </button>
+          </li>
+        </ul>
+
+        {/* Auth buttons */}
+        <div style={{ marginTop: 'auto', padding: '1rem 0', borderTop: '1px solid rgba(127,29,29,0.2)' }}>
+          {isLoggedIn ? (
+            <button className="nb-mobile-btn nb-mobile-btn-outline" onClick={() => { closeMobile(); setShowLogoutModal(true); }}>
+              ออกจากระบบ
+            </button>
+          ) : (
+            <>
+              <Link to="/login" className="nb-mobile-btn nb-mobile-btn-primary" onClick={closeMobile} style={{ marginBottom: '0.5rem' }}>
+                เข้าสู่ระบบ
+              </Link>
+              <Link to="/register" className="nb-mobile-btn nb-mobile-btn-outline" onClick={closeMobile}>
+                สมัครสมาชิก
+              </Link>
+            </>
+          )}
+        </div>
+      </div>
 
       {/* ── Language Modal ── */}
       {showLangModal && (

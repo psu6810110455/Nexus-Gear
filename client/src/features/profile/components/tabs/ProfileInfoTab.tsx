@@ -25,20 +25,20 @@ export const ProfileInfoTab: React.FC<ProfileInfoTabProps> = ({ userData, setUse
   };
 
   return (
-    <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-8 shadow-2xl animate-in fade-in">
+    <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-4 sm:p-8 shadow-2xl animate-in fade-in">
       <div className="flex justify-between items-center mb-8">
         <h3 className="text-2xl font-bold flex items-center gap-3 font-['Orbitron']">
           <span className="w-1.5 h-8 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></span> PROFILE INFO
         </h3>
         {!isEditing ? (
-          <button onClick={() => setIsEditing(true)} className="flex gap-2 bg-[#2E0505] border border-[#990000] text-[#FF0000] px-4 py-2 rounded-lg hover:bg-[#990000] hover:text-white transition">
-            <Edit2 className="w-4 h-4" /> แก้ไข
+          <button onClick={() => setIsEditing(true)} className="flex gap-1.5 sm:gap-2 bg-[#2E0505] border border-[#990000] text-[#FF0000] px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg hover:bg-[#990000] hover:text-white transition text-[11px] sm:text-sm">
+            <Edit2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> แก้ไข
           </button>
         ) : (
           <div className="flex gap-2">
             {/* ✅ เปลี่ยน onClick มาเรียกใช้ handleSaveClick */}
-            <button onClick={handleSaveClick} className="bg-[#FF0000] text-white px-4 py-2 rounded-lg hover:bg-[#990000] transition"><Save className="w-4 h-4" /> บันทึก</button>
-            <button onClick={() => setIsEditing(false)} className="bg-[#2E0505] border border-[#990000] text-[#F2F4F6] px-4 py-2 rounded-lg hover:bg-[#000000] transition"><X className="w-4 h-4" /> ยกเลิก</button>
+            <button onClick={handleSaveClick} className="bg-[#FF0000] text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg hover:bg-[#990000] transition text-[11px] sm:text-sm flex items-center gap-1"><Save className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> บันทึก</button>
+            <button onClick={() => setIsEditing(false)} className="bg-[#2E0505] border border-[#990000] text-[#F2F4F6] px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg hover:bg-[#000000] transition text-[11px] sm:text-sm flex items-center gap-1"><X className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> ยกเลิก</button>
           </div>
         )}
       </div>

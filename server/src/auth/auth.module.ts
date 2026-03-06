@@ -7,10 +7,13 @@ import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy'; // ✅ 1. Import แผนที่ Google เข้ามา
 import { ConfigModule } from '@nestjs/config';
+import { MailModule } from '../mail/mail.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({ envFilePath: '../.env' }),
     UsersModule,
+    MailModule,
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'MY_SUPER_SECRET_KEY',

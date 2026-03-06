@@ -2,25 +2,30 @@
 import { Module } from '@nestjs/common';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { MailService } from './mail.service';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    MailerModule.forRoot({
-      transport: {
-        host: 'smtp.gmail.com', // ใช้เซิร์ฟเวอร์ของ Gmail
-        port: 587,
-        secure: false,
-        auth: {
-          user: 'nexusgear.noreply@gmail.com', // ⚠️ ใส่อีเมล Gmail ของคุณ (ที่จะใช้เป็นคนส่ง)
-          pass: 'poscksiwllhmaqfi',    // ⚠️ ใส่ App Password (เดี๋ยวผมบอกวิธีเอาด้านล่างครับ)
+    MailerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        transport: {
+          host: configService.get<string>('SMTP_HOST') || 'smtp.gmail.com',
+          port: configService.get<number>('SMTP_PORT') || 587,
+          secure: configService.get<string>('SMTP_SECURE') === 'true',
+          auth: {
+            user: configService.get<string>('SMTP_USER'),
+            pass: configService.get<string>('SMTP_PASS'),
+          },
         },
-      },
-      defaults: {
-        from: '"Nexus Gear Support" <noreply@nexusgear.com>', // ชื่อคนส่งที่จะโชว์
-      },
+        defaults: {
+          from: configService.get<string>('SMTP_FROM') || '"Nexus Gear Support" <noreply@nexusgear.com>',
+        },
+      }),
     }),
   ],
   providers: [MailService],
-  exports: [MailService], // เพื่อให้ Module อื่น (เช่น Auth) เรียกใช้บริการส่งเมลได้
+  exports: [MailService],
 })
 export class MailModule {}

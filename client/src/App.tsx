@@ -20,7 +20,7 @@ import PaymentPage from './features/payment/pages/PaymentPage';
 import './App.css';
 import { ProfilePage } from './features/profile/pages/ProfilePage';
 import LoginSuccess from './features/auth/pages/LoginSuccess';
-import ForgotPassword from './features/profile/pages/ForgotPassword'; 
+import ForgotPassword from './features/profile/pages/ForgotPassword';
 import ResetPassword from './features/profile/pages/ResetPassword';
 
 function AppContent() {
@@ -43,6 +43,8 @@ function AppContent() {
         <Route path="/login" element={<Login />} />
         <Route path="/login-success" element={<LoginSuccess />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* ── Login required ── */}
         <Route path="/profile" element={

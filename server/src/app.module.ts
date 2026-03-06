@@ -12,10 +12,12 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { CartModule } from './cart/cart.module'; // ✨ เพิ่มใหม่
 import { ProfileModule } from './profile/profile.module';
 import { MailModule } from './mail/mail.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Global()
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: '127.0.0.1',

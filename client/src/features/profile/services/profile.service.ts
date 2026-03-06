@@ -94,3 +94,43 @@ export const changePassword = async (data: { currentPassword: string; newPasswor
 
   return res.json(); // ถ้าผ่านฉลุย ส่งข้อความ "อัปเดตรหัสผ่านสำเร็จเรียบร้อย" กลับไป
 };
+
+// ✅ 8. ดึงประวัติคำสั่งซื้อของ User จาก Backend จริง
+export const fetchMyOrders = async () => {
+  const res = await fetch('http://localhost:3000/api/orders/my-orders', {
+    method: 'GET',
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to fetch orders');
+  const rawOrders = await res.json();
+
+  // แปลงข้อมูลจากรูปแบบ Backend ให้ตรงกับ Frontend Order type
+  const statusMap: Record<string, string> = {
+    pending: 'pending_payment',
+    paid: 'processing',
+    to_ship: 'processing',
+    shipped: 'shipping',
+    completed: 'delivered',
+    cancelled: 'delivered',
+  };
+
+  return rawOrders.map((order: any) => ({
+    id: order.order_number || `ORD-${order.id}`,
+    date: new Date(order.created_at).toLocaleDateString('th-TH', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    }),
+    total: Number(order.total_price).toLocaleString(),
+    status: statusMap[order.status] || 'pending_payment',
+    items: order.items?.length || 0,
+    tracking: order.status === 'shipped' ? 'กำลังจัดส่ง' : order.status === 'completed' ? 'จัดส่งแล้ว' : 'กำลังจัดเตรียม',
+    address: order.shipping_address || 'ไม่ระบุที่อยู่',
+    itemsDetail: (order.items || []).map((item: any) => ({
+      name: item.product?.name || 'สินค้า',
+      qty: item.quantity,
+      price: Number(item.price_at_purchase).toLocaleString(),
+      image: item.product?.imageUrl || item.product?.image_url || '/placeholder.png',
+    })),
+  }));
+};

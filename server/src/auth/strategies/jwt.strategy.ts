@@ -8,12 +8,12 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: 'nexus-gear-secret-key', // ✅ ต้องตรงกับใน auth.module.ts นะครับ!
+      secretOrKey: process.env.JWT_SECRET || 'MY_SUPER_SECRET_KEY', 
     });
   }
 
   async validate(payload: any) {
     // ถอดรหัสเสร็จ จะแนบข้อมูลนี้ไปกับ Request (req.user)
-    return { id: payload.sub, email: payload.email, role: payload.role };
+    return { id: payload.sub, userId: payload.sub, email: payload.email, role: payload.role };
   }
 }

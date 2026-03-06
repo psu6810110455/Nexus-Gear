@@ -1,38 +1,34 @@
 // src/features/payment/services/payment.service.ts
 
 import api from '../../../shared/services/api'; // ✅ ใช้ instance ที่ attach token อัตโนมัติ
-import type { Address, OrderSummaryData } from '../types/payment.types';
+import type { Address } from '../types/payment.types';
 
-// ─── Mock Data เดิม (คงไว้เพื่อกัน Error ในหน้า UI) ─────────────────────────
-const mockAddresses: Address[] = [
-  { id: 1, label: 'บ้าน', name: 'แม็กซ์ เกมเมอร์', detail: '123 ถนนเกมมิ่ง แขวงไฮเทค เขตดิจิตอล กรุงเทพฯ 10110', phone: '081-234-5678', isDefault: true },
-  { id: 2, label: 'ที่ทำงาน', name: 'แม็กซ์ เกมเมอร์', detail: '456 อาคารออฟฟิศ ถนนสีลม บางรัก กรุงเทพฯ 10500', phone: '081-234-5678', isDefault: false },
-];
-
-const mockOrderSummary: OrderSummaryData = {
-  items: [
-    { name: 'ROG Phone 7 Ultimate', qty: 1, price: 45990 },
-    { name: 'HyperX Cloud Alpha', qty: 2, price: 3990 },
-    { name: 'Razer Kishi V2', qty: 1, price: 3490 },
-    { name: 'Gaming Finger Sleeves', qty: 1, price: 290 },
-  ],
-  subtotal: 53760,
-  discount: 5376,
-  shipping: 0,
-  coupon: 'NEXUS10',
-};
-
-// ─── Functions เดิม (คงไว้เพื่อกัน Error) ──────────────────────────────────
+// ─── Functions: ดึงข้อมูลที่อยู่จริงจาก Backend ──────────────────────────────
 export const fetchAddresses = async (): Promise<Address[]> => {
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(mockAddresses), 600);
-  });
-};
+  try {
+    const token = localStorage.getItem('token');
+    const res = await fetch('http://localhost:3000/profile/addresses', {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+    if (!res.ok) throw new Error('Failed to fetch addresses');
+    const rawAddresses = await res.json();
 
-export const fetchOrderSummary = async (): Promise<OrderSummaryData> => {
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(mockOrderSummary), 800);
-  });
+    // แปลงข้อมูลจาก Profile API ให้ตรงกับ Payment Address type
+    return rawAddresses.map((addr: any) => ({
+      id: addr.id,
+      label: addr.label || 'ที่อยู่',
+      name: addr.name || '',
+      detail: addr.address || addr.detail || '',
+      phone: addr.phone || '',
+      isDefault: addr.isDefault || false,
+    }));
+  } catch (error) {
+    console.error('ไม่สามารถโหลดที่อยู่ได้:', error);
+    return []; // คืนค่าว่างแทน mock
+  }
 };
 
 // ─── Function ใหม่ (เพิ่มเข้ามาสำหรับยิง API จริง) ──────────────────────────

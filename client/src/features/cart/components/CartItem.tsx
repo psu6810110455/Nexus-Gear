@@ -23,7 +23,7 @@ export default function CartItem({ item, isSelected, onToggleSelect, onUpdateQty
       {/* รายละเอียดสินค้า */}
       <div className="flex-1 flex gap-5">
         <figure className="m-0">
-          <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded-xl border border-[#990000]/30 bg-[#1a1a1a]" />
+          <img src={item.imageUrl || item.image_url || 'https://placehold.co/100'} alt={item.name} className="w-24 h-24 object-cover rounded-xl border border-[#990000]/30 bg-[#1a1a1a]" />
         </figure>
         
         <div className="flex-1 min-w-0 flex flex-col justify-between h-24">

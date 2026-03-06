@@ -27,9 +27,7 @@ function AppContent() {
 
   const hideNavbar =
     location.pathname.startsWith('/admin') ||
-    location.pathname.startsWith('/dashboard') ||
-    location.pathname.startsWith('/cart') ||
-    location.pathname.startsWith('/payment');
+    location.pathname.startsWith('/dashboard');
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--clr-bg-dark, #0a0a0a)' }}>
@@ -83,7 +81,7 @@ function AppContent() {
         <Route path="/dashboard" element={
           <AdminRoute>
             <DashboardPage onNavigate={(page) => {
-              if (page === 'home') navigate('/');
+              if (page === 'home') navigate('/admin');
             }} />
           </AdminRoute>
         } />
@@ -95,9 +93,12 @@ function AppContent() {
   );
 }
 
+import { Toaster } from 'sonner';
+
 function App() {
   return (
     <AuthProvider>
+      <Toaster richColors position="top-center" expand />
       <AppContent />
     </AuthProvider>
   );

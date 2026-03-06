@@ -11,6 +11,8 @@ import {
 import { getCart, addToCart, removeFromCart, getSalesData } from '../../../shared/services/api';
 import type { CartItem, SalesData } from '../../../shared/types';
 
+import { toast } from 'sonner';
+
 function DashboardPage() {
   const [cartItems, setCartItems]  = useState<CartItem[]>([]);
   const [salesData, setSalesData]  = useState<SalesData[]>([]);
@@ -33,10 +35,10 @@ function DashboardPage() {
   const handleAddToCart = async () => {
     try {
       await addToCart(5, 1);
-      alert('เพิ่มสินค้าเรียบร้อย!');
+      toast.success('เพิ่มสินค้าเรียบร้อย!');
       fetchData();
     } catch {
-      alert('เกิดข้อผิดพลาด');
+      toast.error('เกิดข้อผิดพลาด');
     }
   };
 
@@ -46,7 +48,7 @@ function DashboardPage() {
       await removeFromCart(id);
       fetchData();
     } catch {
-      alert('ลบไม่ได้');
+      toast.error('ลบไม่ได้');
     }
   };
 

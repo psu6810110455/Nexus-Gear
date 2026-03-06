@@ -283,6 +283,20 @@ const AdminStockPage = () => {
                           className="w-20 bg-[#000000] border border-[#990000]/30 rounded-lg px-3 py-1.5 text-[#F2F4F6] text-sm text-center focus:border-[#FF0000] outline-none font-['Orbitron'] transition"
                         />
                         <button
+                          onClick={async () => {
+                            try {
+                              await updateProduct(p.id, { isHidden: !p.isHidden });
+                              setProducts(prev => prev.map(prod => prod.id === p.id ? { ...prod, isHidden: !p.isHidden } : prod));
+                              showToast(p.isHidden ? 'แสดงสินค้าสำเร็จ' : 'ซ่อนสินค้าสำเร็จ', true);
+                            } catch {
+                              showToast('เกิดข้อผิดพลาดในการซ่อน/แสดงสินค้า', false);
+                            }
+                          }}
+                          className={`px-3 py-1.5 border rounded-lg transition font-['Kanit'] text-xs font-bold flex items-center gap-1 ${p.isHidden ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/20' : 'bg-[#252525] border-[#990000]/30 text-[#F2F4F6]/50 hover:bg-yellow-500/20 hover:text-yellow-400'}`}
+                        >
+                          {p.isHidden ? 'ซ่อนอยู่' : 'แสดงอยู่'}
+                        </button>
+                        <button
                           onClick={() => handleSaveStock(p)}
                           disabled={!isEdit || saving === p.id}
                           className="px-3 py-1.5 bg-[#990000] hover:bg-[#FF0000] disabled:opacity-30 disabled:cursor-not-allowed text-white text-xs font-bold rounded-lg transition font-['Kanit'] active:scale-95"

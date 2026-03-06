@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getProductById, getProducts, addToCart } from '../../../shared/services/api';
 import type { Product } from '../../../shared/types';
+import { toast } from 'sonner';
 
 const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -33,10 +34,10 @@ const ProductDetailPage: React.FC = () => {
     setAddingToCart(true);
     try {
       await addToCart(product.id, quantity);
-      alert(`✅ เพิ่ม "${product.name}" ลงตะกร้าแล้ว!`);
+      toast.success(`✅ เพิ่ม "${product.name}" ลงตะกร้าแล้ว!`);
     } catch (err) {
       console.error(err);
-      alert('❌ เกิดข้อผิดพลาด กรุณาลองใหม่');
+      toast.error('❌ เกิดข้อผิดพลาด กรุณาลองใหม่');
     } finally {
       setAddingToCart(false);
     }
@@ -51,7 +52,7 @@ const ProductDetailPage: React.FC = () => {
       navigate('/cart');
     } catch (err) {
       console.error(err);
-      alert('❌ เกิดข้อผิดพลาด กรุณาลองใหม่');
+      toast.error('❌ เกิดข้อผิดพลาด กรุณาลองใหม่');
       setAddingToCart(false);
     }
   };
@@ -108,13 +109,25 @@ const ProductDetailPage: React.FC = () => {
         </div>
 
         <div className="flex flex-col md:flex-row gap-12 mb-16">
-          <div className="w-full md:w-3/5 bg-white rounded-xl overflow-hidden p-8 flex items-center justify-center relative shadow-[0_0_30px_rgba(255,255,255,0.05)] min-h-[400px]">
-            <img
-              src={product.imageUrl || product.image_url || 'https://placehold.co/600x400?text=No+Image'}
-              alt={product.name}
-              className="max-h-[350px] w-auto object-contain hover:scale-105 transition duration-500"
-              onError={(e) => { e.currentTarget.src = 'https://placehold.co/600x400/png?text=Nexus+Gear'; }}
-            />
+          <div className="w-full md:w-3/5 bg-[#18181b] rounded-xl overflow-hidden p-8 flex flex-col items-center justify-center relative shadow-[0_0_30px_rgba(255,255,255,0.05)] min-h-[400px] border border-white/5">
+            <div className="relative w-full flex items-center justify-center mb-6 h-[300px]">
+                <img
+                  src={product.imageUrl || product.image_url || 'https://placehold.co/600x400?text=No+Image'}
+                  alt={product.name}
+                  className="max-h-full w-auto object-contain hover:scale-105 transition duration-500 drop-shadow-[0_0_15px_rgba(255,0,0,0.15)]"
+                  onError={(e) => { e.currentTarget.src = 'https://placehold.co/600x400/png?text=Nexus+Gear'; }}
+                />
+            </div>
+            
+            {/* Thumbnail Slider */}
+            <div className="flex gap-4 overflow-x-auto pb-2 w-full justify-center">
+                {[product.imageUrl || product.image_url, 'https://placehold.co/100x100/111/dc2626?text=Side', 'https://placehold.co/100x100/111/dc2626?text=Back', 'https://placehold.co/100x100/111/dc2626?text=Box'].map((img, idx) => (
+                    <button key={idx} className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition ${idx === 0 ? 'border-red-600' : 'border-white/10 hover:border-white/30'} flex-shrink-0 bg-white`}>
+                        <img src={img || 'https://placehold.co/100'} alt="Thumbnail" className="w-full h-full object-contain mix-blend-multiply opacity-80 hover:opacity-100" />
+                    </button>
+                ))}
+            </div>
+
             <span className="absolute top-4 left-4 bg-red-600 text-white text-[10px] font-bold px-3 py-1 rounded uppercase tracking-wider shadow-lg">
               New Arrival
             </span>
@@ -128,10 +141,10 @@ const ProductDetailPage: React.FC = () => {
             </div>
             <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">{product.name}</h1>
             <div className="flex items-center gap-3 text-sm mb-6 pb-6 border-b border-white/10">
-              <div className="flex text-yellow-500 text-lg">{renderStars(4)}</div>
-              <span className="text-gray-400">(4.0 Reviews)</span>
+              <div className="flex text-yellow-500 text-lg">{renderStars(Math.floor((product.id % 2) + 4))}</div>
+              <span className="text-gray-400">({((product.id % 2) + 4).toFixed(1)} Reviews)</span>
               <span className="text-gray-600">|</span>
-              <span className="text-green-400">ขายแล้ว 1.2k ชิ้น</span>
+              <span className="text-green-400">ขายแล้ว {((product.id % 15) * 123 + 45).toLocaleString()} ชิ้น</span>
             </div>
             <div className="mb-8">
               <p className="text-gray-400 text-sm mb-1">ราคาพิเศษ</p>

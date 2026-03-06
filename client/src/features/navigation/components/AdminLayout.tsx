@@ -14,7 +14,7 @@ const menuItems = [
   { label: 'แดชบอร์ด',         icon: LayoutDashboard, path: '/dashboard' },
   { label: 'จัดการคำสั่งซื้อ', icon: ShoppingBag,     path: '/admin/orders' },
   { label: 'จัดการสินค้า',     icon: Package,         path: '/admin' },
-  { label: 'จัดการหมวดหมู่',   icon: Layers,          path: '/admin/categories' },
+  { label: 'จัดการหมวดหมู่',   icon: Layers,          path: '' }, // ✅ Use empty path to denote it as an action button
   { label: 'จัดการสต็อก',      icon: BarChart3,       path: '/admin/stock' },
 ];
 
@@ -63,11 +63,11 @@ const AdminLayout = ({ children, breadcrumb = 'จัดการสินค้
             const isActive = location.pathname === item.path;
             return (
               <button
-                key={item.path}
+                key={item.label}
                 onClick={() => {
-                  if (item.path === '/admin/categories' && onCategoryClick) {
-                    onCategoryClick();
-                  } else {
+                  if (item.label === 'จัดการหมวดหมู่') {
+                    if (onCategoryClick) onCategoryClick();
+                  } else if (item.path) {
                     navigate(item.path);
                   }
                 }}
@@ -86,13 +86,13 @@ const AdminLayout = ({ children, breadcrumb = 'จัดการสินค้
 
         {/* Bottom actions */}
         <div className="p-4 border-t border-[#990000]/30 space-y-1">
-          {/* ── ปุ่มกลับ Homepage ── */}
+          {/* ── ปุ่มกลับคลังสินค้าแอดมิน ── */}
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/admin')}
             className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-[#1a0000] hover:text-white transition text-[#F2F4F6]/40 border border-transparent hover:border-[#990000]/30 group"
           >
             <Home size={18} className="text-[#F2F4F6]/30 group-hover:text-[#FF0000] transition" />
-            <span className="font-['Kanit'] text-sm">กลับหน้าหลัก</span>
+            <span className="font-['Kanit'] text-sm">กลับหน้าหลัก (Admin)</span>
           </button>
           {/* ── Logout ── */}
           <button

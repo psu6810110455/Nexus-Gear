@@ -11,9 +11,9 @@ interface ProfileOrdersTabProps {
 export const ProfileOrdersTab: React.FC<ProfileOrdersTabProps> = ({ orders, onOpenStatus, onOpenDetail }) => {
   
   const getStatusBadge = (status: string) => {
-    const styles: Record<string, string> = { delivered: 'bg-green-900/20 text-green-400 border-green-900', shipping: 'bg-blue-900/20 text-blue-400 border-blue-900', processing: 'bg-yellow-900/20 text-yellow-400 border-yellow-900' };
-    const labels: Record<string, string> = { delivered: 'สำเร็จ', shipping: 'ที่ต้องได้รับ', processing: 'ที่ต้องจัดส่ง' };
-    return <span className={`px-3 py-1 rounded-full text-[10px] font-['Orbitron'] tracking-wider border ${styles[status]}`}>{labels[status]}</span>;
+    const styles: Record<string, string> = { delivered: 'bg-green-900/20 text-green-400 border-green-900', shipping: 'bg-blue-900/20 text-blue-400 border-blue-900', processing: 'bg-yellow-900/20 text-yellow-400 border-yellow-900', pending_payment: 'bg-orange-900/20 text-orange-400 border-orange-900' };
+    const labels: Record<string, string> = { delivered: 'สำเร็จ', shipping: 'ที่ต้องได้รับ', processing: 'ที่ต้องจัดส่ง', pending_payment: 'รอชำระ' };
+    return <span className={`px-3 py-1 rounded-full text-[10px] font-['Orbitron'] tracking-wider border ${styles[status] || 'bg-gray-900/20 text-gray-400 border-gray-900'}`}>{labels[status] || status}</span>;
   };
 
   const statusIcons = [

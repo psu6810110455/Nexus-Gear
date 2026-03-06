@@ -19,7 +19,6 @@ import { SuccessModal } from '../components/modals/SuccessModal';
 import { StatusModal } from '../components/modals/StatusModal';
 
 // นำเข้าข้อมูลและ Type
-import { initialUserData, mockOrders } from '../data/mockData';
 import type { Order } from '../types/profile.types';
 
 // นำเข้า API Service
@@ -30,9 +29,9 @@ export const ProfilePage = () => {
   const { user, logout } = useAuth(); 
 
   const [activeTab, setActiveTab] = useState('orders');
-  const [userData, setUserData] = useState(initialUserData);
+  const [userData, setUserData] = useState({ name: '', email: '', phone: '', address: '' });
   const [addresses, setAddresses] = useState<any[]>([]); 
-  const [orders] = useState(mockOrders);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [ratings, setRatings] = useState<Record<string, number>>({});
 
   // ✅ 3. อัปเดต useEffect ให้ดึงข้อมูลสดจาก Database ก่อน ถ้าไม่มีค่อยดึงจาก Google
@@ -53,6 +52,14 @@ export const ProfilePage = () => {
         // 2. โหลดข้อมูลที่อยู่
         const addrs = await profileApi.fetchAddresses();
         setAddresses(addrs);
+
+        // 3. โหลดประวัติคำสั่งซื้อจริงจาก Database
+        try {
+          const realOrders = await profileApi.fetchMyOrders();
+          setOrders(realOrders);
+        } catch (orderErr) {
+          console.error('ไม่สามารถโหลดประวัติคำสั่งซื้อได้:', orderErr);
+        }
       } catch (error) {
         console.error('ไม่สามารถดึงข้อมูลสดจาก DB ได้:', error);
         

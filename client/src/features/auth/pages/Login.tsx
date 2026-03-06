@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../../shared/services/api';
 import { useAuth } from '../../auth/context/AuthContext';
+import { toast } from 'sonner';
 
 const IconInfo = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -49,20 +50,21 @@ const Login = () => {
       const actualToken = data.access_token || data.token; 
 
       if (!actualToken) {
-        alert('ระบบไม่ได้รับ Token จากเซิร์ฟเวอร์ กรุณาตรวจสอบ Backend ครับ');
+        toast.error('ระบบไม่ได้รับ Token จากเซิร์ฟเวอร์ กรุณาตรวจสอบ Backend ครับ');
         return;
       }
 
       login(actualToken, data.user); 
-      alert('ยินดีต้อนรับกลับสู่ Nexus Gear!');
+      toast.success('ยินดีต้อนรับกลับสู่ Nexus Gear!');
       navigate('/');
     } catch (err: any) {
-      alert(err.response?.data?.message || 'อีเมลหรือรหัสผ่านไม่ถูกต้องครับ');
+      toast.error(err.response?.data?.message || 'อีเมลหรือรหัสผ่านไม่ถูกต้องครับ');
     }
   };
 
   // ✅ เพิ่มฟังก์ชันสำหรับพาผู้ใช้ไปหน้าล็อกอินของ Google
   const handleGoogleLogin = () => {
+    localStorage.setItem('oauth_action', 'login');
     window.location.href = 'http://localhost:3000/auth/google';
   };
 

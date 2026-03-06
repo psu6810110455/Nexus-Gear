@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Globe, ChevronLeft, ChevronRight, ShoppingCart } from 'lucide-react';
 import axios from 'axios';
 import { homeStyles } from '../../../styles/home.styles';
+import Footer from '../../navigation/components/Footer';
 
 interface Product {
   id: number; name: string; price: number;
@@ -162,12 +163,7 @@ function HomePage() {
         </div>
       </section>
 
-      <div className="red-divider" />
-      <footer className="footer-strip">
-        <div>© 2026 NEXUSGEAR</div>
-        <div style={{ fontFamily: 'Orbitron', fontSize: '0.9rem', fontWeight: 900, letterSpacing: '0.2em', color: 'rgba(220,38,38,0.65)' }}>NEXUS<span style={{ color: 'rgba(255,255,255,0.18)' }}>GEAR</span></div>
-        <div>POWERED BY PASSION</div>
-      </footer>
+      <Footer />
 
       <button className="globe-btn" onClick={() => setShowLangModal(true)} title="Language"><Globe size={20} /></button>
     </div>

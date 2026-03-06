@@ -1,25 +1,38 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext'; // นำเข้า useAuth เพื่อจัดการสถานะ User
+import { toast } from 'sonner';
 
 const LoginSuccess = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { login } = useAuth(); // ดึงฟังก์ชัน login ออกมาใช้
 
   useEffect(() => {
     // ดึงรหัส token จาก URL ที่ Backend ส่งมา
     const token = searchParams.get('token');
 
     if (token) {
-      // เอาไปเก็บในเครื่อง (เหมือนตอนล็อกอินปกติ)
-      localStorage.setItem('token', token);
+      const action = localStorage.getItem('oauth_action');
       
-      // เก็บเสร็จปุ๊บ พาไปหน้าแรกเลย!
-      navigate('/');
+      if (action === 'register') {
+        localStorage.removeItem('oauth_action');
+        toast.success('สมัครสมาชิกด้วย Google สำเร็จ! กรุณาเข้าสู่ระบบอีกครั้ง');
+        // ส่งไปหน้าล็อกอินโดยไม่ล็อกอินให้ ตาม Request
+        navigate('/login');
+      } else {
+        localStorage.removeItem('oauth_action');
+        // เรียกใช้ฟังก์ชัน login ใน Context แทนที่ตั้งค่า localStorage เองตรงๆ
+        login(token);
+        toast.success('เข้าสู่ระบบสำเร็จ!');
+        // เก็บเสร็จปุ๊บ พาไปหน้าแรกเลย!
+        navigate('/');
+      }
     } else {
       // ถ้าไม่มี Token (เช่นมีคนแอบพิมพ์ URL เข้ามาเอง) ให้เด้งกลับไปหน้าล็อกอิน
       navigate('/login');
     }
-  }, [navigate, searchParams]);
+  }, [navigate, searchParams, login]);
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#000', color: '#fff' }}>

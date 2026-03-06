@@ -202,10 +202,20 @@ const Navbar = () => {
             <div className="nb-divider"></div>
 
             {isLoggedIn ? (
-              <>
-                <Link to="/profile" className="nb-text-link">โปรไฟล์</Link>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                <Link to="/profile" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.05)', padding: '4px 12px 4px 4px', borderRadius: '50px', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', transition: 'all 0.2s' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(220,38,38,0.1)'; e.currentTarget.style.borderColor = 'var(--color-primary, #dc2626)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                >
+                  <div style={{ width: 32, height: 32, borderRadius: '50%', backgroundColor: '#2E0505', border: '1px solid #7F1D1D', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#dc2626', fontWeight: 'bold', fontSize: '0.8rem', overflow: 'hidden' }}>
+                    {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                  </div>
+                  <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.8rem', fontWeight: 500, fontFamily: "'Kanit', sans-serif" }}>
+                    {user?.name || 'ผู้ใช้งาน'}
+                  </span>
+                </Link>
                 <button type="button" onClick={handleLogout} className="nb-btn-outline">ออกจากระบบ</button>
-              </>
+              </div>
             ) : (
               <>
                 <Link to="/login" className="nb-text-link">เข้าสู่ระบบ</Link>

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, ArrowRight, Check, MapPin, CreditCard, ShoppingCart, Upload, Loader, ChevronDown, ChevronUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, ArrowRight, Check, MapPin, CreditCard, Upload, Loader, ChevronDown, ChevronUp } from 'lucide-react';
 import api from '../../../shared/services/api';
+import { toast } from 'sonner';
 
 import { fetchAddresses } from '../services/payment.service';
 import type { Address, OrderSummaryData } from '../types/payment.types';
@@ -20,6 +22,7 @@ interface UploadedSlip {
 const fmt = (n: number) => n.toLocaleString('th-TH');
 
 export default function PaymentPage({ onNavigate }: PaymentProps) {
+  const navigate = useNavigate();
   // ─── STATE MANAGEMENT ───
   const [isApiLoading, setIsApiLoading] = useState<boolean>(true);
   const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
@@ -51,7 +54,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
       if (sessionData) {
         setOrderSummary(JSON.parse(sessionData));
       } else {
-        alert('ไม่พบข้อมูลคำสั่งซื้อ กรุณาเลือกสินค้าในตะกร้าใหม่ครับ');
+        toast.error('ไม่พบข้อมูลคำสั่งซื้อ กรุณาเลือกสินค้าในตะกร้าใหม่ครับ');
         if (onNavigate) onNavigate('cart');
         return;
       }
@@ -80,7 +83,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
     // 🛡️ ดักประเภทไฟล์รูปภาพเท่านั้น
     const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
     if (!validTypes.includes(file.type)) {
-        alert('❌ ระบบรองรับเฉพาะไฟล์รูปภาพ (JPG, PNG) เท่านั้นครับ');
+        toast.error('❌ ระบบรองรับเฉพาะไฟล์รูปภาพ (JPG, PNG) เท่านั้นครับ');
         e.target.value = ''; 
         return;
     }
@@ -88,7 +91,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
     // 🛡️ ดักขนาดไฟล์ไม่เกิน 5MB
     const maxSize = 5 * 1024 * 1024; 
     if (file.size > maxSize) {
-        alert('❌ ขนาดไฟล์ใหญ่เกินไป! กรุณาอัปโหลดรูปภาพขนาดไม่เกิน 5MB ครับ');
+        toast.error('❌ ขนาดไฟล์ใหญ่เกินไป! กรุณาอัปโหลดรูปภาพขนาดไม่เกิน 5MB ครับ');
         e.target.value = ''; 
         return;
     }
@@ -138,7 +141,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
       }
     } catch (error: any) {
       console.error("Checkout Failed:", error);
-      alert(error.response?.data?.message || "❌ เกิดข้อผิดพลาดในการสั่งซื้อ กรุณาลองใหม่อีกครั้ง");
+      toast.error(error.response?.data?.message || "❌ เกิดข้อผิดพลาดในการสั่งซื้อ กรุณาลองใหม่อีกครั้ง");
       setLoadingAction(false);
     }
   };
@@ -172,49 +175,33 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
       </div>
 
       <div className="relative z-10">
-        {/* Navbar */}
-        <header className="bg-[#000000]/80 border-b border-[#990000]/30 backdrop-blur-md sticky top-0 z-50">
-          <nav aria-label="เมนูหลัก" className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <div onClick={() => onNavigate?.('home')} className="flex items-center gap-4 group cursor-pointer" role="button" tabIndex={0} aria-label="กลับไปหน้าหลัก">
-              <figure className="relative m-0">
-                <div aria-hidden="true" className="absolute inset-0 bg-[#FF0000]/20 blur-md rounded-full group-hover:bg-[#FF0000]/40 transition duration-300"></div>
-                <img src="/nexus-logo.png" alt="โลโก้ Nexus Gear" className="w-10 h-10 object-contain relative z-10" />
-              </figure>
-              <h1 className="text-2xl font-['Orbitron'] font-black text-[#F2F4F6] tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,1)]">NEXUS GEAR</h1>
-            </div>
-            <div className="hidden md:flex items-center gap-8">
-              <button onClick={() => onNavigate?.('home')} className="text-[#F2F4F6]/60 hover:text-[#FF0000] transition font-['Kanit'] text-sm tracking-wide">หน้าหลัก</button>
-              <button onClick={() => onNavigate?.('cart')} className="text-[#F2F4F6]/60 hover:text-[#FF0000] transition font-['Kanit'] text-sm tracking-wide flex items-center gap-2"><ShoppingCart aria-hidden="true" className="w-3 h-3" /> ตะกร้าสินค้า</button>
-              <button className="text-[#FF0000] font-['Kanit'] text-sm tracking-wide flex items-center gap-2 border-b-2 border-[#FF0000] pb-1" aria-current="page"><CreditCard aria-hidden="true" className="w-4 h-4" /> ชำระเงิน</button>
-            </div>
-          </nav>
-        </header>
+
 
         {confirmed ? (
           /* ✨ หน้าจอเมื่อสั่งซื้อสำเร็จ (แสดงเลขบิลจริง) */
           <main className="min-h-[80vh] flex items-center justify-center animate-in zoom-in-95 duration-500">
             <article className="max-w-2xl w-full mx-4 px-4 py-16 flex flex-col items-center text-center bg-[#000000]/40 backdrop-blur-xl border border-[#990000]/30 rounded-3xl relative overflow-hidden">
-                <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#FF0000]/10 via-transparent to-transparent opacity-50"></div>
-                <figure className="relative w-32 h-32 mb-8 m-0">
-                  <div aria-hidden="true" className="absolute inset-0 bg-[#FF0000]/20 blur-2xl rounded-full animate-pulse"></div>
+                <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#FF0000]/10 via-transparent to-transparent opacity-50 pointer-events-none"></div>
+                <figure className="relative w-32 h-32 mb-8 m-0 z-10">
+                  <div aria-hidden="true" className="absolute inset-0 bg-[#FF0000]/20 blur-2xl rounded-full animate-pulse pointer-events-none"></div>
                   <div className="relative z-10 w-32 h-32 rounded-full bg-[#0a0a0a] border-2 border-[#FF0000] flex items-center justify-center shadow-[0_0_30px_rgba(255,0,0,0.4)]">
                       <Check aria-hidden="true" className="w-16 h-16 text-[#FF0000] drop-shadow-[0_0_10px_rgba(255,0,0,0.8)]" />
                   </div>
                 </figure>
-                <header>
+                <header className="relative z-10">
                     <h2 className="text-4xl font-['Orbitron'] font-black text-[#FF0000] mb-3 tracking-wide drop-shadow-[0_0_10px_rgba(255,0,0,0.5)]">สั่งซื้อสำเร็จ!</h2>
                     <p className="text-[#F2F4F6]/50 mb-2 font-['Kanit']">หมายเลขคำสั่งซื้อ (ORDER ID)</p>
                 </header>
-                <div className="bg-[#2E0505]/50 px-6 py-2 rounded-lg border border-[#FF0000]/20 mb-8">
+                <div className="bg-[#2E0505]/50 px-6 py-2 rounded-lg border border-[#FF0000]/20 mb-8 relative z-10">
                     {/* ✨ ใช้เลขบิลจากตัวแปร finalOrderNum แทนเลขหลอก */}
                     <p className="text-xl font-['Orbitron'] font-bold text-[#F2F4F6] tracking-widest">{finalOrderNum || '#ORD-GENERATING...'}</p>
                 </div>
-                <p className="text-[#F2F4F6]/60 text-sm max-w-sm leading-relaxed mb-8">
+                <p className="text-[#F2F4F6]/60 text-sm max-w-sm leading-relaxed mb-8 relative z-10">
                     ระบบได้รับคำสั่งซื้อของคุณแล้ว<br/>เราจะส่งรายละเอียดการจัดส่งไปยังอีเมล<br/><span className="text-[#FF0000]">max.gamer@email.com</span>
                 </p>
-                <footer className="flex flex-col sm:flex-row gap-4 w-full justify-center">
-                    <button className="bg-[#990000] hover:bg-[#FF0000] text-white px-8 py-3 rounded-xl font-['Kanit'] font-bold tracking-wide transition-all shadow-[0_0_15px_rgba(153,0,0,0.4)] hover:shadow-[0_0_25px_rgba(255,0,0,0.6)]">ดูรายละเอียดคำสั่งซื้อ</button>
-                    <button onClick={() => onNavigate?.('home')} className="bg-transparent border border-[#990000]/50 text-[#F2F4F6]/60 hover:text-[#FF0000] hover:border-[#FF0000] px-8 py-3 rounded-xl font-['Kanit'] font-bold tracking-wide transition-all">กลับสู่หน้าหลัก</button>
+                <footer className="flex flex-col sm:flex-row gap-4 w-full justify-center relative z-10">
+                    <button onClick={() => navigate('/profile')} className="bg-[#990000] hover:bg-[#FF0000] text-white px-8 py-3 rounded-xl font-['Kanit'] font-bold tracking-wide transition-all shadow-[0_0_15px_rgba(153,0,0,0.4)] hover:shadow-[0_0_25px_rgba(255,0,0,0.6)]">ดูรายละเอียดคำสั่งซื้อ</button>
+                    <button onClick={() => { if(onNavigate) { onNavigate('home'); } else { navigate('/'); } }} className="bg-transparent border border-[#990000]/50 text-[#F2F4F6]/60 hover:text-[#FF0000] hover:border-[#FF0000] px-8 py-3 rounded-xl font-['Kanit'] font-bold tracking-wide transition-all">กลับสู่หน้าหลัก</button>
                 </footer>
             </article>
           </main>
@@ -350,7 +337,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                       </button>
                       <button 
                         onClick={handleConfirm} 
-                        disabled={((payMethod === 'transfer' || payMethod === 'qr') && !uploadedSlip) || loadingAction} 
+                        disabled={!payMethod || ((payMethod === 'transfer' || payMethod === 'qr') && !uploadedSlip) || loadingAction} 
                         className="flex-[2] bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] disabled:opacity-30 disabled:cursor-not-allowed text-white py-4 rounded-xl font-['Kanit'] font-bold tracking-wide text-sm transition-all shadow-[0_0_18px_rgba(153,0,0,0.5)] flex items-center justify-center gap-3 active:scale-95 group relative overflow-hidden"
                       >
                         {loadingAction ? (
@@ -386,8 +373,8 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                         {orderSummary.items.map((item: any, i) => (
                         <article key={i} className="flex items-start justify-between group">
                             <div className="flex items-start gap-3">
-                                <figure className="w-8 h-8 rounded bg-[#1a1a1a] border border-[#990000]/20 flex items-center justify-center text-[10px] text-[#F2F4F6]/30 m-0 overflow-hidden">
-                                  {item.imageUrl ? <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover opacity-80" /> : 'IMG'}
+                                <figure className="w-8 h-8 rounded bg-[#1a1a1a] border border-[#990000]/20 flex items-center justify-center text-[10px] text-[#F2F4F6]/30 m-0 overflow-hidden shrink-0">
+                                  {(item.imageUrl || item.image_url) ? <img src={item.imageUrl || item.image_url} alt={item.name} className="w-full h-full object-cover opacity-80" /> : 'IMG'}
                                 </figure>
                                 <div>
                                   <p className="text-sm text-[#F2F4F6]/90 truncate font-bold w-32 group-hover:text-[#FF0000] transition-colors">{item.name}</p>

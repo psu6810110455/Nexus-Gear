@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Lock, Key } from 'lucide-react';
 // ✅ 1. นำเข้า API Service
 import * as profileApi from '../../services/profile.service';
+import { toast } from 'sonner';
 
 interface PasswordModalProps {
   isOpen: boolean;
@@ -22,15 +23,15 @@ export const PasswordModal: React.FC<PasswordModalProps> = ({ isOpen, onClose, o
   const handleUpdate = async () => {
     // ตรวจสอบเบื้องต้น
     if (!currentPassword || !newPassword || !confirmPassword) {
-      return alert('กรุณากรอกข้อมูลให้ครบทุกช่องครับ');
+      return toast.error('กรุณากรอกข้อมูลให้ครบทุกช่องครับ');
     }
 
     if (newPassword !== confirmPassword) {
-      return alert('รหัสผ่านใหม่และยืนยันรหัสผ่านไม่ตรงกันครับ');
+      return toast.error('รหัสผ่านใหม่และยืนยันรหัสผ่านไม่ตรงกันครับ');
     }
 
     if (newPassword.length < 8) {
-      return alert('รหัสผ่านใหม่ต้องมีความยาวอย่างน้อย 8 ตัวอักษรครับ');
+      return toast.error('รหัสผ่านใหม่ต้องมีความยาวอย่างน้อย 8 ตัวอักษรครับ');
     }
 
     setLoading(true);
@@ -45,7 +46,7 @@ export const PasswordModal: React.FC<PasswordModalProps> = ({ isOpen, onClose, o
       onUpdate(); 
     } catch (error: any) {
       // ถ้าล้มเหลว (เช่น รหัสผ่านเก่าผิด): โชว์ Error จาก Backend
-      alert(error.message);
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }

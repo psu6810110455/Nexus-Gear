@@ -9,7 +9,7 @@ import { GoogleStrategy } from './strategies/google.strategy'; // ✅ 1. Import 
 import { ConfigModule } from '@nestjs/config';
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({ envFilePath: '../.env' }),
     UsersModule,
     PassportModule,
     JwtModule.register({

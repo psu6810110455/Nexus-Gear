@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { ShoppingCart, ArrowLeft, User, Square, CheckSquare, Store, Trash2 } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, Square, CheckSquare, Store, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 // นำเข้า API และ Types
 import { fetchCartItems, validateCoupon, updateCartQuantity, removeFromCart } from '../services/cart.service';
@@ -131,7 +132,7 @@ export default function CartPage({ onNavigate }: CartProps) {
   // ✨ จัดการเมื่อกดปุ่มชำระเงิน (แพ็คข้อมูลใส่ localStorage แล้วพาไปหน้า Payment)
   const handleCheckout = () => {
     if (selectedItems.length === 0) {
-      alert("กรุณาเลือกสินค้าอย่างน้อย 1 ชิ้นเพื่อดำเนินการต่อ");
+      toast.error("กรุณาเลือกสินค้าอย่างน้อย 1 ชิ้นเพื่อดำเนินการต่อ");
       return;
     }
 
@@ -202,29 +203,6 @@ export default function CartPage({ onNavigate }: CartProps) {
       </div>
 
       <div className="relative z-10">
-        
-        {/* Navbar */}
-        <header className="bg-[#000000]/80 border-b border-[#990000]/30 backdrop-blur-md sticky top-0 z-50">
-          <nav aria-label="เมนูหลัก" className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <div onClick={() => onNavigate?.('home')} className="flex items-center gap-4 group cursor-pointer" role="button" tabIndex={0} aria-label="กลับไปหน้าหลัก">
-              <figure className="relative m-0">
-                <div aria-hidden="true" className="absolute inset-0 bg-[#FF0000]/20 blur-md rounded-full group-hover:bg-[#FF0000]/40 transition duration-300"></div>
-                <img src="/nexus-logo.png" alt="โลโก้ Nexus Gear" className="w-10 h-10 object-contain relative z-10" />
-              </figure>
-              <h1 className="text-2xl font-['Orbitron'] font-black text-[#F2F4F6] tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,1)]">
-                NEXUS GEAR
-              </h1>
-            </div>
-            <div className="hidden md:flex items-center gap-8">
-              <button onClick={() => onNavigate?.('home')} className="text-[#F2F4F6]/60 hover:text-[#FF0000] transition font-['Orbitron'] text-sm tracking-wider">หน้าหลัก</button>
-              <button className="text-[#FF0000] font-['Orbitron'] text-sm tracking-wider border-b-2 border-[#FF0000] pb-1 shadow-[0_5px_10px_rgba(255,0,0,0.2)]" aria-current="page">ตะกร้าสินค้า</button>
-              <button onClick={() => onNavigate?.('profile')} className="text-[#F2F4F6]/60 hover:text-[#FF0000] transition font-['Orbitron'] text-sm tracking-wider flex items-center gap-2">
-                <User aria-hidden="true" className="w-4 h-4" /> โปรไฟล์
-              </button>
-            </div>
-          </nav>
-        </header>
-
         {/* Page Header */}
         <section aria-labelledby="cart-heading" className="max-w-7xl mx-auto px-4 pt-8 pb-4">
           <button onClick={() => onNavigate?.('products')} className="flex items-center gap-2 text-[#F2F4F6]/40 hover:text-[#FF0000] transition text-sm mb-6 group" aria-label="กลับไปหน้าสินค้า">

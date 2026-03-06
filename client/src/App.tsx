@@ -4,6 +4,7 @@ import PrivateRoute from './features/auth/components/PrivateRoute';
 import AdminRoute from './features/auth/components/AdminRoute';
 
 import Navbar from './features/navigation/components/Navbar';
+import Footer from './features/navigation/components/Footer';
 import HomePage from './features/home/pages/HomePage';
 import Login from './features/auth/pages/Login';
 import Register from './features/auth/pages/Register';
@@ -93,6 +94,8 @@ function AppContent() {
         {/* ── Fallback ── */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+
+      {!hideNavbar && <Footer />}
     </div>
   );
 }

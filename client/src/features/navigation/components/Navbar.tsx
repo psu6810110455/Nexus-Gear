@@ -57,7 +57,7 @@ const Navbar = () => {
         }
         .nb-inner {
           display: flex; align-items: center; justify-content: space-between;
-          padding: 0 2.5rem; height: 64px;
+          padding: 0 2.5rem; height: 64px; position: relative;
         }
         .nb-logo-text {
           font-family: 'Orbitron', sans-serif; font-weight: 900;
@@ -65,7 +65,7 @@ const Navbar = () => {
           text-shadow: 0 0 20px rgba(220,38,38,0.4);
         }
         .nb-logo-text span { color: var(--color-primary, #dc2626); }
-        .nb-nav { display: flex; gap: 2.5rem; list-style: none; padding: 0; margin: 0; }
+        .nb-nav { display: flex; gap: 2.5rem; list-style: none; padding: 0; margin: 0; position: absolute; left: 50%; transform: translateX(-50%); }
         .nb-nav-link {
           font-family: 'Orbitron', sans-serif; font-size: 0.7rem; font-weight: 700;
           letter-spacing: 0.12em; color: rgba(255,255,255,0.5);

@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Globe, ChevronLeft, ChevronRight, ShoppingCart } from 'lucide-react';
 import axios from 'axios';
 import { homeStyles } from '../../../styles/home.styles';
-import Footer from '../../navigation/components/Footer';
 
 interface Product {
   id: number; name: string; price: number;
@@ -162,8 +161,6 @@ function HomePage() {
           >{t.viewAll} →</button>
         </div>
       </section>
-
-      <Footer />
 
       <button className="globe-btn" onClick={() => setShowLangModal(true)} title="Language"><Globe size={20} /></button>
     </div>

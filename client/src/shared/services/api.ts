@@ -21,7 +21,7 @@ export const registerApi = (name: string, email: string, password: string) =>
 
 // ── Products ──────────────────────────────────────────────────
 export const getProducts = () =>
-  api.get('/products').then((r) => r.data);
+  api.get('/products?includeHidden=true').then((r) => r.data);
 
 export const getProductById = (id: string | number) =>
   api.get(`/products/${id}`).then((r) => r.data);

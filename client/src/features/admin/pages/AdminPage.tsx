@@ -8,7 +8,7 @@ import {
   getCategories, createCategory, updateCategory, deleteCategory,
 } from '../../../shared/services/api';
 import type { Category, Product } from '../../../shared/types';
-import { Plus, Edit, Trash2, X, Upload, Save, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Plus, Edit, Trash2, X, Upload, Save, CheckCircle, AlertTriangle, EyeOff, Eye } from 'lucide-react';
 import AdminLayout from '../../navigation/components/AdminLayout';
 
 // ── Types ─────────────────────────────────────────────────────
@@ -220,6 +220,16 @@ function AdminPage() {
     catch { showToast('ลบสินค้าไม่สำเร็จ', 'error'); }
   };
 
+  const handleToggleHide = async (p: Product) => {
+    try {
+      await updateProduct(p.id, { isHidden: !p.isHidden });
+      showToast(p.isHidden ? 'แสดงสินค้าสำเร็จ' : 'ซ่อนสินค้าสำเร็จ', 'success');
+      fetchProducts();
+    } catch {
+      showToast('เกิดข้อผิดพลาดในการซ่อน/แสดงสินค้า', 'error');
+    }
+  };
+
   const filtered = products.filter((p) => {
     const matchSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
     const catName = typeof p.category === 'object' ? (p.category as Category)?.name : p.category;
@@ -315,7 +325,7 @@ function AdminPage() {
                         <img src={p.imageUrl || 'https://placehold.co/50'} alt="" className="w-full h-full object-contain p-1"
                           onError={(e) => { e.currentTarget.src = 'https://placehold.co/50'; }} />
                       </div>
-                      <span className="font-bold text-[#F2F4F6] font-['Kanit']">{p.name}</span>
+                      <span className="font-bold text-[#F2F4F6] font-['Kanit']">{p.name} {p.isHidden && <span className="text-xs bg-red-500/20 text-red-500 px-2 py-0.5 rounded-full ml-2">ซ่อนอยู่</span>}</span>
                     </div>
                   </td>
                   <td><span className="bg-[#000000] px-2 py-1 rounded text-xs border border-[#990000]/30 font-['Kanit']">
@@ -333,6 +343,9 @@ function AdminPage() {
                   </td>
                   <td className="text-right pr-4">
                     <div className="flex justify-end gap-2">
+                      <button onClick={() => handleToggleHide(p)} className="p-2 bg-[#252525] hover:bg-yellow-500/20 text-yellow-400 rounded-lg transition border border-yellow-500/20" title={p.isHidden ? "แสดงสินค้า" : "ซ่อนสินค้า"}>
+                        {p.isHidden ? <Eye size={16} /> : <EyeOff size={16} />}
+                      </button>
                       <button onClick={() => openEditForm(p)} className="p-2 bg-[#252525] hover:bg-blue-500/20 text-blue-400 rounded-lg transition border border-blue-500/20" title="แก้ไข"><Edit size={16} /></button>
                       <button onClick={() => setDeleteConfirm(p.id)} className="p-2 bg-[#252525] hover:bg-red-500/20 text-[#FF0000] rounded-lg transition border border-red-500/20" title="ลบ"><Trash2 size={16} /></button>
                     </div>

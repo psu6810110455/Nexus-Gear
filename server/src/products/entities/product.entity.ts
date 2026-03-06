@@ -21,6 +21,9 @@ export class Product {
   @Column({ name: 'image_url', nullable: true })
   imageUrl: string;
 
+  @Column({ default: false })
+  isHidden: boolean;
+
   // เชื่อมกับ Category (หลาย Product อยู่ใน 1 Category)
   @ManyToOne(() => Category, (category) => category.products, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'category_id' })

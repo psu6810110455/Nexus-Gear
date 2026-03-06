@@ -25,4 +25,7 @@ export class CreateProductDto {
   @IsOptional()
   @Type(() => Number)
   categoryId?: number;
+
+  @IsOptional()
+  isHidden?: boolean;
 }

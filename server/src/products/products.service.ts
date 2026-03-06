@@ -28,8 +28,23 @@ export class ProductsService {
     return this.productsRepository.save(product);
   }
 
-  findAll() {
-    return this.productsRepository.find({ relations: ['category'] });
+  findAll(search?: string, category?: string, includeHidden: boolean = false) {
+    const query = this.productsRepository.createQueryBuilder('product')
+      .leftJoinAndSelect('product.category', 'category');
+
+    if (!includeHidden) {
+      query.andWhere('product.isHidden = :isHidden', { isHidden: false });
+    }
+
+    if (search) {
+      query.andWhere('product.name LIKE :search', { search: `%${search}%` });
+    }
+
+    if (category) {
+      query.andWhere('category.name = :category', { category });
+    }
+
+    return query.getMany();
   }
 
   async findOne(id: number) {

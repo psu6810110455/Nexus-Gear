@@ -15,6 +15,7 @@ export interface Product {
   stock?: number;
   imageUrl?: string;
   image_url?: string;
+  isHidden?: boolean;
   category?: Category | string;
 }
 

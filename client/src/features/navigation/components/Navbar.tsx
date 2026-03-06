@@ -12,7 +12,7 @@ const PUBLIC_LINKS: NavLink[] = [
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const { isLoggedIn, logout } = useAuth();
+  const { isLoggedIn, logout, user } = useAuth();
   const [showPromoBanner, setShowPromoBanner] = useState(true);
   const [showLangModal, setShowLangModal]     = useState(false);
   const [language, setLanguage]               = useState<'TH' | 'EN'>('TH');
@@ -175,7 +175,7 @@ const Navbar = () => {
                 <Link to={to} className="nb-nav-link">{label}</Link>
               </li>
             ))}
-            {isLoggedIn && (
+            {isLoggedIn && user?.role === 'admin' && (
               <li>
                 <Link to="/admin" className="nb-nav-link admin">จัดการสินค้า</Link>
               </li>

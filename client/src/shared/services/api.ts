@@ -52,7 +52,7 @@ export const deleteCategory = (id: number) =>
 export const getOrders = () =>
   api.get('/api/orders').then((r) => r.data);
 
-export const getMyOrders = () =>                                 // ✅ ใช้ token แทน userId
+export const getMyOrders = () =>                                    // ✅ ใช้ token แทน userId
   api.get('/api/orders/my-orders').then((r) => r.data);
 
 export const getUserOrders = (userId: number) =>
@@ -61,8 +61,16 @@ export const getUserOrders = (userId: number) =>
 export const updateOrderStatus = (id: number, status: string) =>
   api.patch(`/api/orders/${id}/status`, { status }).then((r) => r.data);
 
-export const submitOrderRating = (orderId: number, ratings: Record<number, number>) =>
-  api.post(`/api/orders/${orderId}/rating`, { ratings }).then((r) => r.data);
+// รองรับทั้ง ratings (ดาว) และ reviews (ข้อความรีวิว)
+export const submitOrderRating = (
+  orderId: number,
+  ratings: Record<number, number>,
+  reviews?: Record<number, string>,
+) => api.post(`/api/orders/${orderId}/rating`, { ratings, reviews }).then((r) => r.data);
+
+// ยกเลิกคำสั่งซื้อ (ลูกค้า) — ได้เฉพาะสถานะ pending / paid
+export const cancelOrder = (orderId: number, reason: string) =>
+  api.patch(`/api/orders/${orderId}/cancel`, { reason }).then((r) => r.data);
 
 // ── Cart ──────────────────────────────────────────────────────
 export const getCart = () =>

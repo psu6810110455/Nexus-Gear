@@ -25,6 +25,7 @@ export interface OrderItem {
   price_at_purchase: string;
   product: { name: string; image_url: string };
   rating?: number;
+  review?: string;
 }
 
 export interface Order {
@@ -35,7 +36,8 @@ export interface Order {
   shipping_address: string;
   items: OrderItem[];
   is_rated?: boolean;
-  user?: { username: string };
+  user?: { username: string; email?: string };
+  payment?: { slip_image_url?: string; method?: string };
 }
 
 export interface CartItem {

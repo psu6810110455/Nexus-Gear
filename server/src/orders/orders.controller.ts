@@ -80,4 +80,21 @@ export class OrdersController {
   create(@Body() createOrderDto: CreateOrderDto) {
     return this.ordersService.create(createOrderDto);
   }
+
+  // ── Customer: ส่งรีวิว + คะแนนดาว ────────────────────────────────────
+  @Post(':id/rating')
+  @UseGuards(JwtAuthGuard)
+  submitRating(
+    @Param('id') id: string,
+    @Body() body: { ratings: Record<number, number>; reviews?: Record<number, string> },
+  ) {
+    return this.ordersService.submitRating(+id, body.ratings, body.reviews ?? {});
+  }
+
+  // ── Customer: ยกเลิกคำสั่งซื้อ (เฉพาะ pending / paid) ─────────────────
+  @Patch(':id/cancel')
+  @UseGuards(JwtAuthGuard)
+  cancelOrder(@Param('id') id: string, @Body() body: { reason: string }) {
+    return this.ordersService.cancelOrder(+id, body.reason);
+  }
 }

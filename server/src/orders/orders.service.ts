@@ -161,4 +161,47 @@ export class OrdersService {
     order.status = status;
     return this.ordersRepository.save(order);
   }
+
+  // ── Cancel Order (ลูกค้า — เฉพาะ pending / paid) ─────────────────────────
+  async cancelOrder(id: number, reason: string) {
+    const order = await this.ordersRepository.findOneBy({ id });
+    if (!order) throw new NotFoundException('Order not found');
+
+    const cancellable: OrderStatus[] = [OrderStatus.PENDING, OrderStatus.PAID];
+    if (!cancellable.includes(order.status)) {
+      throw new BadRequestException('ไม่สามารถยกเลิกได้ในสถานะนี้');
+    }
+
+    order.status = OrderStatus.CANCELLED;
+    order.cancel_reason = reason;
+    return this.ordersRepository.save(order);
+  }
+
+  // ── Submit Rating + Review ────────────────────────────────────────────────
+  async submitRating(
+    orderId: number,
+    ratings: Record<number, number>,
+    reviews: Record<number, string>,
+  ) {
+    const order = await this.ordersRepository.findOne({
+      where: { id: orderId },
+      relations: ['items'],
+    });
+    if (!order) throw new NotFoundException('Order not found');
+    if (order.status !== OrderStatus.COMPLETED) {
+      throw new BadRequestException('สามารถรีวิวได้เฉพาะคำสั่งซื้อที่สำเร็จแล้วเท่านั้น');
+    }
+
+    for (const item of order.items) {
+      if (ratings[item.id] !== undefined) {
+        item.rating = ratings[item.id];
+        item.review = reviews?.[item.id] ?? null;
+        await this.orderItemsRepository.save(item);
+      }
+    }
+
+    order.is_rated = true;
+    await this.ordersRepository.save(order);
+    return { success: true, message: 'บันทึกรีวิวสำเร็จ' };
+  }
 }

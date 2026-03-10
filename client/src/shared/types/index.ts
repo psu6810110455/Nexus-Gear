@@ -36,8 +36,9 @@ export interface Order {
   shipping_address: string;
   items: OrderItem[];
   is_rated?: boolean;
-  user?: { username: string; email?: string };
-  payment?: { slip_image_url?: string; method?: string };
+  user?: { name: string; email?: string };
+  slip_image?: string | null;
+  payment_method?: string | null;
 }
 
 export interface CartItem {

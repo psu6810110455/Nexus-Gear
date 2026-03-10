@@ -215,7 +215,7 @@ const OrderDetailModal = ({
                 <MapPin size={16} /> ที่อยู่ในการจัดส่ง
               </div>
               <p className="text-white font-medium">
-                {order.user?.username || "ไม่ระบุชื่อ"}
+                {order.user?.name || "ไม่ระบุชื่อ"}
               </p>
               <p className="text-zinc-400 text-sm mt-1 leading-relaxed">
                 {order.shipping_address}
@@ -271,19 +271,19 @@ const OrderDetailModal = ({
                 <div className="flex items-center gap-2 text-red-500 font-bold text-sm uppercase">
                   <FileText size={16} /> หลักฐานการโอนเงิน
                 </div>
-                {order.payment?.method && (
+                {order.payment_method && (
                   <span className="text-xs px-2.5 py-1 rounded-full bg-zinc-800 border border-zinc-700 text-zinc-300 font-medium">
-                    {order.payment.method === "qr"
+                    {order.payment_method === "qr"
                       ? "📱 QR Code"
                       : "🏦 โอนเงิน"}
                   </span>
                 )}
               </div>
 
-              {order.payment?.slip_image_url ? (
+              {order.slip_image ? (
                 <div className="flex-1 flex flex-col gap-3">
                   <img
-                    src={order.payment.slip_image_url}
+                    src={`http://localhost:3000/uploads/slips/${order.slip_image}`}
                     alt="สลิปการชำระเงิน"
                     className="w-full max-h-64 object-contain rounded-lg border border-zinc-700 bg-black/40"
                   />
@@ -291,7 +291,7 @@ const OrderDetailModal = ({
                     <p>
                       ช่องทาง:{" "}
                       <span className="text-zinc-300">
-                        {order.payment.method === "qr"
+                        {order.payment_method === "qr"
                           ? "สแกน QR Code"
                           : "โอนเงินผ่านธนาคาร"}
                       </span>
@@ -320,9 +320,9 @@ const OrderDetailModal = ({
               <div className="flex justify-between items-center pb-4 border-b border-white/5">
                 <span className="text-zinc-400 text-sm">วิธีชำระเงิน</span>
                 <span className="text-zinc-200 text-sm font-medium">
-                  {order.payment?.method === "qr"
+                  {order.payment_method === "qr"
                     ? "📱 QR Code"
-                    : order.payment?.method
+                    : order.payment_method
                       ? "🏦 โอนเงินธนาคาร"
                       : "—"}
                 </span>

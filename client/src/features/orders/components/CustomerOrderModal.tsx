@@ -30,7 +30,8 @@ interface Order {
   shipping_address: string;
   items: OrderItem[];
   is_rated?: boolean;
-  payment?: { slip_image_url?: string; method?: string };
+  slip_image?: string | null;
+  payment_method?: string | null;
 }
 
 interface ModalProps {
@@ -143,8 +144,10 @@ const CustomerOrderModal = ({
   const isCompletedAndNotRated =
     order.status === "completed" && !order.is_rated;
   const carrier = getCarrier(order.status);
-  const slip = order.payment?.slip_image_url;
-  const method = order.payment?.method;
+  const slip = order.slip_image
+    ? `http://localhost:3000/uploads/slips/${order.slip_image}`
+    : null;
+  const method = order.payment_method;
 
   // ฟังก์ชันเวลากดดาว
   const handleStarClick = (itemId: number, star: number) => {

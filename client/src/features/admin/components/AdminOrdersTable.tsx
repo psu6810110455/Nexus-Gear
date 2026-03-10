@@ -1,15 +1,25 @@
 // features/admin/components/AdminOrdersTable.tsx
 
-import { Eye, PackageOpen, XCircle } from "lucide-react";
+import {
+  Eye,
+  PackageOpen,
+  XCircle,
+  Clock,
+  CheckCircle2,
+  Truck,
+  Package,
+  Star,
+  Ban,
+} from "lucide-react";
 import type { Order } from "../../../shared/types";
 
 const STATUS_COLOR: Record<string, string> = {
-  pending: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
+  pending: "bg-yellow-500/10 text-yellow-400 border-yellow-500/30",
   paid: "bg-blue-500/10 text-blue-400 border-blue-500/30",
-  to_ship: "bg-orange-500/10 text-orange-500 border-orange-500/20",
+  to_ship: "bg-orange-500/10 text-orange-400 border-orange-500/30",
   shipped: "bg-purple-500/10 text-purple-400 border-purple-500/30",
-  completed: "bg-green-500/10 text-green-500 border-green-500/20",
-  cancelled: "bg-red-500/10 text-red-500 border-red-500/20",
+  completed: "bg-green-500/10 text-green-400 border-green-500/30",
+  cancelled: "bg-red-500/10 text-red-400 border-red-500/30",
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -19,6 +29,15 @@ const STATUS_LABEL: Record<string, string> = {
   shipped: "ระหว่างขนส่ง",
   completed: "สำเร็จ",
   cancelled: "ยกเลิก",
+};
+
+const STATUS_ICON: Record<string, React.ReactNode> = {
+  pending: <Clock size={11} />,
+  paid: <CheckCircle2 size={11} />,
+  to_ship: <Package size={11} />,
+  shipped: <Truck size={11} />,
+  completed: <Star size={11} />,
+  cancelled: <Ban size={11} />,
 };
 
 interface AdminOrdersTableProps {
@@ -137,8 +156,9 @@ const AdminOrdersTable = ({
                 </td>
                 <td className="p-5 text-center">
                   <span
-                    className={`px-3.5 py-1.5 rounded-full text-[11px] font-bold border uppercase tracking-wider shadow-sm ${STATUS_COLOR[order.status] ?? "bg-gray-500/10 text-gray-500"}`}
+                    className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[11px] font-bold border uppercase tracking-wider shadow-sm ${STATUS_COLOR[order.status] ?? "bg-gray-500/10 text-gray-500"}`}
                   >
+                    {STATUS_ICON[order.status]}
                     {STATUS_LABEL[order.status] ?? order.status}
                   </span>
                 </td>
@@ -163,7 +183,7 @@ const AdminOrdersTable = ({
                       order.status !== "completed" && (
                         <button
                           onClick={() => onCancelOrder(order)}
-                          className="p-2.5 bg-zinc-800 border border-zinc-700 text-zinc-400 hover:bg-red-600/20 hover:border-red-500/60 hover:text-red-400 rounded-xl transition-all duration-300 transform hover:scale-110 active:scale-95 shadow-md"
+                          className="p-2.5 bg-red-600/20 border border-red-500/60 text-red-400 hover:bg-red-600 hover:border-red-600 hover:text-white rounded-xl transition-all duration-300 transform hover:scale-110 active:scale-95 shadow-md shadow-red-900/20"
                           title="ยกเลิกคำสั่งซื้อ"
                         >
                           <XCircle size={18} />

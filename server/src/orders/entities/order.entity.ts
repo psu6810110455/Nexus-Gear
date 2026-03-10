@@ -39,6 +39,12 @@ export class Order {
   @Column({ type: 'varchar', length: 255, nullable: true })
   slip_image: string | null;     // ✨ เพิ่มใหม่
 
+  @Column({ default: false })
+  is_rated: boolean;
+
+  @Column({ type: 'text', nullable: true })
+  cancel_reason: string | null;
+
   @CreateDateColumn()
   created_at: Date;
 

@@ -162,14 +162,28 @@ export class OrdersService {
     return this.ordersRepository.save(order);
   }
 
-  // ── Cancel Order (ลูกค้า — เฉพาะ pending / paid) ─────────────────────────
-  async cancelOrder(id: number, reason: string) {
-    const order = await this.ordersRepository.findOneBy({ id });
+  // ── Cancel Order (รองรับทั้งลูกค้าและ Admin) ──────────────────────────────
+  async cancelOrder(id: number, reason: string, restock: boolean = true) {
+    const order = await this.ordersRepository.findOne({
+      where: { id },
+      relations: ['items', 'items.product'],
+    });
     if (!order) throw new NotFoundException('Order not found');
 
     const cancellable: OrderStatus[] = [OrderStatus.PENDING, OrderStatus.PAID];
     if (!cancellable.includes(order.status)) {
       throw new BadRequestException('ไม่สามารถยกเลิกได้ในสถานะนี้');
+    }
+
+    // ── คืนสต็อกสินค้า (ถ้า restock = true) ──
+    if (restock) {
+      for (const item of order.items) {
+        const product = await this.productsRepository.findOneBy({ id: item.product.id });
+        if (product) {
+          product.stock += item.quantity;
+          await this.productsRepository.save(product);
+        }
+      }
     }
 
     order.status = OrderStatus.CANCELLED;

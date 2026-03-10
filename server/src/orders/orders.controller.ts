@@ -29,7 +29,7 @@ export class OrdersController {
     }),
   }))
   async checkout(@Body() body: any, @UploadedFile() file: any, @Request() req: any) {
-    const userId = req.user.userId; // ✅ ดึงจาก JWT ไม่ hardcode อีกต่อไป
+    const userId = req.user.userId;
     const { shippingAddress, paymentMethod } = body;
     const slipFilename = file ? file.filename : null;
     return this.ordersService.checkout(userId, shippingAddress, paymentMethod, slipFilename);
@@ -92,9 +92,14 @@ export class OrdersController {
   }
 
   // ── Customer: ยกเลิกคำสั่งซื้อ (เฉพาะ pending / paid) ─────────────────
+  // restock = true คือสินค้าจะถูกเพิ่มกลับเข้า stock โดยอัตโนมัติ
   @Patch(':id/cancel')
   @UseGuards(JwtAuthGuard)
-  cancelOrder(@Param('id') id: string, @Body() body: { reason: string }) {
-    return this.ordersService.cancelOrder(+id, body.reason);
+  cancelOrder(
+    @Param('id') id: string,
+    @Body() body: { reason: string; restock?: boolean }
+  ) {
+    // ค่า default restock = true (คืนสต็อกเสมอ)
+    return this.ordersService.cancelOrder(+id, body.reason, body.restock !== false);
   }
 }

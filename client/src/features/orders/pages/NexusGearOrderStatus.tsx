@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { CheckCircle } from "lucide-react";
 import {
-  getUserOrders,
+  getMyOrders,
   submitOrderRating,
   cancelOrder,
 } from "../../../shared/services/api";
@@ -16,8 +16,6 @@ import CustomerOrderModal from "../components/CustomerOrderModal";
 import CancelOrderModal from "../components/CancelOrdermodal";
 
 // ── helpers ───────────────────────────────────────────────────
-const CURRENT_USER_ID = 1;
-
 const filterByTab = (orders: Order[], tab: string) => {
   if (tab === "all") return orders;
   if (tab === "paid")
@@ -41,7 +39,7 @@ const NexusGearOrderStatus = () => {
   const fetchMyOrders = async () => {
     try {
       setLoading(true);
-      setOrders(await getUserOrders(CURRENT_USER_ID));
+      setOrders(await getMyOrders());
     } catch (e) {
       console.error(e);
     } finally {
@@ -137,10 +135,14 @@ const NexusGearOrderStatus = () => {
 
         {/* ── Table column header (desktop) ── */}
         {!loading && filtered.length > 0 && (
-          <div className="hidden md:grid grid-cols-12 gap-6 px-8 py-5 mb-4 text-sm font-bold text-zinc-300 uppercase tracking-widest bg-[var(--clr-bg-card)] rounded-2xl border border-zinc-800/80 shadow-md">
-            <div className="col-span-2 text-center">หมายเลขคำสั่งซื้อ</div>
+          <div className="hidden md:grid grid-cols-12 gap-4 px-8 py-4 mb-4 text-xs font-bold text-zinc-400 uppercase tracking-widest bg-[var(--clr-bg-card)] rounded-2xl border border-zinc-800/80 shadow-md">
+            <div className="col-span-2 text-center whitespace-nowrap">
+              หมายเลขออเดอร์
+            </div>
             <div className="col-span-4 text-center">รายการสินค้า</div>
-            <div className="col-span-2 text-center">ยอดรวมสุทธิ</div>
+            <div className="col-span-2 text-center whitespace-nowrap">
+              ยอดรวมสุทธิ
+            </div>
             <div className="col-span-2 text-center">สถานะ</div>
             <div className="col-span-2 text-center">การจัดการ</div>
           </div>

@@ -74,6 +74,7 @@ export class OrdersService {
     order.status = OrderStatus.PENDING;
     order.total_price = totalPrice;
     order.slip_image = slipImage;
+    order.payment_method = paymentMethod;
     order.order_number = 'ORD-' + Date.now();
     order.items = orderItems;
 

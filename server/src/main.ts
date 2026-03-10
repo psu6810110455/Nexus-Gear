@@ -1,9 +1,11 @@
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // 1. ตั้งค่า CORS
   app.enableCors({
@@ -18,7 +20,10 @@ async function bootstrap() {
     whitelist: true,
   }));
 
-  // 3. รัน Server
+  // 3. Static file serving (slip images)
+  app.useStaticAssets(join(__dirname, '..', '..', 'uploads'), { prefix: '/uploads' });
+
+  // 4. รัน Server
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
   console.log(`🚀 Application is running on: http://localhost:${port}`);

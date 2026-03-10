@@ -39,6 +39,9 @@ export class Order {
   @Column({ type: 'varchar', length: 255, nullable: true })
   slip_image: string | null;     // ✨ เพิ่มใหม่
 
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  payment_method: string | null;
+
   @Column({ default: false })
   is_rated: boolean;
 

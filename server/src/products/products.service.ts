@@ -105,7 +105,7 @@ export class ProductsService {
         id:     item.id,
         rating: item.rating,
         review: item.review ?? null,
-        user:   { username: item.order?.user?.name ?? 'ลูกค้า' },
+        user:   { name: item.order?.user?.name ?? 'ลูกค้า' },
       }));
   }
 }

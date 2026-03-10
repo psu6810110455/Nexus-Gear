@@ -4,7 +4,11 @@
 
 import { useEffect, useState } from "react";
 import { Search, CheckCircle, AlertTriangle } from "lucide-react";
-import { getOrders, updateOrderStatus } from "../../../shared/services/api";
+import {
+  getOrders,
+  updateOrderStatus,
+  cancelOrder,
+} from "../../../shared/services/api";
 import type { Order } from "../../../shared/types";
 
 import AdminLayout from "../../navigation/components/AdminLayout";
@@ -80,8 +84,8 @@ const NexusGearAdminOrders = () => {
     },
   ) => {
     try {
-      await updateOrderStatus(orderId, "cancelled");
-      // TODO: ส่ง payload เพิ่มเติมไปยัง endpoint cancel จริง เช่น /orders/:id/cancel
+      // ส่ง reason + restock ไปยัง PATCH /orders/:id/cancel
+      await cancelOrder(orderId, payload.reason, payload.restock);
       setOrders((prev) =>
         prev.map((o) =>
           o.id === orderId ? { ...o, status: "cancelled" as any } : o,
@@ -89,7 +93,7 @@ const NexusGearAdminOrders = () => {
       );
       setCancelTarget(null);
       showToast(
-        `ยกเลิกคำสั่งซื้อ #${String(orderId).padStart(3, "0")} สำเร็จ`,
+        `ยกเลิกคำสั่งซื้อ #${String(orderId).padStart(3, "0")} สำเร็จ${payload.restock ? " (คืนสต็อกแล้ว)" : ""}`,
         true,
       );
     } catch {

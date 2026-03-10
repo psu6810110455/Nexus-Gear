@@ -1,31 +1,68 @@
 // features/orders/components/OrderCard.tsx
 
-import { Package, Star, ChevronRight } from "lucide-react";
+import {
+  Package,
+  Star,
+  ChevronRight,
+  XCircle,
+  Clock,
+  CheckCircle2,
+  Truck,
+  PackageCheck,
+  Ban,
+} from "lucide-react";
 
-const STATUS_DISPLAY: Record<string, { text: string; className: string }> = {
+const STATUS_DISPLAY: Record<
+  string,
+  {
+    text: string;
+    badge: string;
+    bar: string;
+    glow: string;
+    icon: React.ReactNode;
+  }
+> = {
   pending: {
     text: "รอชำระเงิน",
-    className: "text-amber-400 border-amber-400/30 bg-amber-400/10",
+    badge: "text-amber-400 border-amber-400/40 bg-amber-400/10",
+    bar: "bg-amber-400",
+    glow: "hover:shadow-[0_0_24px_-6px_rgba(251,191,36,0.2)]",
+    icon: <Clock size={11} />,
   },
   paid: {
     text: "เตรียมสินค้า",
-    className: "text-cyan-400 border-cyan-400/30 bg-cyan-400/10",
+    badge: "text-cyan-400 border-cyan-400/40 bg-cyan-400/10",
+    bar: "bg-cyan-400",
+    glow: "hover:shadow-[0_0_24px_-6px_rgba(34,211,238,0.2)]",
+    icon: <CheckCircle2 size={11} />,
   },
   to_ship: {
     text: "รอจัดส่ง",
-    className: "text-orange-400 border-orange-400/30 bg-orange-400/10",
+    badge: "text-orange-400 border-orange-400/40 bg-orange-400/10",
+    bar: "bg-orange-400",
+    glow: "hover:shadow-[0_0_24px_-6px_rgba(251,146,60,0.2)]",
+    icon: <PackageCheck size={11} />,
   },
   shipped: {
     text: "ระหว่างขนส่ง",
-    className: "text-purple-400 border-purple-500/50 bg-purple-500/10",
+    badge: "text-purple-400 border-purple-400/40 bg-purple-400/10",
+    bar: "bg-purple-400",
+    glow: "hover:shadow-[0_0_24px_-6px_rgba(192,132,252,0.2)]",
+    icon: <Truck size={11} />,
   },
   completed: {
     text: "ได้รับสินค้าแล้ว",
-    className: "text-emerald-400 border-emerald-400/30 bg-emerald-400/10",
+    badge: "text-emerald-400 border-emerald-400/40 bg-emerald-400/10",
+    bar: "bg-emerald-400",
+    glow: "hover:shadow-[0_0_24px_-6px_rgba(52,211,153,0.2)]",
+    icon: <Star size={11} />,
   },
   cancelled: {
-    text: "ยกเลิก",
-    className: "text-zinc-500 border-zinc-500/30 bg-zinc-500/10",
+    text: "ยกเลิกแล้ว",
+    badge: "text-zinc-500 border-zinc-600/40 bg-zinc-700/20",
+    bar: "bg-zinc-600",
+    glow: "",
+    icon: <Ban size={11} />,
   },
 };
 
@@ -60,7 +97,6 @@ interface Order {
   items: OrderItem[];
   is_rated?: boolean;
 }
-
 interface OrderCardProps {
   order: Order;
   onSelect: (order: Order) => void;
@@ -68,112 +104,130 @@ interface OrderCardProps {
 }
 
 const OrderCard = ({ order, onSelect, onCancel }: OrderCardProps) => {
-  const status = STATUS_DISPLAY[order.status] ?? {
+  const s = STATUS_DISPLAY[order.status] ?? {
     text: order.status,
-    className: "text-zinc-400 border-zinc-800 bg-zinc-900",
+    badge: "text-zinc-400 border-zinc-700 bg-zinc-800",
+    bar: "bg-zinc-600",
+    glow: "",
+    icon: null,
   };
   const first = order.items[0];
   const ratable = order.status === "completed" && !order.is_rated;
 
   return (
-    <article className="group bg-[#121212] border border-zinc-800/80 rounded-2xl hover:bg-[#161616] hover:border-zinc-700 transition-all duration-300 shadow-md hover:shadow-xl p-5 md:px-8 md:py-6 flex flex-col md:grid md:grid-cols-12 gap-5 md:gap-6 md:items-center">
-      {/* Order ID + Date */}
-      <div className="md:col-span-2 flex flex-col md:items-center border-b border-zinc-800/80 md:border-b-0 md:border-r pb-4 md:pb-0">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-[var(--clr-primary)] font-black text-[10px] uppercase tracking-widest bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">
-            ID
-          </span>
-          <h3 className="text-white font-black text-lg tracking-wider">
-            #{String(order.id).padStart(3, "0")}
-          </h3>
-        </div>
-        <p className="text-zinc-500 text-xs font-bold">
-          {formatThaiDate(order.created_at)}
-        </p>
-      </div>
+    <article
+      className={`group relative flex overflow-hidden bg-[#111111] border border-zinc-800/60 rounded-2xl hover:border-zinc-700/80 hover:bg-[#151515] transition-all duration-200 ${s.glow}`}
+    >
+      {/* ── Left accent bar — สีตาม status ── */}
+      <div className={`w-[3px] shrink-0 ${s.bar} opacity-80`} />
 
-      {/* Product Info */}
-      <div className="md:col-span-4 flex items-center md:justify-center gap-4 md:pl-2">
-        <div className="w-14 h-14 rounded-xl bg-[#050505] border border-zinc-800 flex items-center justify-center shrink-0">
-          {first?.product.image_url ? (
-            <img
-              src={first.product.image_url}
-              alt="product"
-              className="w-full h-full object-cover rounded-xl opacity-80"
-            />
-          ) : (
-            <Package size={24} className="text-zinc-600" />
-          )}
-        </div>
-        <div className="flex flex-col min-w-0 text-left">
-          <p className="text-zinc-200 text-sm font-bold truncate">
-            {first?.product.name || "สินค้าไม่ระบุชื่อ"}
-          </p>
-          <p className="text-zinc-500 text-xs mt-1">
-            {order.items.length > 1
-              ? `และสินค้าอื่นอีก ${order.items.length - 1} รายการ`
-              : `จำนวน: ${first?.quantity} ชิ้น`}
+      {/* ── Main row ── */}
+      <div className="flex items-center w-full px-4 py-4 gap-3">
+        {/* Col 1: Order ID */}
+        <div className="hidden md:flex flex-col justify-center w-[92px] shrink-0 border-r border-zinc-800/50 pr-4">
+          <div className="flex items-center gap-1.5 mb-1">
+            <span className="text-[var(--clr-primary)] text-[8px] font-black uppercase tracking-widest bg-red-500/10 border border-red-500/20 px-1.5 py-0.5 rounded">
+              ID
+            </span>
+            <span className="text-white font-black text-base leading-none">
+              #{String(order.id).padStart(3, "0")}
+            </span>
+          </div>
+          <p className="text-zinc-600 text-[10px]">
+            {formatThaiDate(order.created_at)}
           </p>
         </div>
-      </div>
 
-      {/* Total */}
-      <div className="md:col-span-2 flex justify-between md:justify-center items-center border-t border-zinc-800/80 md:border-0 pt-4 md:pt-0">
-        <span className="md:hidden text-zinc-500 text-xs font-bold uppercase tracking-widest">
-          ยอดสุทธิ
-        </span>
-        <div className="flex items-baseline gap-1">
-          <span className="text-[var(--clr-primary)] font-black text-sm">
-            ฿
-          </span>
-          <span className="text-xl font-black text-white tracking-tighter">
+        {/* Col 2: Product */}
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div className="w-11 h-11 rounded-xl bg-zinc-900 border border-zinc-800 overflow-hidden flex items-center justify-center shrink-0">
+            {first?.product.image_url ? (
+              <img
+                src={first.product.image_url}
+                alt=""
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <Package size={18} className="text-zinc-600" />
+            )}
+          </div>
+          <div className="min-w-0">
+            <p className="md:hidden text-[9px] text-zinc-600 mb-0.5">
+              #{String(order.id).padStart(3, "0")} ·{" "}
+              {formatThaiDate(order.created_at)}
+            </p>
+            <p className="text-zinc-100 text-sm font-bold truncate">
+              {first?.product.name || "สินค้า"}
+            </p>
+            <p className="text-zinc-600 text-[11px] mt-0.5">
+              {order.items.length > 1
+                ? `จำนวน: ${first?.quantity} ชิ้น  +${order.items.length - 1} รายการ`
+                : `จำนวน: ${first?.quantity} ชิ้น`}
+            </p>
+          </div>
+        </div>
+
+        {/* Col 3: Total */}
+        <div className="hidden sm:flex flex-col items-end shrink-0 w-[116px] border-l border-zinc-800/50 pl-4">
+          <p className="text-zinc-600 text-[9px] uppercase tracking-widest font-bold mb-0.5">
+            ยอดรวม
+          </p>
+          <p className="text-white font-black text-base leading-none">
+            <span className="text-[var(--clr-primary)] text-xs mr-0.5">฿</span>
             {Number(order.total_price).toLocaleString()}
+          </p>
+        </div>
+
+        {/* Col 4: Status badge */}
+        <div className="hidden md:flex justify-center shrink-0 w-[150px] border-l border-zinc-800/50 pl-4">
+          <span
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[11px] font-bold whitespace-nowrap ${s.badge}`}
+          >
+            {s.icon} {s.text}
           </span>
         </div>
-      </div>
 
-      {/* Status */}
-      <div className="md:col-span-2 flex justify-between md:justify-center items-center">
-        <span className="md:hidden text-zinc-500 text-xs font-bold uppercase tracking-widest">
-          สถานะ
-        </span>
-        <span
-          className={`px-3 py-1.5 text-xs font-black rounded-full border shadow-sm ${status.className}`}
-        >
-          {status.text}
-        </span>
-      </div>
+        {/* Col 5: Actions */}
+        <div className="flex flex-col gap-1.5 shrink-0 border-l border-zinc-800/50 pl-4 w-[136px]">
+          {/* mobile: status pill */}
+          <div className="md:hidden flex justify-end mb-0.5">
+            <span
+              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[9px] font-bold ${s.badge}`}
+            >
+              {s.icon} {s.text}
+            </span>
+          </div>
 
-      {/* Action Button */}
-      <div className="md:col-span-2 flex flex-col justify-end md:justify-center gap-2 mt-2 md:mt-0">
-        <button
-          onClick={() => onSelect(order)}
-          className={`w-full md:w-[130px] px-4 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 group-hover:scale-[1.02] active:scale-95 ${
-            ratable
-              ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-[0_4px_15px_rgba(245,158,11,0.3)] hover:shadow-[0_4px_25px_rgba(245,158,11,0.5)]"
-              : "bg-[var(--clr-primary)] hover:bg-[var(--clr-primary-hover)] text-white shadow-[0_4px_15px_rgba(220,38,38,0.2)]"
-          }`}
-        >
-          {ratable ? (
-            <>
-              <Star size={14} className="fill-white" /> ให้คะแนน
-            </>
-          ) : (
-            <>
-              รายละเอียด <ChevronRight size={14} />
-            </>
-          )}
-        </button>
-
-        {/* ปุ่มยกเลิก — แสดงเฉพาะ pending / paid */}
-        {onCancel && (
           <button
-            onClick={onCancel}
-            className="w-full md:w-[130px] px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-1 active:scale-95 border border-red-500/30 text-red-400 hover:bg-red-500/10 hover:border-red-500/60"
+            onClick={() => onSelect(order)}
+            className={`w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 ${
+              ratable
+                ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-[0_2px_14px_rgba(245,158,11,0.35)] hover:opacity-90"
+                : "bg-[var(--clr-primary)] text-white hover:opacity-90 shadow-[0_2px_14px_rgba(220,38,38,0.25)]"
+            }`}
           >
-            ยกเลิก
+            {ratable ? (
+              <>
+                <Star size={12} className="fill-white shrink-0" />
+                ให้คะแนน
+              </>
+            ) : (
+              <>
+                รายละเอียด
+                <ChevronRight size={12} className="shrink-0" />
+              </>
+            )}
           </button>
-        )}
+
+          {onCancel && (
+            <button
+              onClick={onCancel}
+              className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs uppercase tracking-widest transition-all active:scale-95 bg-red-500/10 border border-red-500/40 text-red-400 hover:bg-red-500/20 hover:border-red-500/70 hover:text-red-300"
+            >
+              <XCircle size={12} className="shrink-0" /> ยกเลิก
+            </button>
+          )}
+        </div>
       </div>
     </article>
   );

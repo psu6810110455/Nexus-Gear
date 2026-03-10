@@ -5,6 +5,11 @@ import {
   Package,
   CreditCard,
   CheckCircle,
+  Clock,
+  Truck,
+  PackageCheck,
+  Star,
+  Ban,
 } from "lucide-react";
 import { type Order } from "../../../shared/types"; // Import Type Order
 
@@ -14,6 +19,94 @@ interface OrderDetailModalProps {
   order: Order | null;
   onUpdateStatus: (id: number, status: string) => void;
 }
+
+// ── Delivery Timeline ──────────────────────────────────────────
+const DELIVERY_STEPS = [
+  { key: "pending", label: "แจ้งชำระเงิน", icon: Clock },
+  { key: "paid", label: "เตรียมพัสดุ", icon: Package },
+  { key: "to_ship", label: "เตรียมจัดส่ง", icon: PackageCheck },
+  { key: "shipped", label: "กำลังจัดส่ง", icon: Truck },
+  { key: "completed", label: "สำเร็จ", icon: Star },
+];
+
+const STATUS_ORDER = ["pending", "paid", "to_ship", "shipped", "completed"];
+
+const DeliveryTimeline = ({ status }: { status: string }) => {
+  const isCancelled = status === "cancelled";
+  const currentIdx = STATUS_ORDER.indexOf(status);
+
+  return (
+    <div className="bg-zinc-900/50 p-4 rounded-xl border border-zinc-800">
+      <div className="flex items-center gap-2 text-red-500 mb-4 font-bold text-sm uppercase">
+        <Truck size={16} /> สถานะการจัดส่ง
+      </div>
+
+      {isCancelled ? (
+        <div className="flex items-center gap-3 px-3 py-3 bg-red-500/10 border border-red-500/20 rounded-xl">
+          <Ban size={18} className="text-red-400 shrink-0" />
+          <div>
+            <p className="text-red-400 font-bold text-sm">ยกเลิกคำสั่งซื้อ</p>
+            <p className="text-zinc-500 text-xs mt-0.5">
+              คำสั่งซื้อนี้ถูกยกเลิกแล้ว
+            </p>
+          </div>
+        </div>
+      ) : (
+        <ol className="relative ml-3">
+          {DELIVERY_STEPS.map(({ key, label, icon: Icon }, idx) => {
+            const isDone = currentIdx >= idx;
+            const isCurrent = currentIdx === idx;
+
+            return (
+              <li
+                key={key}
+                className="flex items-start gap-3 pb-5 last:pb-0 relative"
+              >
+                {/* vertical line */}
+                {idx < DELIVERY_STEPS.length - 1 && (
+                  <div
+                    className={`absolute left-[11px] top-6 w-0.5 h-full -translate-x-1/2 ${
+                      currentIdx > idx ? "bg-green-500/60" : "bg-zinc-700"
+                    }`}
+                  />
+                )}
+                {/* dot */}
+                <div
+                  className={`relative z-10 w-6 h-6 rounded-full flex items-center justify-center shrink-0 border-2 transition-all ${
+                    isCurrent
+                      ? "bg-green-500 border-green-400 shadow-[0_0_10px_rgba(34,197,94,0.6)]"
+                      : isDone
+                        ? "bg-green-500/30 border-green-500/60"
+                        : "bg-zinc-800 border-zinc-700"
+                  }`}
+                >
+                  <Icon
+                    size={12}
+                    className={isDone ? "text-green-300" : "text-zinc-600"}
+                  />
+                </div>
+                {/* label */}
+                <div className="pt-0.5">
+                  <p
+                    className={`text-sm font-bold ${isCurrent ? "text-green-400" : isDone ? "text-zinc-300" : "text-zinc-600"}`}
+                  >
+                    {label}
+                  </p>
+                  {isCurrent && (
+                    <p className="text-xs text-zinc-500 mt-0.5 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse inline-block" />
+                      สถานะปัจจุบัน
+                    </p>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      )}
+    </div>
+  );
+};
 
 const OrderDetailModal = ({
   isOpen,
@@ -111,8 +204,11 @@ const OrderDetailModal = ({
 
         {/* Content Body */}
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Left Column: Address & Items */}
+          {/* Left Column: Timeline, Address & Items */}
           <div className="space-y-6">
+            {/* ── Delivery Timeline ── */}
+            <DeliveryTimeline status={order.status} />
+
             {/* Address Box */}
             <div className="bg-zinc-900/50 p-4 rounded-xl border border-zinc-800">
               <div className="flex items-center gap-2 text-red-500 mb-3 font-bold text-sm uppercase">
@@ -123,9 +219,6 @@ const OrderDetailModal = ({
               </p>
               <p className="text-zinc-400 text-sm mt-1 leading-relaxed">
                 {order.shipping_address}
-              </p>
-              <p className="text-zinc-500 text-xs mt-2">
-                เบอร์โทร: 081-XXX-XXXX (Mock)
               </p>
             </div>
 

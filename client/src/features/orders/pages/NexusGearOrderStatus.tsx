@@ -1,7 +1,7 @@
 // features/orders/pages/NexusGearOrderStatus.tsx
 
 import { useEffect, useState } from "react";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, AlertTriangle } from "lucide-react";
 import {
   getMyOrders,
   submitOrderRating,
@@ -70,10 +70,7 @@ const NexusGearOrderStatus = () => {
       );
     } catch {
       setSelectedOrder(null);
-      showToast(
-        "เกิดข้อผิดพลาดในการบันทึกคะแนน กรุณาลองใหม่อีกครั้ง ❌",
-        false,
-      );
+      showToast("เกิดข้อผิดพลาดในการบันทึกคะแนน กรุณาลองใหม่อีกครั้ง", false);
     } finally {
       setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 100);
     }
@@ -82,11 +79,12 @@ const NexusGearOrderStatus = () => {
   const handleCancelOrder = async (orderId: number, reason: string) => {
     try {
       await cancelOrder(orderId, reason);
+      // อัปเดต status ใน state ทันที — backend คืนสต็อกให้แล้ว
       setOrders((prev) =>
         prev.map((o) => (o.id === orderId ? { ...o, status: "cancelled" } : o)),
       );
       setCancelTarget(null);
-      showToast("ยกเลิกคำสั่งซื้อสำเร็จ", true);
+      showToast("ยกเลิกคำสั่งซื้อสำเร็จ สินค้าถูกคืนสต็อกแล้ว", true);
     } catch {
       showToast("เกิดข้อผิดพลาด ไม่สามารถยกเลิกได้", false);
     }
@@ -96,34 +94,33 @@ const NexusGearOrderStatus = () => {
 
   return (
     <section className="w-full min-h-screen bg-[var(--clr-bg-base)] text-white p-4 md:p-10 font-sans relative animate-fade-in">
-      <div className="max-w-6xl mx-auto">
-        {/* ── Header ── */}
-        <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="border-l-4 border-[var(--clr-primary)] pl-4">
-            <h1 className="text-2xl font-black tracking-wide">
-              ประวัติการสั่งซื้อ
-            </h1>
-            <p className="text-zinc-500 text-sm mt-1">
-              จัดการและติดตามสถานะคำสั่งซื้อของคุณ
-            </p>
-          </div>
-          {toast && (
-            <div
-              className={`px-5 py-3 rounded-xl flex items-center gap-3 animate-bounce-in border shadow-2xl ${
-                toast.ok
-                  ? "bg-[var(--clr-bg-card)] border-green-500/50 text-green-400 shadow-[0_5px_20px_-5px_rgba(34,197,94,0.3)]"
-                  : "bg-[var(--clr-bg-card)] border-red-500/50 text-red-400 shadow-[0_5px_20px_-5px_rgba(220,38,38,0.3)]"
-              }`}
-            >
-              <CheckCircle
-                size={22}
-                className={toast.ok ? "text-green-500" : "text-red-500"}
-              />
-              <span className="font-bold text-sm tracking-wide">
-                {toast.msg}
-              </span>
-            </div>
+      {/* ── Toast (fixed top-right) ── */}
+      {toast && (
+        <div
+          className={`fixed top-5 right-5 z-[9999] flex items-center gap-3 px-5 py-3.5 rounded-xl text-sm font-bold shadow-2xl border animate-in slide-in-from-right duration-300 ${
+            toast.ok
+              ? "bg-[var(--clr-bg-card)] border-green-500/60 text-green-400 shadow-[0_0_20px_rgba(34,197,94,0.25)]"
+              : "bg-[var(--clr-bg-card)] border-red-500/60 text-red-400 shadow-[0_0_20px_rgba(220,38,38,0.25)]"
+          }`}
+        >
+          {toast.ok ? (
+            <CheckCircle size={18} className="shrink-0" />
+          ) : (
+            <AlertTriangle size={18} className="shrink-0" />
           )}
+          <span>{toast.msg}</span>
+        </div>
+      )}
+
+      <div className="max-w-5xl mx-auto">
+        {/* ── Header ── */}
+        <header className="mb-8 border-l-4 border-[var(--clr-primary)] pl-4">
+          <h1 className="text-2xl font-black tracking-wide">
+            ประวัติการสั่งซื้อ
+          </h1>
+          <p className="text-zinc-500 text-sm mt-1">
+            จัดการและติดตามสถานะคำสั่งซื้อของคุณ
+          </p>
         </header>
 
         {/* ── Tabs ── */}
@@ -133,23 +130,19 @@ const NexusGearOrderStatus = () => {
           onTabChange={setActiveTab}
         />
 
-        {/* ── Table column header (desktop) ── */}
+        {/* ── Column headers (desktop) ── */}
         {!loading && filtered.length > 0 && (
-          <div className="hidden md:grid grid-cols-12 gap-4 px-8 py-4 mb-4 text-xs font-bold text-zinc-400 uppercase tracking-widest bg-[var(--clr-bg-card)] rounded-2xl border border-zinc-800/80 shadow-md">
-            <div className="col-span-2 text-center whitespace-nowrap">
-              หมายเลขออเดอร์
-            </div>
+          <div className="hidden md:grid grid-cols-12 gap-4 px-8 py-3 mb-3 text-[11px] font-bold text-zinc-500 uppercase tracking-widest bg-[var(--clr-bg-card)] rounded-xl border border-zinc-800/60">
+            <div className="col-span-2 text-center">หมายเลขออเดอร์</div>
             <div className="col-span-4 text-center">รายการสินค้า</div>
-            <div className="col-span-2 text-center whitespace-nowrap">
-              ยอดรวมสุทธิ
-            </div>
+            <div className="col-span-2 text-center">ยอดรวมสุทธิ</div>
             <div className="col-span-2 text-center">สถานะ</div>
             <div className="col-span-2 text-center">การจัดการ</div>
           </div>
         )}
 
         {/* ── Order list ── */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
           {loading ? (
             [1, 2, 3, 4].map((n) => <OrderSkeleton key={n} />)
           ) : filtered.length === 0 ? (
@@ -171,7 +164,7 @@ const NexusGearOrderStatus = () => {
         </div>
       </div>
 
-      {/* ── Modal ── */}
+      {/* ── Modals ── */}
       <CustomerOrderModal
         isOpen={selectedOrder !== null}
         onClose={() => setSelectedOrder(null)}

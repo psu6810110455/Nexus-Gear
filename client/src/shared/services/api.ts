@@ -73,8 +73,8 @@ export const submitOrderRating = (
 ) => api.post(`/api/orders/${orderId}/rating`, { ratings, reviews }).then((r) => r.data);
 
 // ยกเลิกคำสั่งซื้อ (ลูกค้า) — ได้เฉพาะสถานะ pending / paid
-export const cancelOrder = (orderId: number, reason: string) =>
-  api.patch(`/api/orders/${orderId}/cancel`, { reason }).then((r) => r.data);
+export const cancelOrder = (orderId: number, reason: string, restock?: boolean) =>
+  api.patch(`/api/orders/${orderId}/cancel`, { reason, restock }).then((r) => r.data);
 
 // ── Cart ──────────────────────────────────────────────────────
 export const getCart = () =>

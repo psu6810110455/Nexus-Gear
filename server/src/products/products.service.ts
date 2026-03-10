@@ -5,6 +5,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
 import { Category } from './entities/category.entity';
+import { OrderItem } from '../orders/entities/order-item.entity';
 
 @Injectable()
 export class ProductsService {
@@ -13,6 +14,8 @@ export class ProductsService {
     private productsRepository: Repository<Product>,
     @InjectRepository(Category)
     private categoriesRepository: Repository<Category>,
+    @InjectRepository(OrderItem)
+    private orderItemsRepository: Repository<OrderItem>,
   ) {}
 
   async create(createProductDto: CreateProductDto) {
@@ -87,5 +90,22 @@ export class ProductsService {
     const product = await this.productsRepository.findOne({ where: { id } });
     if (!product) throw new NotFoundException(`Product #${id} not found`);
     return this.productsRepository.remove(product);
+  }
+
+  // ── ดึงรีวิวของสินค้า (จาก order_items ที่มี rating) ──────────────────
+  async getReviews(productId: number) {
+    const items = await this.orderItemsRepository.find({
+      where: { product: { id: productId } },
+      relations: ['order', 'order.user'],
+    });
+
+    return items
+      .filter((item) => item.rating !== null)
+      .map((item) => ({
+        id:     item.id,
+        rating: item.rating,
+        review: item.review ?? null,
+        user:   { username: item.order?.user?.name ?? 'ลูกค้า' },
+      }));
   }
 }

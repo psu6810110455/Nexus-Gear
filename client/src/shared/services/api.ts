@@ -26,6 +26,10 @@ export const getProducts = () =>
 export const getProductById = (id: string | number) =>
   api.get(`/products/${id}`).then((r) => r.data);
 
+// ดึงรีวิวของสินค้าจาก order_items ที่ลูกค้าให้คะแนนแล้ว
+export const getProductReviews = (productId: number | string) =>
+  api.get(`/products/${productId}/reviews`).then((r) => r.data);
+
 export const createProduct = (data: object) =>
   api.post('/products', data).then((r) => r.data);
 

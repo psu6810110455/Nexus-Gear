@@ -39,4 +39,10 @@ export class ProductsController {
   remove(@Param('id') id: string) {
     return this.productsService.remove(+id);
   }
+
+  // ── ดูรีวิวของสินค้า (จาก order_items ที่มี rating) ──────────────────
+  @Get(':id/reviews')
+  getReviews(@Param('id') id: string) {
+    return this.productsService.getReviews(+id);
+  }
 }

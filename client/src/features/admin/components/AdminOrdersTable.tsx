@@ -1,6 +1,6 @@
 // features/admin/components/AdminOrdersTable.tsx
 
-import { Eye, PackageOpen } from "lucide-react";
+import { Eye, PackageOpen, XCircle } from "lucide-react";
 import type { Order } from "../../../shared/types";
 
 const STATUS_COLOR: Record<string, string> = {
@@ -25,6 +25,7 @@ interface AdminOrdersTableProps {
   orders: Order[];
   loading: boolean;
   onViewOrder: (order: Order) => void;
+  onCancelOrder: (order: Order) => void;
 }
 
 // ── Skeleton rows ──────────────────────────────────────────────
@@ -85,6 +86,7 @@ const AdminOrdersTable = ({
   orders,
   loading,
   onViewOrder,
+  onCancelOrder,
 }: AdminOrdersTableProps) => (
   <div className="bg-[var(--clr-bg-card)] rounded-2xl border border-zinc-800/80 overflow-hidden shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)]">
     <div className="overflow-x-auto">
@@ -149,13 +151,25 @@ const AdminOrdersTable = ({
                   </div>
                 </td>
                 <td className="p-5 text-center">
-                  <button
-                    onClick={() => onViewOrder(order)}
-                    className="p-2.5 bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-[var(--clr-primary)] hover:border-[var(--clr-primary)] hover:text-white rounded-xl transition-all duration-300 transform hover:scale-110 active:scale-95 shadow-md"
-                    title="ดูรายละเอียด"
-                  >
-                    <Eye size={18} />
-                  </button>
+                  <div className="flex items-center justify-center gap-2">
+                    <button
+                      onClick={() => onViewOrder(order)}
+                      className="p-2.5 bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-[var(--clr-primary)] hover:border-[var(--clr-primary)] hover:text-white rounded-xl transition-all duration-300 transform hover:scale-110 active:scale-95 shadow-md"
+                      title="ดูรายละเอียด"
+                    >
+                      <Eye size={18} />
+                    </button>
+                    {order.status !== "cancelled" &&
+                      order.status !== "completed" && (
+                        <button
+                          onClick={() => onCancelOrder(order)}
+                          className="p-2.5 bg-zinc-800 border border-zinc-700 text-zinc-400 hover:bg-red-600/20 hover:border-red-500/60 hover:text-red-400 rounded-xl transition-all duration-300 transform hover:scale-110 active:scale-95 shadow-md"
+                          title="ยกเลิกคำสั่งซื้อ"
+                        >
+                          <XCircle size={18} />
+                        </button>
+                      )}
+                  </div>
                 </td>
               </tr>
             ))

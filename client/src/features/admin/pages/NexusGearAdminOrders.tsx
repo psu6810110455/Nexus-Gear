@@ -2,34 +2,38 @@
 // src/features/admin/pages/NexusGearAdminOrders.tsx
 // ============================================================
 
-import { useEffect, useState } from 'react';
-import { Search, CheckCircle, AlertTriangle } from 'lucide-react';
-import { getOrders, updateOrderStatus } from '../../../shared/services/api';
-import type { Order } from '../../../shared/types';
+import { useEffect, useState } from "react";
+import { Search, CheckCircle, AlertTriangle } from "lucide-react";
+import { getOrders, updateOrderStatus } from "../../../shared/services/api";
+import type { Order } from "../../../shared/types";
 
-import AdminLayout from '../../navigation/components/AdminLayout';
-import AdminOrdersTabs from '../components/AdminOrdersTabs';
-import AdminOrdersTable from '../components/AdminOrdersTable';
-import OrderDetailModal from '../../orders/components/OrderDetailModal';
+import AdminLayout from "../../navigation/components/AdminLayout";
+import AdminOrdersTabs from "../components/AdminOrdersTabs";
+import AdminOrdersTable from "../components/AdminOrdersTable";
+import OrderDetailModal from "../../orders/components/OrderDetailModal";
+import AdminCancelOrderModal from "../components/AdminCancelOrderModal";
 
 const THAI_STATUS: Record<string, string> = {
-  pending:   'รอชำระเงิน',
-  paid:      'ชำระเงินแล้ว',
-  to_ship:   'เตรียมจัดส่ง',
-  shipped:   'จัดส่งแล้ว',
-  completed: 'สำเร็จ',
-  cancelled: 'ยกเลิก',
+  pending: "รอชำระเงิน",
+  paid: "ชำระเงินแล้ว",
+  to_ship: "เตรียมจัดส่ง",
+  shipped: "จัดส่งแล้ว",
+  completed: "สำเร็จ",
+  cancelled: "ยกเลิก",
 };
 
 const NexusGearAdminOrders = () => {
-  const [orders, setOrders]               = useState<Order[]>([]);
-  const [loading, setLoading]             = useState(true);
-  const [activeTab, setActiveTab]         = useState('All');
-  const [searchTerm, setSearchTerm]       = useState('');
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("All");
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [toast, setToast]                 = useState<{ msg: string; ok: boolean } | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<Order | null>(null);
+  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
 
-  useEffect(() => { setTimeout(fetchOrders, 500); }, []);
+  useEffect(() => {
+    setTimeout(fetchOrders, 500);
+  }, []);
 
   const fetchOrders = async () => {
     try {
@@ -51,35 +55,75 @@ const NexusGearAdminOrders = () => {
     try {
       await updateOrderStatus(orderId, newStatus);
       setOrders((prev) =>
-        prev.map((o) => o.id === orderId ? { ...o, status: newStatus as any } : o),
+        prev.map((o) =>
+          o.id === orderId ? { ...o, status: newStatus as any } : o,
+        ),
       );
       setSelectedOrder(null);
-      showToast(`อัปเดตสถานะเป็น "${THAI_STATUS[newStatus] || newStatus}" สำเร็จ!`, true);
+      showToast(
+        `อัปเดตสถานะเป็น "${THAI_STATUS[newStatus] || newStatus}" สำเร็จ!`,
+        true,
+      );
     } catch {
-      showToast('เกิดข้อผิดพลาดในการอัปเดตสถานะ', false);
+      showToast("เกิดข้อผิดพลาดในการอัปเดตสถานะ", false);
+    }
+  };
+
+  const handleAdminCancel = async (
+    orderId: number,
+    payload: {
+      reason: string;
+      refundAmount: string;
+      refundChannel: string;
+      refundEvidence: string;
+      restock: boolean;
+    },
+  ) => {
+    try {
+      await updateOrderStatus(orderId, "cancelled");
+      // TODO: ส่ง payload เพิ่มเติมไปยัง endpoint cancel จริง เช่น /orders/:id/cancel
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === orderId ? { ...o, status: "cancelled" as any } : o,
+        ),
+      );
+      setCancelTarget(null);
+      showToast(
+        `ยกเลิกคำสั่งซื้อ #${String(orderId).padStart(3, "0")} สำเร็จ`,
+        true,
+      );
+    } catch {
+      showToast("เกิดข้อผิดพลาดในการยกเลิก", false);
     }
   };
 
   const filtered = orders.filter((order) => {
-    const matchTab    = activeTab === 'All' || order.status === activeTab;
-    const search      = searchTerm.toLowerCase();
+    const matchTab = activeTab === "All" || order.status === activeTab;
+    const search = searchTerm.toLowerCase();
     const matchSearch =
-      `ORD-${String(order.id).padStart(3, '0')}`.toLowerCase().includes(search) ||
-      (order.user?.username || '').toLowerCase().includes(search);
+      `ORD-${String(order.id).padStart(3, "0")}`
+        .toLowerCase()
+        .includes(search) ||
+      (order.user?.username || "").toLowerCase().includes(search);
     return matchTab && matchSearch;
   });
 
   return (
     <AdminLayout breadcrumb="จัดการคำสั่งซื้อ">
-
       {/* ── Toast ── */}
       {toast && (
-        <div className={`fixed top-5 right-5 z-[9999] flex items-center gap-3 px-5 py-4 rounded-xl text-sm font-bold shadow-2xl border animate-in slide-in-from-right duration-300 font-['Kanit'] ${
-          toast.ok
-            ? 'bg-black border-green-500 text-green-400 shadow-[0_0_20px_rgba(34,197,94,0.4)]'
-            : 'bg-black border-[#FF0000] text-[#FF0000] shadow-[0_0_20px_rgba(255,0,0,0.4)]'
-        }`}>
-          {toast.ok ? <CheckCircle className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}
+        <div
+          className={`fixed top-5 right-5 z-[9999] flex items-center gap-3 px-5 py-4 rounded-xl text-sm font-bold shadow-2xl border animate-in slide-in-from-right duration-300 font-['Kanit'] ${
+            toast.ok
+              ? "bg-black border-green-500 text-green-400 shadow-[0_0_20px_rgba(34,197,94,0.4)]"
+              : "bg-black border-[#FF0000] text-[#FF0000] shadow-[0_0_20px_rgba(255,0,0,0.4)]"
+          }`}
+        >
+          {toast.ok ? (
+            <CheckCircle className="w-5 h-5" />
+          ) : (
+            <AlertTriangle className="w-5 h-5" />
+          )}
           {toast.msg}
         </div>
       )}
@@ -127,15 +171,23 @@ const NexusGearAdminOrders = () => {
           orders={filtered}
           loading={loading}
           onViewOrder={(order) => setSelectedOrder(order)}
+          onCancelOrder={(order) => setCancelTarget(order)}
         />
       </div>
 
-      {/* ── Modal ── */}
+      {/* ── Modals ── */}
       <OrderDetailModal
         isOpen={selectedOrder !== null}
         onClose={() => setSelectedOrder(null)}
         order={selectedOrder}
         onUpdateStatus={handleUpdateStatus}
+      />
+
+      <AdminCancelOrderModal
+        isOpen={cancelTarget !== null}
+        onClose={() => setCancelTarget(null)}
+        order={cancelTarget}
+        onConfirm={handleAdminCancel}
       />
     </AdminLayout>
   );

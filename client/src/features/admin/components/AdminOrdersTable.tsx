@@ -10,6 +10,8 @@ import {
   Package,
   Star,
   Ban,
+  CreditCard,
+  ImageIcon,
 } from "lucide-react";
 import type { Order } from "../../../shared/types";
 
@@ -97,7 +99,7 @@ const SkeletonRows = () => (
 // ── Empty ──────────────────────────────────────────────────────
 const EmptyRows = () => (
   <tr>
-    <td colSpan={5} className="py-20 text-center">
+    <td colSpan={6} className="py-20 text-center">
       <div className="flex flex-col items-center gap-3">
         <div className="w-16 h-16 bg-zinc-900 rounded-2xl flex items-center justify-center border border-zinc-800">
           <PackageOpen size={28} className="text-zinc-600" />
@@ -131,6 +133,9 @@ const AdminOrdersTable = ({
             <th className="px-5 py-3.5 text-[10px] font-black uppercase tracking-[0.12em] text-zinc-500 text-center">
               สถานะ
             </th>
+            <th className="px-5 py-3.5 text-[10px] font-black uppercase tracking-[0.12em] text-zinc-500 text-center">
+              การชำระเงิน
+            </th>
             <th className="px-5 py-3.5 text-[10px] font-black uppercase tracking-[0.12em] text-zinc-500">
               การจัดส่ง
             </th>
@@ -153,8 +158,7 @@ const AdminOrdersTable = ({
                 order.status !== "cancelled" && order.status !== "completed";
               const isEven = idx % 2 === 0;
               const orderId = `ORD-${new Date().getFullYear() + 543}-${String(order.id).padStart(3, "0")}`;
-              const initial =
-                order.user?.username?.charAt(0).toUpperCase() ?? "?";
+              const initial = order.user?.name?.charAt(0).toUpperCase() ?? "?";
 
               return (
                 <tr
@@ -172,7 +176,7 @@ const AdminOrdersTable = ({
                           {orderId}
                         </p>
                         <p className="text-zinc-500 text-xs mt-0.5">
-                          {order.user?.username || "ลูกค้าทั่วไป"}
+                          {order.user?.name || "ลูกค้าทั่วไป"}
                         </p>
                         <p className="text-zinc-700 text-[10px] mt-0.5">
                           {new Date(order.created_at).toLocaleString("th-TH")}
@@ -205,6 +209,33 @@ const AdminOrdersTable = ({
                         {order.status}
                       </span>
                     )}
+                  </td>
+
+                  {/* Col: Payment */}
+                  <td className="px-5 py-4 text-center">
+                    <div className="flex flex-col items-center gap-1">
+                      <span
+                        className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[10px] font-bold ${
+                          order.payment_method === "qr"
+                            ? "text-violet-400 border-violet-400/30 bg-violet-400/10"
+                            : order.payment_method
+                              ? "text-cyan-400 border-cyan-400/30 bg-cyan-400/10"
+                              : "text-zinc-600 border-zinc-700 bg-zinc-800/50"
+                        }`}
+                      >
+                        <CreditCard size={10} />
+                        {order.payment_method === "qr"
+                          ? "QR Code"
+                          : order.payment_method
+                            ? "โอนเงิน"
+                            : "—"}
+                      </span>
+                      {order.slip_image && (
+                        <span className="inline-flex items-center gap-1 text-[9px] text-green-400">
+                          <ImageIcon size={9} /> มีสลิป
+                        </span>
+                      )}
+                    </div>
                   </td>
 
                   {/* Col 4: Carrier */}

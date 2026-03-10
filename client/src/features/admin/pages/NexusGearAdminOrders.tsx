@@ -108,7 +108,7 @@ const NexusGearAdminOrders = () => {
       `ORD-${String(order.id).padStart(3, "0")}`
         .toLowerCase()
         .includes(search) ||
-      (order.user?.username || "").toLowerCase().includes(search);
+      (order.user?.name || "").toLowerCase().includes(search);
     return matchTab && matchSearch;
   });
 

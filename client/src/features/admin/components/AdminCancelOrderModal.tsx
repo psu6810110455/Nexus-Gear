@@ -83,7 +83,9 @@ const AdminCancelOrderModal = ({
     setRestock(null);
   };
 
-  const slipUrl = order.payment?.slip_image_url;
+  const slipUrl = order.slip_image
+    ? `http://localhost:3000/uploads/slips/${order.slip_image}`
+    : null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 animate-fade-in">
@@ -122,7 +124,7 @@ const AdminCancelOrderModal = ({
               </p>
               <div>
                 <p className="text-white font-bold">
-                  {order.user?.username || "ไม่ระบุ"}
+                  {order.user?.name || "ไม่ระบุ"}
                 </p>
                 <p className="text-zinc-500 text-xs">
                   {order.user?.email || "-"}
@@ -191,7 +193,9 @@ const AdminCancelOrderModal = ({
                   <p>
                     ช่องทาง:{" "}
                     <span className="text-zinc-200">
-                      {order.payment?.method || "โอนเงิน"}
+                      {order.payment_method === "qr"
+                        ? "QR Code"
+                        : "โอนเงินธนาคาร"}
                     </span>
                   </p>
                   <p>

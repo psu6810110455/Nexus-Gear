@@ -2,13 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { CheckCircle } from "lucide-react";
-import { getUserOrders, submitOrderRating } from "../../../shared/services/api";
+import {
+  getUserOrders,
+  submitOrderRating,
+  cancelOrder,
+} from "../../../shared/services/api";
 import type { Order } from "../../../shared/types";
 
 import OrderTabs from "../components/OrderTabs";
 import OrderCard from "../components/OrderCard";
 import { OrderSkeleton, OrderEmpty } from "../components/OrderSkeleton";
 import CustomerOrderModal from "../components/CustomerOrderModal";
+import CancelOrderModal from "../components/CancelOrdermodal";
 
 // ── helpers ───────────────────────────────────────────────────
 const CURRENT_USER_ID = 1;
@@ -26,6 +31,7 @@ const NexusGearOrderStatus = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<Order | null>(null);
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
 
   useEffect(() => {
@@ -51,9 +57,10 @@ const NexusGearOrderStatus = () => {
   const handleRatingSubmit = async (
     orderId: number,
     ratings: Record<number, number>,
+    reviews: Record<number, string>,
   ) => {
     try {
-      await submitOrderRating(orderId, ratings);
+      await submitOrderRating(orderId, ratings, reviews);
       setOrders((prev) =>
         prev.map((o) => (o.id === orderId ? { ...o, is_rated: true } : o)),
       );
@@ -71,6 +78,19 @@ const NexusGearOrderStatus = () => {
       );
     } finally {
       setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 100);
+    }
+  };
+
+  const handleCancelOrder = async (orderId: number, reason: string) => {
+    try {
+      await cancelOrder(orderId, reason);
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, status: "cancelled" } : o)),
+      );
+      setCancelTarget(null);
+      showToast("ยกเลิกคำสั่งซื้อสำเร็จ", true);
+    } catch {
+      showToast("เกิดข้อผิดพลาด ไม่สามารถยกเลิกได้", false);
     }
   };
 
@@ -138,6 +158,11 @@ const NexusGearOrderStatus = () => {
                 key={order.id}
                 order={order}
                 onSelect={() => setSelectedOrder(order)}
+                onCancel={
+                  order.status === "pending" || order.status === "paid"
+                    ? () => setCancelTarget(order)
+                    : undefined
+                }
               />
             ))
           )}
@@ -150,6 +175,13 @@ const NexusGearOrderStatus = () => {
         onClose={() => setSelectedOrder(null)}
         order={selectedOrder}
         onSubmitRating={handleRatingSubmit}
+      />
+
+      <CancelOrderModal
+        isOpen={cancelTarget !== null}
+        onClose={() => setCancelTarget(null)}
+        order={cancelTarget}
+        onConfirm={handleCancelOrder}
       />
     </section>
   );

@@ -64,9 +64,10 @@ interface Order {
 interface OrderCardProps {
   order: Order;
   onSelect: (order: Order) => void;
+  onCancel?: () => void;
 }
 
-const OrderCard = ({ order, onSelect }: OrderCardProps) => {
+const OrderCard = ({ order, onSelect, onCancel }: OrderCardProps) => {
   const status = STATUS_DISPLAY[order.status] ?? {
     text: order.status,
     className: "text-zinc-400 border-zinc-800 bg-zinc-900",
@@ -144,7 +145,7 @@ const OrderCard = ({ order, onSelect }: OrderCardProps) => {
       </div>
 
       {/* Action Button */}
-      <div className="md:col-span-2 flex justify-end md:justify-center mt-2 md:mt-0">
+      <div className="md:col-span-2 flex flex-col justify-end md:justify-center gap-2 mt-2 md:mt-0">
         <button
           onClick={() => onSelect(order)}
           className={`w-full md:w-[130px] px-4 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 group-hover:scale-[1.02] active:scale-95 ${
@@ -163,6 +164,16 @@ const OrderCard = ({ order, onSelect }: OrderCardProps) => {
             </>
           )}
         </button>
+
+        {/* ปุ่มยกเลิก — แสดงเฉพาะ pending / paid */}
+        {onCancel && (
+          <button
+            onClick={onCancel}
+            className="w-full md:w-[130px] px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-1 active:scale-95 border border-red-500/30 text-red-400 hover:bg-red-500/10 hover:border-red-500/60"
+          >
+            ยกเลิก
+          </button>
+        )}
       </div>
     </article>
   );

@@ -23,7 +23,11 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   order: Order | null;
-  onSubmitRating: (orderId: number, ratings: Record<number, number>) => void;
+  onSubmitRating: (
+    orderId: number,
+    ratings: Record<number, number>,
+    reviews: Record<number, string>,
+  ) => void;
 }
 
 const CustomerOrderModal = ({
@@ -32,12 +36,14 @@ const CustomerOrderModal = ({
   order,
   onSubmitRating,
 }: ModalProps) => {
-  // เก็บค่าดาวที่ลูกค้ากด (แยกตาม id ของสินค้า)
   const [ratings, setRatings] = useState<Record<number, number>>({});
+  const [reviews, setReviews] = useState<Record<number, string>>({});
 
-  // ล้างค่าดาวทุกครั้งที่เปิด Modal ใหม่
   useEffect(() => {
-    if (order) setRatings({});
+    if (order) {
+      setRatings({});
+      setReviews({});
+    }
   }, [order]);
 
   if (!isOpen || !order) return null;
@@ -102,7 +108,7 @@ const CustomerOrderModal = ({
 
   const handleSubmit = () => {
     if (isCompletedAndNotRated) {
-      onSubmitRating(order.id, ratings);
+      onSubmitRating(order.id, ratings, reviews);
     } else {
       onClose();
     }
@@ -182,24 +188,46 @@ const CustomerOrderModal = ({
 
                       {/* ⭐️ โชว์ดาวเฉพาะออเดอร์ที่สถานะ "สำเร็จ" */}
                       {order.status === "completed" && (
-                        <div className="flex gap-1 mt-3">
-                          {[1, 2, 3, 4, 5].map((star) => {
-                            const currentRating = order.is_rated
-                              ? item.rating || 5
-                              : ratings[item.id] || 0;
-                            return (
-                              <Star
-                                key={star}
-                                size={18}
-                                className={`transition-transform ${!order.is_rated ? "cursor-pointer hover:scale-110" : ""} ${
-                                  star <= currentRating
-                                    ? "text-yellow-500 fill-yellow-500"
-                                    : "text-zinc-700"
-                                }`}
-                                onClick={() => handleStarClick(item.id, star)}
-                              />
-                            );
-                          })}
+                        <div className="mt-3 space-y-2">
+                          <div className="flex gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => {
+                              const currentRating = order.is_rated
+                                ? item.rating || 5
+                                : ratings[item.id] || 0;
+                              return (
+                                <Star
+                                  key={star}
+                                  size={18}
+                                  className={`transition-transform ${!order.is_rated ? "cursor-pointer hover:scale-110" : ""} ${
+                                    star <= currentRating
+                                      ? "text-yellow-500 fill-yellow-500"
+                                      : "text-zinc-700"
+                                  }`}
+                                  onClick={() => handleStarClick(item.id, star)}
+                                />
+                              );
+                            })}
+                          </div>
+                          {/* ช่องเขียนรีวิว — เฉพาะยังไม่ได้รีวิว */}
+                          {!order.is_rated && (
+                            <textarea
+                              rows={2}
+                              placeholder="เขียนรีวิวสินค้า (ไม่บังคับ)..."
+                              value={reviews[item.id] || ""}
+                              onChange={(e) =>
+                                setReviews((prev) => ({
+                                  ...prev,
+                                  [item.id]: e.target.value,
+                                }))
+                              }
+                              className="w-full bg-zinc-900 border border-zinc-700 focus:border-zinc-500 text-zinc-200 text-xs rounded-lg px-3 py-2 resize-none outline-none placeholder-zinc-600 transition-colors"
+                            />
+                          )}
+                          {order.is_rated && (item as any).review && (
+                            <p className="text-xs text-zinc-500 italic">
+                              "{(item as any).review}"
+                            </p>
+                          )}
                         </div>
                       )}
                     </div>

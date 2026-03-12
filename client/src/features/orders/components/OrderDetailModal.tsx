@@ -118,7 +118,7 @@ const OrderDetailModal = ({
 
   const getThaiStatus = (status: string) => {
     const thStatus: Record<string, string> = {
-      pending: "รอชำระเงิน",
+      pending: "รอตรวจสอบ",
       paid: "ชำระเงินแล้ว",
       to_ship: "เตรียมจัดส่ง",
       shipped: "จัดส่งแล้ว",

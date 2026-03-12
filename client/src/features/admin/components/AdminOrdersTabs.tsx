@@ -12,7 +12,7 @@ interface AdminOrdersTabsProps {
 
 const TABS = [
   { label: "ทั้งหมด", value: "All" },
-  { label: "รอชำระเงิน", value: "pending" },
+  { label: "รอตรวจสอบ", value: "pending" },
   { label: "ชำระเงินแล้ว", value: "paid" },
   { label: "เตรียมจัดส่ง", value: "to_ship" },
   { label: "ระหว่างขนส่ง", value: "shipped" },

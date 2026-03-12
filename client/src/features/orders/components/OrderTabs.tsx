@@ -21,7 +21,7 @@ const TABS = [
   },
   {
     id: "pending",
-    label: "ที่ต้องชำระ",
+    label: "รอตรวจสอบ",
     icon: Wallet,
     count: (o: Order[]) => o.filter((x) => x.status === "pending").length,
   },

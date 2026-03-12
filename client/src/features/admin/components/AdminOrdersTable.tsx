@@ -21,7 +21,7 @@ const STATUS: Record<
   { label: string; cls: string; icon: React.ReactNode }
 > = {
   pending: {
-    label: "รอชำระเงิน",
+    label: "รอตรวจสอบ",
     cls: "text-amber-400  border-amber-400/40  bg-amber-400/10",
     icon: <Clock size={11} />,
   },

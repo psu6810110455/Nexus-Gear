@@ -23,7 +23,7 @@ const STATUS_DISPLAY: Record<
   }
 > = {
   pending: {
-    text: "รอชำระเงิน",
+    text: "รอตรวจสอบ",
     badge: "text-amber-400 border-amber-400/40 bg-amber-400/10",
     bar: "bg-amber-400",
     glow: "hover:shadow-[0_0_24px_-6px_rgba(251,191,36,0.2)]",

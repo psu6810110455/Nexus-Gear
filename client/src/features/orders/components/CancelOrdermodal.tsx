@@ -147,7 +147,7 @@ const CancelOrderModal = ({ isOpen, onClose, order, onConfirm }: Props) => {
 
           <p className="text-zinc-600 text-xs bg-zinc-900/50 border border-zinc-800 rounded-xl p-3">
             ⚠️ สามารถยกเลิกได้เฉพาะคำสั่งซื้อที่ยังไม่ได้รับการจัดส่ง (สถานะ:
-            รอชำระเงิน / ชำระเงินแล้ว)
+            รอตรวจสอบ / ชำระเงินแล้ว)
           </p>
         </div>
 

@@ -21,8 +21,8 @@ export default function PaymentMethod({ payMethod, onSelectMethod, grandTotal, o
 
   const [qrStatus,         setQrStatus]         = useState<QrStatus>('idle');
   const [qrDataUrl,        setQrDataUrl]        = useState<string | null>(null);
-  const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
-  const [isSimulating,    setIsSimulating]    = useState(false);
+  
+  // ✨ ลบ paymentIntentId ออกไปแล้ว เพราะเราไม่ต้องใช้มันโชว์ปุ่มจำลองแล้ว
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const methods = [
@@ -37,7 +37,6 @@ export default function PaymentMethod({ payMethod, onSelectMethod, grandTotal, o
       stopPolling();
       setQrStatus('idle');
       setQrDataUrl(null);
-      setPaymentIntentId(null);
     }
     return () => stopPolling();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -46,14 +45,12 @@ export default function PaymentMethod({ payMethod, onSelectMethod, grandTotal, o
   const initStripeQR = async () => {
     setQrStatus('loading');
     try {
-      // ✨ สำคัญมาก: Stripe ต้องการหน่วยเป็น "สตางค์" เลยต้องเอา grandTotal ไปคูณ 100 และปัดเศษทิ้ง
       const stripeAmount = Math.round(grandTotal * 100);
 
       const { data } = await api.post('/api/payments/create-intent', {
         amount: stripeAmount,
         orderId: 'PENDING',
       });
-      setPaymentIntentId(data.paymentIntentId);
 
       if (data.qrData) {
         const url = await QRCode.toDataURL(data.qrData, {
@@ -66,10 +63,10 @@ export default function PaymentMethod({ payMethod, onSelectMethod, grandTotal, o
       }
 
       setQrStatus('waiting');
+      // ส่ง ID เข้าฟังก์ชันไปตรงๆ เลย ไม่ต้องเก็บลง State ให้รกเครื่อง
       startPolling(data.paymentIntentId);
     } catch (error) {
       console.error("Stripe QR Error:", error);
-      // ถ้า Error ก็ยังแสดง QR ปลอมให้ไปต่อได้
       setQrStatus('waiting');
     }
   };
@@ -95,13 +92,6 @@ export default function PaymentMethod({ payMethod, onSelectMethod, grandTotal, o
 
   const stopPolling = () => {
     if (pollingRef.current) { clearInterval(pollingRef.current); pollingRef.current = null; }
-  };
-
-  const handleSimulate = async () => {
-    if (!paymentIntentId) return;
-    setIsSimulating(true);
-    try { await api.post(`/api/payments/simulate-success/${paymentIntentId}`); }
-    finally { setIsSimulating(false); }
   };
 
   const statusMap: Record<QrStatus, { text: string; color: string } | null> = {
@@ -184,19 +174,6 @@ export default function PaymentMethod({ payMethod, onSelectMethod, grandTotal, o
                   )}
                   {statusLabel.text}
                 </p>
-              )}
-
-              {(qrStatus === 'waiting' || qrStatus === 'processing') && paymentIntentId && (
-                <aside className="mt-4 pt-4 border-t border-[#990000]/20 w-full text-center">
-                  <p className="text-xs text-[#F2F4F6]/30 mb-2">🧪 Demo Mode — กดปุ่มด้านล่างเพื่อจำลองการชำระเงิน</p>
-                  <button
-                    onClick={handleSimulate}
-                    disabled={isSimulating}
-                    className="px-6 py-2 bg-green-700 hover:bg-green-600 disabled:opacity-50 rounded-lg text-sm font-['Kanit'] font-bold transition-colors text-white"
-                  >
-                    {isSimulating ? 'กำลังประมวลผล...' : '✅ จำลองการชำระเงินสำเร็จ'}
-                  </button>
-                </aside>
               )}
             </>
           )}

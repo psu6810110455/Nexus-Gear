@@ -46,7 +46,7 @@ function ProductCard({ product, onClick, variant = 'shop' }: ProductCardProps) {
             alt={product.name}
             className="max-h-full max-w-full object-contain group-hover:scale-110 transition duration-500 mix-blend-multiply"
             onError={(e) => {
-              e.currentTarget.src = 'https://dummyimage.com/400x400/000/fff&text=Nexus';
+              e.currentTarget.src = 'https://dummyimage.com/400x400/000/fff?text=Nexus';
             }}
           />
           <div
@@ -98,7 +98,7 @@ function ProductCard({ product, onClick, variant = 'shop' }: ProductCardProps) {
           alt={product.name}
           className="max-h-full max-w-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500"
           onError={(e) => {
-            e.currentTarget.src = 'https://dummyimage.com/150x150/000/fff&text=No+Image';
+            e.currentTarget.src = 'https://dummyimage.com/150x150/000/fff?text=No+Image';
           }}
         />
       </div>

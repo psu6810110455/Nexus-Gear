@@ -115,10 +115,10 @@ const ProductDetail: React.FC = () => {
         <div className="flex flex-col md:flex-row gap-12 mb-16">
             <div className="w-full md:w-3/5 bg-white rounded-xl overflow-hidden p-8 flex items-center justify-center relative shadow-[0_0_30px_rgba(255,255,255,0.05)] min-h-[400px]">
                 <img 
-                    src={product.imageUrl || product.image_url || 'https://dummyimage.com/600x400/000/fff&text=No+Image'} 
+                    src={product.imageUrl || product.image_url || 'https://dummyimage.com/600x400/000/fff?text=No+Image'} 
                     alt={product.name} 
                     className="max-h-[350px] w-auto object-contain hover:scale-105 transition duration-500"
-                    onError={(e) => { e.currentTarget.src = 'https://dummyimage.com/600x400/000/fff&text=Nexus+Gear'; }}
+                    onError={(e) => { e.currentTarget.src = 'https://dummyimage.com/600x400/000/fff?text=Nexus+Gear'; }}
                 />
                  <span className="absolute top-4 left-4 bg-red-600 text-white text-[10px] font-bold px-3 py-1 rounded uppercase tracking-wider shadow-lg">New Arrival</span>
             </div>

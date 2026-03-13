@@ -208,7 +208,7 @@ function ProductList() {
                                     src={product.imageUrl || product.image_url || 'https://dummyimage.com/400x400/000/fff'} 
                                     alt={product.name}
                                     className="max-h-full max-w-full object-contain group-hover:scale-110 transition duration-500 mix-blend-multiply"
-                                    onError={(e) => { e.currentTarget.src = 'https://dummyimage.com/400x400/000/fff&text=Nexus'; }}
+                                    onError={(e) => { e.currentTarget.src = 'https://dummyimage.com/400x400/000/fff?text=Nexus'; }}
                                 />
                                 <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition duration-300"></div>
                             </div>

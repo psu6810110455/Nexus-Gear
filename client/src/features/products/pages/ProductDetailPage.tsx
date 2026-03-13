@@ -127,13 +127,13 @@ const ProductDetailPage: React.FC = () => {
                 src={
                   product.imageUrl ||
                   product.image_url ||
-                  "https://dummyimage.com/600x400/000/fff&text=No+Image"
+                  "https://dummyimage.com/600x400/000/fff?text=No+Image"
                 }
                 alt={product.name}
                 className="max-h-full w-auto object-contain hover:scale-105 transition duration-500 drop-shadow-[0_0_15px_rgba(255,0,0,0.15)]"
                 onError={(e) => {
                   e.currentTarget.src =
-                    "https://dummyimage.com/600x400/000/fff&text=Nexus+Gear";
+                    "https://dummyimage.com/600x400/000/fff?text=Nexus+Gear";
                 }}
               />
             </div>
@@ -142,9 +142,9 @@ const ProductDetailPage: React.FC = () => {
             <div className="flex gap-4 overflow-x-auto pb-2 w-full justify-center">
               {[
                 product.imageUrl || product.image_url,
-                "https://dummyimage.com/100x100/111/dc2626&text=Side",
-                "https://dummyimage.com/100x100/111/dc2626&text=Back",
-                "https://dummyimage.com/100x100/111/dc2626&text=Box",
+                "https://dummyimage.com/100x100/111/dc2626?text=Side",
+                "https://dummyimage.com/100x100/111/dc2626?text=Back",
+                "https://dummyimage.com/100x100/111/dc2626?text=Box",
               ].map((img, idx) => (
                 <button
                   key={idx}
@@ -341,7 +341,7 @@ const ProductDetailPage: React.FC = () => {
                       className="max-h-full object-contain group-hover:scale-110 transition duration-500 mix-blend-multiply"
                       onError={(e) => {
                         e.currentTarget.src =
-                          "https://dummyimage.com/400x400/000/fff&text=NEXUS";
+                          "https://dummyimage.com/400x400/000/fff?text=NEXUS";
                       }}
                     />
                   </div>

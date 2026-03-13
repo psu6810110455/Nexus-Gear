@@ -67,7 +67,7 @@ const ProductDetail = () => {
     <div style={{ minHeight: '100vh', background: 'var(--color-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-muted)', fontFamily: 'Orbitron, sans-serif', letterSpacing: '0.1em' }}>ไม่พบสินค้า</div>
   );
 
-  const imgSrc = product.imageUrl ?? product.image_url ?? 'https://dummyimage.com/600x400/000/fff&text=No+Image';
+  const imgSrc = product.imageUrl ?? product.image_url ?? 'https://dummyimage.com/600x400/000/fff?text=No+Image';
 
   return (
     <main style={{ width: '100%', minHeight: '100vh', background: 'var(--color-bg)', color: 'var(--color-text)', fontFamily: "'Kanit', sans-serif", paddingBottom: '6rem' }}>
@@ -92,7 +92,7 @@ const ProductDetail = () => {
             style={{ maxHeight: '28rem', maxWidth: '100%', objectFit: 'contain', transition: 'transform 0.5s', position: 'relative', zIndex: 1, mixBlendMode: 'multiply' }}
             onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.05)')}
             onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
-            onError={e => { e.currentTarget.src = 'https://dummyimage.com/600x400/000/fff&text=Nexus+Gear'; }} />
+            onError={e => { e.currentTarget.src = 'https://dummyimage.com/600x400/000/fff?text=Nexus+Gear'; }} />
         </div>
         <div className="pd-info-panel">
           <span className="pd-category-badge">{product.category?.name ?? 'GAMING GEAR'}</span>
@@ -203,7 +203,7 @@ const ProductDetail = () => {
                         style={{ maxHeight: '100%', objectFit: 'contain', transition: 'transform 0.5s', mixBlendMode: 'multiply' }}
                         onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.1)')}
                         onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
-                        onError={e => { e.currentTarget.src = 'https://dummyimage.com/400x400/000/fff&text=NEXUS'; }}
+                        onError={e => { e.currentTarget.src = 'https://dummyimage.com/400x400/000/fff?text=NEXUS'; }}
                         onClick={e => e.stopPropagation()} />
                     </div>
                     <div style={{ padding: '0.9rem' }}>

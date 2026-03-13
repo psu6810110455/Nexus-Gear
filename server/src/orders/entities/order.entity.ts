@@ -3,10 +3,10 @@ import { User } from '../../users/entities/user.entity';
 import { OrderItem } from './order-item.entity';
 
 export enum OrderStatus {
-  PENDING = 'pending',
-  PAID = 'paid',
-  TO_SHIP = 'to_ship',
-  SHIPPED = 'shipped',
+  PENDING   = 'pending',
+  PAID      = 'paid',
+  TO_SHIP   = 'to_ship',
+  SHIPPED   = 'shipped',
   COMPLETED = 'completed',
   CANCELLED = 'cancelled',
 }
@@ -21,7 +21,7 @@ export class Order {
   user: User;
 
   @Column({ type: 'varchar', length: 50, nullable: true })
-  order_number: string;          // ✨ เพิ่มใหม่
+  order_number: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   total_price: number;
@@ -37,7 +37,11 @@ export class Order {
   shipping_address: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  slip_image: string | null;     // ✨ เพิ่มใหม่
+  slip_image: string | null;
+
+  // ✨ เพิ่ม: เก็บ Stripe PaymentIntent ID สำหรับ QR PromptPay
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  stripe_payment_intent_id: string | null;
 
   @Column({ type: 'varchar', length: 50, nullable: true })
   payment_method: string | null;

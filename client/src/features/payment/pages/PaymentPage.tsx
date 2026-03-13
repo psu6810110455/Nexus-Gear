@@ -1,55 +1,60 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Check, MapPin, CreditCard, Upload, Loader, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  ArrowLeft, ArrowRight, Check, MapPin,
+  CreditCard, Upload, Loader, ChevronDown, ChevronUp,
+} from 'lucide-react';
 import api from '../../../shared/services/api';
 import { toast } from 'sonner';
 
 import { fetchAddresses } from '../services/payment.service';
 import type { Address, OrderSummaryData } from '../types/payment.types';
-import StepBar from '../components/StepBar';
+import StepBar      from '../components/StepBar';
 import AddressSelect from '../components/AddressSelect';
 import PaymentMethod from '../components/PaymentMethod';
 
+// ─── Types ───────────────────────────────────────────────────────────────────
 interface PaymentProps {
   onNavigate?: (page: string) => void;
 }
-
 interface UploadedSlip {
-  name: string;
+  name:    string;
   preview: string | ArrayBuffer | null;
 }
 
 const fmt = (n: number) => n.toLocaleString('th-TH');
 
+// ─── Component ───────────────────────────────────────────────────────────────
 export default function PaymentPage({ onNavigate }: PaymentProps) {
   const navigate = useNavigate();
-  // ─── STATE MANAGEMENT ───
-  const [isApiLoading, setIsApiLoading] = useState<boolean>(true);
-  const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
-  const [orderSummary, setOrderSummary] = useState<OrderSummaryData | null>(null);
 
-  const [step, setStep] = useState<number>(1);
-  const [selectedAddr, setSelectedAddr] = useState<number | null>(null);
-  const [payMethod, setPayMethod] = useState<string | null>(null);
-  const [uploadedSlip, setUploadedSlip] = useState<UploadedSlip | null>(null);
-  const [slipFile, setSlipFile] = useState<File | null>(null); // ✨ เพิ่มเพื่อเก็บไฟล์จริงสำหรับส่ง API
-  const [confirmed, setConfirmed] = useState<boolean>(false);
-  const [loadingAction, setLoadingAction] = useState<boolean>(false);
-  const [showSummary, setShowSummary] = useState<boolean>(false);
-  
-  // ✨ เพิ่ม State สำหรับเก็บเลขบิลของจริงที่ได้จาก Database
-  const [finalOrderNum, setFinalOrderNum] = useState<string>('');
+  // ── State ──────────────────────────────────────────────────────────────────
+  const [isApiLoading,    setIsApiLoading]    = useState(true);
+  const [savedAddresses,  setSavedAddresses]  = useState<Address[]>([]);
+  const [orderSummary,    setOrderSummary]    = useState<OrderSummaryData | null>(null);
 
-  // ─── LIFECYCLE ───
+  const [step,            setStep]            = useState(1);
+  const [selectedAddr,    setSelectedAddr]    = useState<number | null>(null);
+  const [payMethod,       setPayMethod]       = useState<string | null>(null);
+  const [uploadedSlip,    setUploadedSlip]    = useState<UploadedSlip | null>(null);
+  const [slipFile,        setSlipFile]        = useState<File | null>(null);
+  const [confirmed,       setConfirmed]       = useState(false);
+  const [loadingAction,   setLoadingAction]   = useState(false);
+  const [showSummary,     setShowSummary]     = useState(false);
+  const [finalOrderNum,   setFinalOrderNum]   = useState('');
+
+  // ✨ State ใหม่ — QR Stripe
+  const [isQrPaid,        setIsQrPaid]        = useState(false);
+  const [qrPaidIntentId,  setQrPaidIntentId]  = useState<string | null>(null);
+
+  // ── Load data ──────────────────────────────────────────────────────────────
   useEffect(() => {
     const loadData = async () => {
       setIsApiLoading(true);
-      
-      // ดึงแค่ที่อยู่มาก็พอ
+
       const addrs = await fetchAddresses();
       setSavedAddresses(addrs);
-      
-      // ✨ เปิดกระเป๋า (localStorage) เอาข้อมูลตะกร้าของจริงออกมาโชว์
+
       const sessionData = localStorage.getItem('checkoutSession');
       if (sessionData) {
         setOrderSummary(JSON.parse(sessionData));
@@ -58,355 +63,483 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
         if (onNavigate) onNavigate('cart');
         return;
       }
-      
-      const defaultAddr = addrs.find(a => a.isDefault);
-      if (defaultAddr) setSelectedAddr(defaultAddr.id);
-      
+
+      const def = addrs.find(a => a.isDefault);
+      if (def) setSelectedAddr(def.id);
       setIsApiLoading(false);
     };
     loadData();
   }, [onNavigate]);
 
-  // ─── LOGIC FUNCTIONS ───
-  const goNext = () => { 
-    window.scrollTo({ top: 0, behavior: 'smooth' }); 
-    setStep((s) => Math.min(3, s + 1)); 
+  // ── Navigation ─────────────────────────────────────────────────────────────
+  const goNext = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setStep(s => Math.min(3, s + 1));
   };
-  
-  const goBack = () => setStep((s) => Math.max(1, s - 1));
+  const goBack = () => setStep(s => Math.max(1, s - 1));
 
-  // ฟังก์ชันจัดการอัปโหลดสลิปแบบ Secure
+  // ── Upload slip ────────────────────────────────────────────────────────────
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // 🛡️ ดักประเภทไฟล์รูปภาพเท่านั้น
-    const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-    if (!validTypes.includes(file.type)) {
-        toast.error('❌ ระบบรองรับเฉพาะไฟล์รูปภาพ (JPG, PNG) เท่านั้นครับ');
-        e.target.value = ''; 
-        return;
+    if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
+      toast.error('❌ ระบบรองรับเฉพาะไฟล์รูปภาพ (JPG, PNG) เท่านั้นครับ');
+      e.target.value = ''; return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('❌ ขนาดไฟล์ใหญ่เกินไป! กรุณาอัปโหลดรูปภาพขนาดไม่เกิน 5MB ครับ');
+      e.target.value = ''; return;
     }
 
-    // 🛡️ ดักขนาดไฟล์ไม่เกิน 5MB
-    const maxSize = 5 * 1024 * 1024; 
-    if (file.size > maxSize) {
-        toast.error('❌ ขนาดไฟล์ใหญ่เกินไป! กรุณาอัปโหลดรูปภาพขนาดไม่เกิน 5MB ครับ');
-        e.target.value = ''; 
-        return;
-    }
-
-    // เซฟไฟล์จริงลง State เพื่อเตรียมส่ง API
     setSlipFile(file);
-
-    // ทำ Preview ให้ลูกค้าดูบนหน้าจอ
     const reader = new FileReader();
     reader.onloadend = () => setUploadedSlip({ name: file.name, preview: reader.result });
     reader.readAsDataURL(file);
   };
 
-  // ✨ อัปเกรด handleConfirm ให้ยิง API ของจริงและส่งไฟล์สลิป
+  // ✨ Callback รับจาก PaymentMethod เมื่อ Stripe QR จ่ายสำเร็จ
+  const handleQrPaymentSuccess = (intentId: string) => {
+    setIsQrPaid(true);
+    setQrPaidIntentId(intentId);
+    toast.success('ตรวจสอบการชำระเงินสำเร็จ! 🎉');
+    // ข้ามไป Step 3 อัตโนมัติ
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setStep(3);
+    }, 800);
+  };
+
+  // ── Confirm order ──────────────────────────────────────────────────────────
   const handleConfirm = async () => {
     setLoadingAction(true);
     try {
       const addressDetail = savedAddresses.find(a => a.id === selectedAddr)?.detail || 'ไม่ระบุที่อยู่';
-
-      // 📦 ใช้ FormData เพราะเราต้องแนบไฟล์รูปภาพส่งไปกับข้อมูลด้วย
       const formData = new FormData();
-      formData.append('userId', '1'); // ล็อคไว้เป็น User 1 ตามตัวอย่างเดิม
       formData.append('shippingAddress', addressDetail);
-      formData.append('paymentMethod', payMethod || '');
-      
-      if (slipFile) {
-        formData.append('slipImage', slipFile); // แนบไฟล์รูปสลิป
+      formData.append('paymentMethod',   payMethod || '');
+
+      // ✨ ถ้า QR จ่ายผ่าน Stripe แล้ว → ส่ง intentId แทนสลิป
+      if (isQrPaid && qrPaidIntentId) {
+        formData.append('stripePaymentIntentId', qrPaidIntentId);
+      } else if (payMethod === 'transfer' && slipFile) {
+        formData.append('slipImage', slipFile);
       }
 
-      // ยิงข้อมูลไปหา Backend (OrdersController) โดยใช้ api ของเรา
       const response = await api.post('/api/orders/checkout', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
       if (response.data.success) {
-        // ✨ บันทึกเลขบิลของจริง (ORD-177...) ที่ได้จากหลังบ้าน
-        setFinalOrderNum(response.data.orderNumber); 
-        
-        // ล้างข้อมูลตะกร้าชั่วคราว
+        setFinalOrderNum(response.data.orderNumber);
         localStorage.removeItem('checkoutSession');
-        
-        setLoadingAction(false); 
-        setConfirmed(true); 
-        window.scrollTo(0,0); 
+        setLoadingAction(false);
+        setConfirmed(true);
+        window.scrollTo(0, 0);
       }
     } catch (error: any) {
-      console.error("Checkout Failed:", error);
-      toast.error(error.response?.data?.message || "❌ เกิดข้อผิดพลาดในการสั่งซื้อ กรุณาลองใหม่อีกครั้ง");
+      toast.error(error.response?.data?.message || '❌ เกิดข้อผิดพลาดในการสั่งซื้อ กรุณาลองใหม่อีกครั้ง');
       setLoadingAction(false);
     }
   };
 
-  // ─── RENDER STATES ───
+  // ── Loading ────────────────────────────────────────────────────────────────
   if (isApiLoading || !orderSummary) {
     return (
       <main className="min-h-screen bg-[#000000] flex justify-center items-center">
-        <p className="text-[#FF0000] font-['Orbitron'] animate-pulse text-2xl tracking-widest">กำลังโหลดระบบชำระเงิน...</p>
+        <p role="status" className="text-[#FF0000] font-['Orbitron'] animate-pulse text-2xl tracking-widest">
+          กำลังโหลดระบบชำระเงิน...
+        </p>
       </main>
     );
   }
 
-  const grandTotal = orderSummary.subtotal - orderSummary.discount + orderSummary.shipping;
+  const grandTotal         = orderSummary.subtotal - orderSummary.discount + orderSummary.shipping;
+  const selectedAddressData = savedAddresses.find(a => a.id === selectedAddr);
 
+  // ── เงื่อนไขปุ่ม Confirm ──────────────────────────────────────────────────
+  // QR + จ่ายแล้ว   → กดได้เลย ✅
+  // Transfer         → ต้องแนบสลิปก่อน
+  // QR + ยังไม่จ่าย  → ยังกดไม่ได้ (ไม่ควรถึง Step 3 ได้อยู่แล้ว)
+  const isConfirmDisabled =
+    loadingAction ||
+    (payMethod === 'transfer' && !uploadedSlip) ||
+    (payMethod === 'qr' && !isQrPaid);
+
+  // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-[#000000] text-[#F2F4F6] font-['Kanit'] relative overflow-x-hidden selection:bg-[#990000] selection:text-white pb-20">
-      
+
       <style>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(46, 5, 5, 0.3); border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar       { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(46,5,5,0.3); border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #990000; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #FF0000; }
       `}</style>
 
-      {/* เอฟเฟกต์พื้นหลัง */}
+      {/* Background glow */}
       <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#2E0505] blur-[150px] rounded-full opacity-60"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#2E0505] blur-[150px] rounded-full opacity-60"></div>
-        <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h40v40H0V0zm1 1h38v38H1V1z' fill='%23990000' fill-opacity='0.4' fill-rule='evenodd'/%3E%3C/svg%3E")` }}></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#2E0505] blur-[150px] rounded-full opacity-60" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#2E0505] blur-[150px] rounded-full opacity-60" />
       </div>
 
       <div className="relative z-10">
 
-
+        {/* ═══════════════════════════════════════
+            หน้าสั่งซื้อสำเร็จ
+            ═══════════════════════════════════════ */}
         {confirmed ? (
-          /* ✨ หน้าจอเมื่อสั่งซื้อสำเร็จ (แสดงเลขบิลจริง) */
           <main className="min-h-[80vh] flex items-center justify-center animate-in zoom-in-95 duration-500">
-            <article className="max-w-2xl w-full mx-4 px-4 py-16 flex flex-col items-center text-center bg-[#000000]/40 backdrop-blur-xl border border-[#990000]/30 rounded-3xl relative overflow-hidden">
-                <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#FF0000]/10 via-transparent to-transparent opacity-50 pointer-events-none"></div>
-                <figure className="relative w-32 h-32 mb-8 m-0 z-10">
-                  <div aria-hidden="true" className="absolute inset-0 bg-[#FF0000]/20 blur-2xl rounded-full animate-pulse pointer-events-none"></div>
-                  <div className="relative z-10 w-32 h-32 rounded-full bg-[#0a0a0a] border-2 border-[#FF0000] flex items-center justify-center shadow-[0_0_30px_rgba(255,0,0,0.4)]">
-                      <Check aria-hidden="true" className="w-16 h-16 text-[#FF0000] drop-shadow-[0_0_10px_rgba(255,0,0,0.8)]" />
-                  </div>
-                </figure>
-                <header className="relative z-10">
-                    <h2 className="text-4xl font-['Orbitron'] font-black text-[#FF0000] mb-3 tracking-wide drop-shadow-[0_0_10px_rgba(255,0,0,0.5)]">สั่งซื้อสำเร็จ!</h2>
-                    <p className="text-[#F2F4F6]/50 mb-2 font-['Kanit']">หมายเลขคำสั่งซื้อ (ORDER ID)</p>
-                </header>
-                <div className="bg-[#2E0505]/50 px-6 py-2 rounded-lg border border-[#FF0000]/20 mb-8 relative z-10">
-                    {/* ✨ ใช้เลขบิลจากตัวแปร finalOrderNum แทนเลขหลอก */}
-                    <p className="text-xl font-['Orbitron'] font-bold text-[#F2F4F6] tracking-widest">{finalOrderNum || '#ORD-GENERATING...'}</p>
+            <section
+              aria-labelledby="success-title"
+              className="max-w-2xl w-full mx-4 px-4 py-16 flex flex-col items-center text-center bg-[#000000]/40 backdrop-blur-xl border border-[#990000]/30 rounded-3xl"
+            >
+              <figure className="relative w-32 h-32 mb-8 m-0 z-10">
+                <div className="w-32 h-32 rounded-full bg-[#0a0a0a] border-2 border-[#FF0000] flex items-center justify-center shadow-[0_0_30px_rgba(255,0,0,0.4)]">
+                  <Check aria-hidden="true" className="w-16 h-16 text-[#FF0000]" />
                 </div>
-                <p className="text-[#F2F4F6]/60 text-sm max-w-sm leading-relaxed mb-8 relative z-10">
-                    ระบบได้รับคำสั่งซื้อของคุณแล้ว<br/>เราจะส่งรายละเอียดการจัดส่งไปยังอีเมล<br/><span className="text-[#FF0000]">max.gamer@email.com</span>
-                </p>
-                <footer className="flex flex-col sm:flex-row gap-4 w-full justify-center relative z-10">
-                    <button onClick={() => navigate('/profile')} className="bg-[#990000] hover:bg-[#FF0000] text-white px-8 py-3 rounded-xl font-['Kanit'] font-bold tracking-wide transition-all shadow-[0_0_15px_rgba(153,0,0,0.4)] hover:shadow-[0_0_25px_rgba(255,0,0,0.6)]">ดูรายละเอียดคำสั่งซื้อ</button>
-                    <button onClick={() => { if(onNavigate) { onNavigate('home'); } else { navigate('/'); } }} className="bg-transparent border border-[#990000]/50 text-[#F2F4F6]/60 hover:text-[#FF0000] hover:border-[#FF0000] px-8 py-3 rounded-xl font-['Kanit'] font-bold tracking-wide transition-all">กลับสู่หน้าหลัก</button>
-                </footer>
-            </article>
-          </main>
-        ) : (
-          /* หน้าจอชำระเงินปกติ (Checkout) */
-          <main className="max-w-5xl mx-auto px-4 py-8">
-            <section aria-labelledby="checkout-heading" className="flex items-center justify-between mb-8">
-              <header>
-                  <button onClick={() => onNavigate?.('cart')} className="flex items-center gap-2 text-[#F2F4F6]/40 hover:text-[#FF0000] transition text-sm mb-4 group" aria-label="กลับไปหน้าตะกร้าสินค้า">
-                    <ArrowLeft aria-hidden="true" className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> กลับไปตะกร้าสินค้า
-                  </button>
-                  <h2 id="checkout-heading" className="text-3xl md:text-4xl font-['Orbitron'] font-bold flex items-center gap-4">
-                    <div aria-hidden="true" className="w-1.5 h-10 bg-[#FF0000] rounded-full shadow-[0_0_15px_#FF0000]"></div>
-                    CHECKOUT
-                  </h2>
-              </header>
+              </figure>
+
+              <h1 id="success-title" className="text-4xl font-['Orbitron'] font-black text-[#FF0000] mb-3 tracking-wide">
+                สั่งซื้อสำเร็จ!
+              </h1>
+              <p className="text-[#F2F4F6]/50 mb-2">หมายเลขคำสั่งซื้อ (ORDER ID)</p>
+
+              <div className="bg-[#2E0505]/50 px-6 py-2 rounded-lg border border-[#FF0000]/20 mb-8">
+                <p className="text-xl font-['Orbitron'] font-bold text-[#F2F4F6] tracking-widest">{finalOrderNum}</p>
+              </div>
+
+              <p className="text-[#F2F4F6]/60 text-sm max-w-sm leading-relaxed mb-8">
+                ระบบได้รับคำสั่งซื้อของคุณแล้ว<br />
+                เราจะส่งรายละเอียดการจัดส่งไปยังอีเมลที่ลงทะเบียนไว้
+              </p>
+
+              <nav className="flex flex-col sm:flex-row gap-4 w-full justify-center">
+                <button
+                  onClick={() => navigate('/profile')}
+                  className="bg-[#990000] hover:bg-[#FF0000] text-white px-8 py-3 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(153,0,0,0.4)]"
+                >
+                  ดูรายละเอียดคำสั่งซื้อ
+                </button>
+                <button
+                  onClick={() => { if (onNavigate) onNavigate('home'); else navigate('/'); }}
+                  className="border border-[#990000]/50 text-[#F2F4F6]/60 hover:text-[#FF0000] hover:border-[#FF0000] px-8 py-3 rounded-xl font-bold transition-all"
+                >
+                  กลับสู่หน้าหลัก
+                </button>
+              </nav>
             </section>
+          </main>
+
+        ) : (
+
+          /* ═══════════════════════════════════════
+              หน้า Checkout
+              ═══════════════════════════════════════ */
+          <main className="max-w-5xl mx-auto px-4 py-8">
+
+            <header className="mb-8">
+              <nav aria-label="breadcrumb">
+                <button
+                  onClick={() => onNavigate?.('cart')}
+                  className="flex items-center gap-2 text-[#F2F4F6]/40 hover:text-[#FF0000] transition text-sm mb-4"
+                >
+                  <ArrowLeft className="w-4 h-4" /> กลับไปตะกร้าสินค้า
+                </button>
+              </nav>
+              <h1 className="text-3xl md:text-4xl font-['Orbitron'] font-bold flex items-center gap-4">
+                <span aria-hidden="true" className="w-1.5 h-10 bg-[#FF0000] rounded-full shadow-[0_0_15px_#FF0000]" />
+                CHECKOUT
+              </h1>
+            </header>
 
             <StepBar current={step} />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-12">
-              <section className="lg:col-span-2 space-y-6">
-                
-                {/* STEP 1: Address */}
+
+              {/* ── Main content ── */}
+              <div className="lg:col-span-2 space-y-6">
+
+                {/* STEP 1: ที่อยู่จัดส่ง */}
                 {step === 1 && (
-                  <article className="space-y-6 animate-in slide-in-from-left-4 duration-500">
-                    <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl relative overflow-hidden">
-                      <div aria-hidden="true" className="absolute top-0 right-0 w-32 h-32 bg-[#FF0000]/5 blur-[50px] rounded-full pointer-events-none"></div>
+                  <section aria-labelledby="step1-title" className="animate-in slide-in-from-left-4 duration-500">
+                    <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl">
                       <header className="flex items-center gap-3 mb-6 border-b border-[#990000]/20 pb-4">
-                        <div aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></div> 
-                        <h3 className="text-xl font-['Kanit'] font-bold">เลือกที่อยู่จัดส่ง</h3>
+                        <div aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]" />
+                        <h2 id="step1-title" className="text-xl font-bold">เลือกที่อยู่จัดส่ง</h2>
                       </header>
-                      <AddressSelect 
-                        addresses={savedAddresses} 
-                        selectedAddr={selectedAddr} 
-                        onSelect={setSelectedAddr} 
+                      <AddressSelect
+                        addresses={savedAddresses}
+                        selectedAddr={selectedAddr}
+                        onSelect={setSelectedAddr}
                       />
                     </div>
-                    <button onClick={goNext} disabled={!selectedAddr} className="w-full bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] disabled:opacity-50 disabled:cursor-not-allowed text-white py-4 rounded-xl font-['Kanit'] font-bold tracking-wide text-sm transition-all shadow-[0_0_20px_rgba(153,0,0,0.4)] hover:shadow-[0_0_30px_rgba(255,0,0,0.6)] flex items-center justify-center gap-3 active:scale-95 group">
-                      ดำเนินการชำระเงิน <ArrowRight aria-hidden="true" className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                    </button>
-                  </article>
+
+                    <nav className="mt-6">
+                      <button
+                        onClick={goNext}
+                        disabled={!selectedAddr}
+                        className="w-full bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] text-white py-4 rounded-xl font-bold disabled:opacity-50 flex items-center justify-center gap-3 group transition-all shadow-[0_0_20px_rgba(153,0,0,0.4)]"
+                      >
+                        ดำเนินการชำระเงิน
+                        <ArrowRight aria-hidden="true" className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                      </button>
+                    </nav>
+                  </section>
                 )}
 
-                {/* STEP 2: Payment Method */}
+                {/* STEP 2: วิธีชำระเงิน */}
                 {step === 2 && (
-                  <article className="space-y-6 animate-in slide-in-from-right-4 duration-500">
-                    <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl relative overflow-hidden">
-                      <div aria-hidden="true" className="absolute top-0 right-0 w-32 h-32 bg-[#FF0000]/5 blur-[50px] rounded-full pointer-events-none"></div>
+                  <section aria-labelledby="step2-title" className="animate-in slide-in-from-right-4 duration-500">
+                    <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl">
                       <header className="flex items-center gap-3 mb-6 border-b border-[#990000]/20 pb-4">
-                        <div aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></div>
-                        <h3 className="text-xl font-['Kanit'] font-bold">เลือกวิธีชำระเงิน</h3>
+                        <div aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]" />
+                        <h2 id="step2-title" className="text-xl font-bold">เลือกวิธีชำระเงิน</h2>
                       </header>
-                      <PaymentMethod 
-                        payMethod={payMethod} 
-                        onSelectMethod={setPayMethod} 
-                        grandTotal={grandTotal} 
+
+                      {/* ✨ ส่ง onQrPaymentSuccess เพื่อรับแจ้งเมื่อ QR จ่ายสำเร็จ */}
+                      <PaymentMethod
+                        payMethod={payMethod}
+                        onSelectMethod={setPayMethod}
+                        grandTotal={grandTotal}
+                        onQrPaymentSuccess={handleQrPaymentSuccess}
                       />
                     </div>
-                    <footer className="flex gap-4 pt-4">
-                      <button onClick={goBack} className="flex-1 border border-[#990000]/50 text-[#F2F4F6]/60 hover:text-[#FF0000] hover:border-[#FF0000] py-4 rounded-xl font-['Kanit'] text-xs font-bold tracking-wide transition flex items-center justify-center gap-2 group">
-                        <ArrowLeft aria-hidden="true" className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> ย้อนกลับ
+
+                    <nav className="flex gap-4 pt-6">
+                      <button
+                        onClick={goBack}
+                        className="flex-1 border border-[#990000]/50 text-[#F2F4F6]/60 hover:text-[#FF0000] hover:border-[#FF0000] py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all"
+                      >
+                        <ArrowLeft aria-hidden="true" className="w-4 h-4" /> ย้อนกลับ
                       </button>
-                      <button onClick={goNext} disabled={!payMethod} className="flex-[2] bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] disabled:opacity-30 disabled:cursor-not-allowed text-white py-4 rounded-xl font-['Kanit'] font-bold tracking-wide text-sm transition-all shadow-[0_0_18px_rgba(153,0,0,0.5)] flex items-center justify-center gap-3 active:scale-95 group">
-                        ขั้นตอนต่อไป <ArrowRight aria-hidden="true" className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+
+                      {/* ✨ QR: disabled จนกว่าจะจ่ายสำเร็จ | Transfer: กดต่อได้ทันที */}
+                      <button
+                        onClick={goNext}
+                        disabled={!payMethod || (payMethod === 'qr' && !isQrPaid)}
+                        className="flex-[2] bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] text-white py-4 rounded-xl font-bold disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-3 group transition-all shadow-[0_0_18px_rgba(153,0,0,0.5)]"
+                      >
+                        {payMethod === 'qr' && !isQrPaid
+                          ? <><Loader aria-hidden="true" className="w-4 h-4 animate-spin" /> รอการชำระเงิน...</>
+                          : <>ขั้นตอนต่อไป <ArrowRight aria-hidden="true" className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></>
+                        }
                       </button>
-                    </footer>
-                  </article>
+                    </nav>
+                  </section>
                 )}
 
-                {/* STEP 3: Confirm & Upload Slip */}
+                {/* STEP 3: ยืนยันคำสั่งซื้อ */}
                 {step === 3 && (
-                  <article className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
-                    <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl relative overflow-hidden">
-                      <div aria-hidden="true" className="absolute top-0 right-0 w-32 h-32 bg-[#FF0000]/5 blur-[50px] rounded-full pointer-events-none"></div>
-                      <header>
-                        <h3 className="text-xl font-['Kanit'] font-bold flex items-center gap-3 mb-2"><span className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></span> ยืนยันคำสั่งซื้อ</h3>
-                        <p className="text-[#F2F4F6]/40 text-sm mb-8 pl-5 font-light">โปรดตรวจสอบรายละเอียดและแนบสลิปชำระเงินก่อนกดยืนยัน</p>
+                  <section aria-labelledby="step3-title" className="animate-in slide-in-from-bottom-4 duration-500">
+                    <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl">
+
+                      <header className="mb-8">
+                        <h2 id="step3-title" className="text-xl font-bold flex items-center gap-3 mb-2">
+                          <span aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]" />
+                          ยืนยันคำสั่งซื้อ
+                        </h2>
+                        <p className="text-[#F2F4F6]/40 text-sm pl-5">โปรดตรวจสอบรายละเอียดให้ถูกต้องก่อนดำเนินการ</p>
                       </header>
-                      
+
+                      {/* สรุปที่อยู่ + วิธีชำระ */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                        <div className="bg-[#0a0a0a] border border-[#990000]/20 rounded-xl p-5 hover:border-[#FF0000]/50 transition duration-300">
-                            <div className="flex items-center justify-between mb-3 border-b border-[#990000]/20 pb-2">
-                                <span className="text-xs font-['Kanit'] text-[#990000] tracking-wide flex items-center gap-2"><MapPin aria-hidden="true" className="w-3 h-3" /> จัดส่งไปที่</span>
-                                <button onClick={() => setStep(1)} className="text-[#F2F4F6]/40 text-[10px] font-['Kanit'] hover:text-[#FF0000] transition">แก้ไข</button>
-                            </div>
-                            <p className="text-sm text-[#F2F4F6] font-bold mb-1">{savedAddresses.find(a => a.id === selectedAddr)?.name}</p>
-                            <p className="text-xs text-[#F2F4F6]/60 leading-relaxed">{savedAddresses.find(a => a.id === selectedAddr)?.detail}</p>
-                        </div>
-                        <div className="bg-[#0a0a0a] border border-[#990000]/20 rounded-xl p-5 hover:border-[#FF0000]/50 transition duration-300">
-                            <div className="flex items-center justify-between mb-3 border-b border-[#990000]/20 pb-2">
-                                <span className="text-xs font-['Kanit'] text-[#990000] tracking-wide flex items-center gap-2"><CreditCard aria-hidden="true" className="w-3 h-3" /> วิธีชำระเงิน</span>
-                                <button onClick={() => setStep(2)} className="text-[#F2F4F6]/40 text-[10px] font-['Kanit'] hover:text-[#FF0000] transition">แก้ไข</button>
-                            </div>
-                            <p className="text-lg text-[#F2F4F6] font-bold flex items-center gap-2">{payMethod === 'qr' ? '📱 สแกน QR Code' : '🏦 โอนเงินผ่านธนาคาร'}</p>
-                            <p className="text-xs text-[#F2F4F6]/40 mt-1">ยอดรวม: ฿{fmt(grandTotal)}</p>
-                        </div>
+
+                        <article className="bg-[#0a0a0a] border border-[#990000]/20 rounded-xl p-5 hover:border-[#FF0000]/50 transition">
+                          <header className="flex items-center justify-between mb-3 border-b border-[#990000]/20 pb-2">
+                            <h3 className="text-xs text-[#990000] flex items-center gap-2">
+                              <MapPin aria-hidden="true" className="w-3 h-3" /> จัดส่งไปที่
+                            </h3>
+                            <button onClick={() => setStep(1)} disabled={loadingAction} className="text-[#F2F4F6]/40 text-[10px] hover:text-[#FF0000] transition-colors">
+                              แก้ไข
+                            </button>
+                          </header>
+                          <address className="not-italic">
+                            <p className="text-sm font-bold mb-1">{selectedAddressData?.name}</p>
+                            <p className="text-xs text-[#F2F4F6]/60 leading-relaxed">{selectedAddressData?.detail}</p>
+                          </address>
+                        </article>
+
+                        <article className="bg-[#0a0a0a] border border-[#990000]/20 rounded-xl p-5 hover:border-[#FF0000]/50 transition">
+                          <header className="flex items-center justify-between mb-3 border-b border-[#990000]/20 pb-2">
+                            <h3 className="text-xs text-[#990000] flex items-center gap-2">
+                              <CreditCard aria-hidden="true" className="w-3 h-3" /> วิธีชำระเงิน
+                            </h3>
+                            <button onClick={() => setStep(2)} disabled={loadingAction} className="text-[#F2F4F6]/40 text-[10px] hover:text-[#FF0000] transition-colors">
+                              แก้ไข
+                            </button>
+                          </header>
+                          <p className="text-lg font-bold">
+                            {payMethod === 'qr' ? '📱 สแกน QR Code' : '🏦 โอนเงินผ่านธนาคาร'}
+                          </p>
+                          <p className="text-xs text-[#F2F4F6]/40 mt-1">ยอดรวม: ฿{fmt(grandTotal)}</p>
+
+                          {/* ✨ Badge QR จ่ายแล้ว */}
+                          {isQrPaid && (
+                            <span className="inline-flex items-center gap-1 mt-2 text-xs text-green-400 bg-green-900/30 px-2 py-1 rounded-full border border-green-800/40">
+                              <Check aria-hidden="true" className="w-3 h-3" /> ชำระเงินสำเร็จแล้ว
+                            </span>
+                          )}
+                        </article>
                       </div>
 
-                      {(payMethod === 'transfer' || payMethod === 'qr') && (
-                        <div className="bg-[#0a0a0a] border border-[#990000]/20 rounded-xl p-6 relative overflow-hidden">
-                          <div aria-hidden="true" className="absolute top-0 left-0 w-1 h-full bg-[#FF0000]"></div>
-                          <h4 className="text-sm font-['Kanit'] text-[#F2F4F6] tracking-wide mb-4 flex items-center gap-2"><Upload aria-hidden="true" className="w-4 h-4 text-[#FF0000]" /> อัปโหลดสลิปชำระเงิน</h4>
-                          
+                      {/* อัปโหลดสลิป (เฉพาะ transfer) */}
+                      {payMethod === 'transfer' && (
+                        <fieldset className="bg-[#0a0a0a] border border-[#990000]/20 rounded-xl p-6 relative animate-in fade-in zoom-in-95 duration-300">
+                          <div aria-hidden="true" className="absolute top-0 left-0 w-1 h-full bg-[#FF0000]" />
+                          <legend className="text-sm text-[#F2F4F6] mb-4 flex items-center gap-2 w-full">
+                            <Upload aria-hidden="true" className="w-4 h-4 text-[#FF0000]" /> อัปโหลดสลิปชำระเงิน
+                          </legend>
+
                           {!uploadedSlip ? (
                             <label className="flex flex-col items-center justify-center border-2 border-dashed border-[#990000]/30 hover:border-[#FF0000] hover:bg-[#FF0000]/5 rounded-xl p-10 cursor-pointer transition-all group">
-                              <div className="w-12 h-12 rounded-full bg-[#2E0505] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(153,0,0,0.3)]">
+                              <div className="w-12 h-12 rounded-full bg-[#2E0505] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                                 <Upload aria-hidden="true" className="w-6 h-6 text-[#FF0000]" />
                               </div>
-                              <p className="text-sm text-[#F2F4F6]/70 font-bold">คลิกเพื่ออัปโหลดสลิป</p>
-                              <p className="text-xs text-[#F2F4F6]/30 mt-1">รองรับไฟล์: JPG, PNG (ขนาดไม่เกิน 5MB)</p>
-                              <input type="file" accept="image/jpeg, image/png, image/jpg" onChange={handleFileUpload} className="hidden" />
+                              <span className="text-sm font-bold">คลิกเพื่ออัปโหลดสลิป</span>
+                              <span className="text-xs text-[#F2F4F6]/30 mt-1">รองรับไฟล์: JPG, PNG (ไม่เกิน 5MB)</span>
+                              <input
+                                type="file"
+                                accept="image/jpeg, image/png, image/jpg"
+                                onChange={handleFileUpload}
+                                className="hidden"
+                              />
                             </label>
                           ) : (
-                            <div className="flex items-start gap-4 bg-[#2E0505]/40 border border-[#990000]/30 rounded-xl p-4 animate-in fade-in">
-                              <figure className="m-0">
-                                <img src={uploadedSlip.preview as string} alt="รูปภาพสลิปที่อัปโหลด" className="w-20 h-24 object-cover rounded-lg border border-[#990000]/30 bg-black" />
-                              </figure>
-                              <div className="flex-1 min-w-0 py-1">
-                                <p className="text-sm text-[#F2F4F6] font-bold truncate mb-1">{uploadedSlip.name}</p>
-                                <p className="text-xs text-green-400 flex items-center gap-1 mb-3"><Check aria-hidden="true" className="w-3 h-3" /> อัปโหลดสำเร็จ</p>
-                                <button onClick={() => setUploadedSlip(null)} className="text-[#F2F4F6]/40 hover:text-[#FF0000] text-xs border border-[#F2F4F6]/10 hover:border-[#FF0000] px-3 py-1.5 rounded transition">ลบ / เปลี่ยนรูปใหม่</button>
-                              </div>
-                            </div>
+                            <figure className="flex items-start gap-4 bg-[#2E0505]/40 border border-[#990000]/30 rounded-xl p-4 m-0">
+                              <img
+                                src={uploadedSlip.preview as string}
+                                alt="สลิปที่อัปโหลด"
+                                className="w-20 h-24 object-cover rounded-lg border border-[#990000]/30"
+                              />
+                              <figcaption className="flex-1 py-1">
+                                <p className="text-sm font-bold truncate mb-1">{uploadedSlip.name}</p>
+                                <p className="text-xs text-green-400 flex items-center gap-1 mb-3">
+                                  <Check aria-hidden="true" className="w-3 h-3" /> อัปโหลดสำเร็จ
+                                </p>
+                                <button
+                                  onClick={() => { setUploadedSlip(null); setSlipFile(null); }}
+                                  className="text-xs border border-[#F2F4F6]/10 px-3 py-1.5 rounded hover:border-[#FF0000] hover:text-[#FF0000] transition-colors"
+                                >
+                                  เปลี่ยนรูปใหม่
+                                </button>
+                              </figcaption>
+                            </figure>
                           )}
-                        </div>
+                        </fieldset>
                       )}
+
+                      {/* ✨ Banner QR จ่ายแล้ว (แทนการแนบสลิป) */}
+                      {payMethod === 'qr' && isQrPaid && (
+                        <aside
+                          role="status"
+                          className="bg-green-900/20 border border-green-800/40 rounded-xl p-5 flex items-center gap-4 animate-in fade-in"
+                        >
+                          <div aria-hidden="true" className="w-10 h-10 rounded-full bg-green-800/40 flex items-center justify-center flex-shrink-0">
+                            <Check className="w-5 h-5 text-green-400" />
+                          </div>
+                          <div>
+                            <p className="text-green-400 font-bold">ชำระเงินผ่าน QR Code สำเร็จแล้ว</p>
+                            <p className="text-[#F2F4F6]/40 text-xs mt-1">ไม่จำเป็นต้องแนบสลิป กดยืนยันการสั่งซื้อได้เลย</p>
+                          </div>
+                        </aside>
+                      )}
+
                     </div>
 
-                    <footer className="flex gap-4 pt-4">
-                      <button onClick={goBack} className="flex-1 border border-[#990000]/50 text-[#F2F4F6]/60 hover:text-[#FF0000] hover:border-[#FF0000] py-4 rounded-xl font-['Kanit'] text-xs font-bold tracking-wide transition flex items-center justify-center gap-2 group">
-                        <ArrowLeft aria-hidden="true" className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> ย้อนกลับ
-                      </button>
-                      <button 
-                        onClick={handleConfirm} 
-                        disabled={!payMethod || ((payMethod === 'transfer' || payMethod === 'qr') && !uploadedSlip) || loadingAction} 
-                        className="flex-[2] bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] disabled:opacity-30 disabled:cursor-not-allowed text-white py-4 rounded-xl font-['Kanit'] font-bold tracking-wide text-sm transition-all shadow-[0_0_18px_rgba(153,0,0,0.5)] flex items-center justify-center gap-3 active:scale-95 group relative overflow-hidden"
+                    <nav className="flex gap-4 pt-6">
+                      <button
+                        onClick={goBack}
+                        disabled={loadingAction}
+                        className="flex-1 border border-[#990000]/50 text-[#F2F4F6]/60 hover:text-[#FF0000] hover:border-[#FF0000] py-4 rounded-xl font-bold flex items-center justify-center gap-2 disabled:opacity-30 transition-all"
                       >
-                        {loadingAction ? (
-                          <><Loader aria-hidden="true" className="w-5 h-5 animate-spin" /> กำลังดำเนินการ...</>
-                        ) : (
-                          <>
-                            <span className="relative z-10">ยืนยันการสั่งซื้อ</span> 
-                            <Check aria-hidden="true" className="w-5 h-5 relative z-10" />
-                          </>
-                        )}
+                        <ArrowLeft aria-hidden="true" className="w-4 h-4" /> ย้อนกลับ
                       </button>
-                    </footer>
-                  </article>
-                )}
-              </section>
 
-              {/* แถบสรุปยอดด้านขวา */}
-              <aside className="lg:col-span-1">
-                <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl sticky top-28 transition-all duration-300">
-                  <header>
-                      <button onClick={() => setShowSummary(!showSummary)} className="w-full flex items-center justify-between lg:pointer-events-none mb-2" aria-expanded={showSummary}>
-                        <h3 className="text-lg font-['Kanit'] font-bold flex items-center gap-3">
-                          <span aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></span> สรุปคำสั่งซื้อ
-                        </h3>
-                        <span className="lg:hidden text-[#F2F4F6]/40">
-                          {showSummary ? <ChevronUp aria-hidden="true" className="w-5 h-5" /> : <ChevronDown aria-hidden="true" className="w-5 h-5" />}
-                        </span>
+                      <button
+                        onClick={handleConfirm}
+                        disabled={isConfirmDisabled}
+                        className="flex-[2] bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] text-white py-4 rounded-xl font-bold flex items-center justify-center gap-3 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-[0_0_18px_rgba(153,0,0,0.5)]"
+                      >
+                        {loadingAction
+                          ? <><Loader aria-hidden="true" className="w-5 h-5 animate-spin" /> กำลังดำเนินการ...</>
+                          : <>ยืนยันการสั่งซื้อ <Check aria-hidden="true" className="w-5 h-5" /></>
+                        }
                       </button>
+                    </nav>
+                  </section>
+                )}
+
+              </div>
+
+              {/* ── Sidebar: สรุปยอด ── */}
+              <aside aria-label="สรุปคำสั่งซื้อ" className="lg:col-span-1">
+                <section className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl sticky top-28">
+
+                  <header>
+                    <button
+                      onClick={() => setShowSummary(!showSummary)}
+                      aria-expanded={showSummary}
+                      className="w-full flex items-center justify-between lg:pointer-events-none mb-2"
+                    >
+                      <h2 className="text-lg font-bold flex items-center gap-3">
+                        <span aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]" />
+                        สรุปคำสั่งซื้อ
+                      </h2>
+                      <span aria-hidden="true" className="lg:hidden text-[#F2F4F6]/40">
+                        {showSummary ? <ChevronUp /> : <ChevronDown />}
+                      </span>
+                    </button>
                   </header>
 
-                  <div className={`mt-5 space-y-4 ${showSummary ? 'block' : 'hidden'} lg:block animate-in slide-in-from-top-2`}>
-                    <div className="space-y-3 max-h-60 overflow-y-auto pr-6 custom-scrollbar">
-                        {orderSummary.items.map((item: any, i) => (
-                        <article key={i} className="flex items-start justify-between group">
-                            <div className="flex items-start gap-3">
-                                <figure className="w-8 h-8 rounded bg-[#1a1a1a] border border-[#990000]/20 flex items-center justify-center text-[10px] text-[#F2F4F6]/30 m-0 overflow-hidden shrink-0">
-                                  {(item.imageUrl || item.image_url) ? <img src={item.imageUrl || item.image_url} alt={item.name} className="w-full h-full object-cover opacity-80" /> : 'IMG'}
-                                </figure>
-                                <div>
-                                  <p className="text-sm text-[#F2F4F6]/90 truncate font-bold w-32 group-hover:text-[#FF0000] transition-colors">{item.name}</p>
-                                  <p className="text-xs text-[#F2F4F6]/40">จำนวน: {item.qty}</p>
-                                </div>
+                  <div className={`mt-5 space-y-4 ${showSummary ? 'block' : 'hidden'} lg:block`}>
+
+                    {/* รายการสินค้า */}
+                    <ul className="space-y-3 max-h-60 overflow-y-auto pr-6 custom-scrollbar m-0 p-0 list-none">
+                      {orderSummary.items.map((item: any, i) => (
+                        <li key={i} className="flex items-start justify-between group">
+                          <div className="flex items-start gap-3">
+                            <figure className="w-8 h-8 rounded bg-[#1a1a1a] border border-[#990000]/20 flex items-center justify-center m-0 overflow-hidden shrink-0">
+                              {(item.imageUrl || item.image_url)
+                                ? <img src={item.imageUrl || item.image_url} alt={item.name} className="w-full h-full object-cover opacity-80" />
+                                : <span className="text-[10px] text-[#F2F4F6]/30">IMG</span>
+                              }
+                            </figure>
+                            <div>
+                              <p className="text-sm font-bold w-32 truncate group-hover:text-[#FF0000] transition-colors">{item.name}</p>
+                              <p className="text-xs text-[#F2F4F6]/40">จำนวน: {item.qty}</p>
                             </div>
-                            <span className="text-sm text-[#F2F4F6] font-['Orbitron']">฿{fmt(item.price * item.qty)}</span>
-                        </article>
-                        ))}
-                    </div>
+                          </div>
+                          <span className="text-sm font-['Orbitron']">฿{fmt(item.price * item.qty)}</span>
+                        </li>
+                      ))}
+                    </ul>
 
-                    <footer className="border-t border-[#990000]/25 pt-4 mt-2 space-y-2">
+                    {/* ยอดสรุป */}
+                    <dl className="border-t border-[#990000]/25 pt-4 space-y-2 m-0">
                       <div className="flex justify-between text-sm">
-                        <span className="text-[#F2F4F6]/50">ราคาสินค้า</span>
-                        <span className="text-[#F2F4F6] font-['Orbitron']">฿{fmt(orderSummary.subtotal)}</span>
+                        <dt className="text-[#F2F4F6]/50">ราคาสินค้า</dt>
+                        <dd className="font-['Orbitron'] m-0">฿{fmt(orderSummary.subtotal)}</dd>
+                      </div>
+                      <div className="flex justify-between text-sm text-[#FF0000]">
+                        <dt>ส่วนลดคูปอง ({orderSummary.coupon})</dt>
+                        <dd className="font-['Orbitron'] m-0">-฿{fmt(orderSummary.discount)}</dd>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-[#FF0000]">ส่วนลดคูปอง ({orderSummary.coupon})</span>
-                        <span className="text-[#FF0000] font-['Orbitron']">-฿{fmt(orderSummary.discount)}</span>
+                        <dt className="text-[#F2F4F6]/50">ค่าจัดส่ง</dt>
+                        <dd className="text-green-400 font-bold m-0">ส่งฟรี</dd>
                       </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-[#F2F4F6]/50">ค่าจัดส่ง</span>
-                        <span className="text-green-400 font-bold font-['Kanit'] tracking-wide">ส่งฟรี</span>
-                      </div>
-                    </footer>
+                    </dl>
 
-                    <div className="border-t border-[#990000]/30 pt-4 mt-2 flex justify-between items-end bg-[#2E0505]/30 p-4 rounded-xl border border-[#990000]/10">
-                      <span className="font-['Kanit'] text-xs text-[#F2F4F6]/50 tracking-wide">ยอดรวมสุทธิ</span>
-                      <span className="font-['Orbitron'] text-2xl font-black text-[#FF0000] drop-shadow-[0_0_8px_rgba(255,0,0,0.5)]">฿{fmt(grandTotal)}</span>
-                    </div>
+                    <dl className="border-t border-[#990000]/30 pt-4 flex justify-between items-end bg-[#2E0505]/30 p-4 rounded-xl m-0">
+                      <dt className="text-xs text-[#F2F4F6]/50">ยอดรวมสุทธิ</dt>
+                      <dd className="font-['Orbitron'] text-2xl font-black text-[#FF0000] drop-shadow-[0_0_8px_rgba(255,0,0,0.5)] m-0">
+                        ฿{fmt(grandTotal)}
+                      </dd>
+                    </dl>
+
                   </div>
-                </div>
+                </section>
               </aside>
 
             </div>

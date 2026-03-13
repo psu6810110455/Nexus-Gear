@@ -31,8 +31,18 @@ export class OrdersController {
   async checkout(@Body() body: any, @UploadedFile() file: any, @Request() req: any) {
     const userId = req.user.userId;
     const { shippingAddress, paymentMethod } = body;
-    const slipFilename = file ? file.filename : null;
-    return this.ordersService.checkout(userId, shippingAddress, paymentMethod, slipFilename);
+    const slipFilename  = file ? file.filename : null;
+
+    // ✨ รับ stripePaymentIntentId จาก FormData (ส่งมาเมื่อจ่าย QR สำเร็จ)
+    const stripePaymentIntentId = body.stripePaymentIntentId || null;
+
+    return this.ordersService.checkout(
+      userId,
+      shippingAddress,
+      paymentMethod,
+      slipFilename,
+      stripePaymentIntentId, // ✨ ส่งต่อเข้า service
+    );
   }
 
   // ── Customer: ดู Order ของตัวเอง (ต้อง login) ─────────────────────────

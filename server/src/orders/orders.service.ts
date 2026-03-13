@@ -23,12 +23,13 @@ export class OrdersService {
     private cartRepository: Repository<Cart>,
   ) {}
 
-  // ── Checkout จากตะกร้า (จาก feature branch) ──────────────────────────────
+  // ── Checkout จากตะกร้า ────────────────────────────────────────────────────
   async checkout(
     userId: number,
     shippingAddress: string,
     paymentMethod: string,
     slipImage: string | null,
+    stripePaymentIntentId?: string | null, // ✨ เพิ่ม parameter นี้
   ) {
     // 1. ดึงสินค้าในตะกร้าของ user
     const cartItems = await this.cartRepository.find({
@@ -69,7 +70,7 @@ export class OrdersService {
 
     // 4. สร้าง Order
     const order = new Order();
-    order.user = user;
+    order.user             = user;
     order.shipping_address = shippingAddress;
     order.status = OrderStatus.PENDING;
     order.total_price = totalPrice;
@@ -78,21 +79,28 @@ export class OrdersService {
     order.order_number = 'ORD-' + Date.now();
     order.items = orderItems;
 
+    // ✨ บันทึก Stripe Intent ID (ถ้ามี)
+    if (stripePaymentIntentId) {
+      order.stripe_payment_intent_id = stripePaymentIntentId;
+      // QR จ่ายผ่าน Stripe แล้ว → เปลี่ยน status เป็น PAID ทันที
+      order.status = OrderStatus.PAID;
+    }
+
     const savedOrder = await this.ordersRepository.save(order);
 
     // 5. ล้างตะกร้า
     await this.cartRepository.delete({ user: { id: userId } });
 
     return {
-      success: true,
-      message: 'สั่งซื้อและตัดสต็อกสินค้าสำเร็จ!',
-      orderId: savedOrder.id,
+      success:     true,
+      message:     'สั่งซื้อและตัดสต็อกสินค้าสำเร็จ!',
+      orderId:     savedOrder.id,
       orderNumber: savedOrder.order_number,
       totalAmount: totalPrice,
     };
   }
 
-  // ── Create Order แบบ manual (จาก HEAD) ───────────────────────────────────
+  // ── Create Order แบบ manual ───────────────────────────────────────────────
   async create(createOrderDto: CreateOrderDto) {
     const { userId, shippingAddress, items } = createOrderDto;
 
@@ -100,10 +108,10 @@ export class OrdersService {
     if (!user) throw new NotFoundException('User not found');
 
     const order = new Order();
-    order.user = user;
+    order.user             = user;
     order.shipping_address = shippingAddress;
-    order.status = OrderStatus.PENDING;
-    order.items = [];
+    order.status           = OrderStatus.PENDING;
+    order.items            = [];
 
     let totalPrice = 0;
 
@@ -113,9 +121,9 @@ export class OrdersService {
         throw new NotFoundException(`ไม่พบสินค้า Product ID: ${itemDto.productId}`);
       }
 
-      const orderItem = new OrderItem();
-      orderItem.product = product;
-      orderItem.quantity = itemDto.quantity;
+      const orderItem       = new OrderItem();
+      orderItem.product     = product;
+      orderItem.quantity    = itemDto.quantity;
       orderItem.price_at_purchase = product.price;
 
       totalPrice += Number(product.price) * itemDto.quantity;
@@ -148,10 +156,7 @@ export class OrdersService {
       relations: ['items', 'items.product', 'user'],
     });
 
-    if (!order) {
-      throw new NotFoundException(`ไม่พบคำสั่งซื้อหมายเลข ${id}`);
-    }
-
+    if (!order) throw new NotFoundException(`ไม่พบคำสั่งซื้อหมายเลข ${id}`);
     return order;
   }
 

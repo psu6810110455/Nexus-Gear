@@ -29,6 +29,21 @@ const GAMING_CATEGORIES: CategoryItem[] = [
     { name: 'อุปกรณ์เสริมอื่นๆ', searchKey: 'gaming accessories' }
 ];
 
+// รายการรูปภาพสินค้าจริงๆ เพื่อให้ตรงกับหน้าเว็บ
+const REAL_IMAGE_URLS = [
+    'https://dlcdnwebimgs.asus.com/gain/44268636-6202-4048-96bd-276632057342/w800', // ROG Phone
+    'https://m.media-amazon.com/images/I/61imgK9J+lL.jpg', // Black Shark
+    'https://row.hyperx.com/cdn/shop/products/hyperx_cloud_alpha_red_1_main_900x.jpg', // Headset
+    'https://m.media-amazon.com/images/I/61iXE1nZkGL.jpg', // Kishi V2
+    'https://dlcdnwebimgs.asus.com/gain/57F833C8-94D9-4824-913A-98C152B336A1', // ROG Kunai
+    'https://m.media-amazon.com/images/I/61K-x+w+pXIL._AC_SL1500_.jpg', // Flydigi Apex
+    'https://m.media-amazon.com/images/I/61+y+w+pXIL._AC_SL1500_.jpg', // Finger Sleeve
+    'https://m.media-amazon.com/images/I/61t-XhJ-xRL.jpg', // Cooler Fan
+    'https://m.media-amazon.com/images/I/71wF7YDIQkL._AC_SL1500_.jpg', // Gaming Mouse
+    'https://m.media-amazon.com/images/I/619BkvKW35L._AC_SL1500_.jpg', // Headset Stand
+    'https://m.media-amazon.com/images/I/81vJNEKzZIL._AC_SL1500_.jpg' // Mechanical Keyboard
+];
+
 const BRANDS: string[] = ['Nexus', 'ROG', 'Razer', 'Logitech G', 'SteelSeries', 'Black Shark', 'RedMagic'];
 
 async function seedGamingData() {
@@ -71,7 +86,7 @@ async function seedGamingData() {
         for (const cat of GAMING_CATEGORIES) {
             const [res]: any = await connection.execute(
                 'INSERT INTO categories (name, image_url) VALUES (?, ?)',
-                [cat.name, `https://dummyimage.com/400x400/000/fff?text=${encodeURIComponent(cat.name)}`]
+                [cat.name, faker.helpers.arrayElement(REAL_IMAGE_URLS)]
             );
             categoryIds.push({ id: res.insertId, name: cat.name, key: cat.searchKey });
         }
@@ -92,7 +107,7 @@ async function seedGamingData() {
                     faker.commerce.productDescription(),
                     faker.commerce.price({ min: 150, max: 45000 }), 
                     faker.number.int({ min: 5, max: 200 }),
-                    `https://dummyimage.com/500x500/111/dc2626?text=${encodeURIComponent(brand + ' ' + cat.name)}`,
+                    faker.helpers.arrayElement(REAL_IMAGE_URLS),
                     faker.number.float({ min: 3.5, max: 5, fractionDigits: 1 })
                 ]
             );

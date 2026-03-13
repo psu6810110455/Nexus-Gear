@@ -129,6 +129,7 @@
   width: 100%;
   max-width: 460px;
   padding: 2rem;
+  padding-bottom: 3rem;
   z-index: 10;
 }
 .auth-title {
@@ -168,4 +169,5 @@
   height: 150px;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 1200 200'%3E%3Cpath d='M0 150 L200 150 L250 100 L950 100 L1000 150 L1200 150' stroke='%23ff0000' stroke-width='3' fill='none' /%3E%3C/svg%3E") no-repeat bottom;
   pointer-events: none;
+  z-index: 1;
 }

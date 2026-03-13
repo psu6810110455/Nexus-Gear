@@ -71,7 +71,7 @@ async function seedGamingData() {
         for (const cat of GAMING_CATEGORIES) {
             const [res]: any = await connection.execute(
                 'INSERT INTO categories (name, image_url) VALUES (?, ?)',
-                [cat.name, `https://source.unsplash.com/random/400x400/?${cat.searchKey}`]
+                [cat.name, `https://dummyimage.com/400x400/000/fff?text=${encodeURIComponent(cat.name)}`]
             );
             categoryIds.push({ id: res.insertId, name: cat.name, key: cat.searchKey });
         }
@@ -92,7 +92,7 @@ async function seedGamingData() {
                     faker.commerce.productDescription(),
                     faker.commerce.price({ min: 150, max: 45000 }), 
                     faker.number.int({ min: 5, max: 200 }),
-                    `https://source.unsplash.com/random/500x500/?gaming,tech,${cat.key}&sig=${i}`,
+                    `https://dummyimage.com/500x500/111/dc2626?text=${encodeURIComponent(brand + ' ' + cat.name)}`,
                     faker.number.float({ min: 3.5, max: 5, fractionDigits: 1 })
                 ]
             );

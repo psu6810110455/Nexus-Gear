@@ -81,6 +81,7 @@ async function seedGamingData() {
         // 1. ล้างข้อมูลเก่า
         await connection.execute('SET FOREIGN_KEY_CHECKS = 0');
         const tables = [
+            'product_images',
             'order_status_history', 'payments', 'reviews', 'order_items', 
             'orders', 'cart_items', 'addresses', 'products', 'categories', 'coupons', 'users'
         ];
@@ -114,16 +115,54 @@ async function seedGamingData() {
         }
         console.log(`📁 สร้างหมวดหมู่สินค้า ${CATEGORIES.length} ประเภทแล้ว`);
 
-        // 4. สร้าง Products — ใช้รูปภาพที่ตรงกับหมวดหมู่ของสินค้า
+        // 4. สร้าง Products + Product Images (หลายรูปต่อสินค้า)
+        // รูปภาพ variant ต่อหมวดหมู่ — ใช้ picsum.photos/seed สร้างรูป unique ที่ยังคงเสถียร
+        const CATEGORY_IMAGE_VARIANTS: Record<string, string[]> = {
+            'มือถือเกมมิ่ง': [
+                `${IMG_BASE}/gaming-phone.png`,
+                'https://picsum.photos/seed/gaming-phone-front/500/500',
+                'https://picsum.photos/seed/gaming-phone-back/500/500',
+                'https://picsum.photos/seed/gaming-phone-box/500/500',
+            ],
+            'จอยควบคุม': [
+                `${IMG_BASE}/gaming-controller.png`,
+                'https://picsum.photos/seed/controller-top/500/500',
+                'https://picsum.photos/seed/controller-side/500/500',
+                'https://picsum.photos/seed/controller-box/500/500',
+            ],
+            'หูฟัง': [
+                `${IMG_BASE}/gaming-headset.png`,
+                'https://picsum.photos/seed/headset-left/500/500',
+                'https://picsum.photos/seed/headset-right/500/500',
+                'https://picsum.photos/seed/headset-box/500/500',
+            ],
+            'พัดลมระบายอากาศ': [
+                `${IMG_BASE}/phone-cooler.png`,
+                'https://picsum.photos/seed/cooler-rgb/500/500',
+                'https://picsum.photos/seed/cooler-side/500/500',
+            ],
+            'ถุงนิ้วเกมมิ่ง': [
+                `${IMG_BASE}/finger-sleeves.png`,
+                'https://picsum.photos/seed/sleeves-pair/500/500',
+                'https://picsum.photos/seed/sleeves-box/500/500',
+            ],
+            'อุปกรณ์เสริมอื่นๆ': [
+                `${IMG_BASE}/gaming-accessories.png`,
+                'https://picsum.photos/seed/mouse-rgb/500/500',
+                'https://picsum.photos/seed/keyboard-top/500/500',
+                'https://picsum.photos/seed/mousepad-full/500/500',
+            ],
+        };
+
         let inserted = 0;
+        let imagesInserted = 0;
         for (const p of REAL_PRODUCTS) {
             const catId = catMap[p.category];
             if (!catId) continue;
 
-            // ดึงรูปภาพที่ตรงกับหมวดหมู่ของสินค้าตัวนี้
             const imageUrl = CATEGORY_IMAGES[p.category] || `${IMG_BASE}/gaming-accessories.png`;
 
-            await connection.execute(
+            const [res]: any = await connection.execute(
                 'INSERT INTO products (category_id, name, description, price, stock, image_url, rating_average) VALUES (?, ?, ?, ?, ?, ?, ?)',
                 [
                     catId,
@@ -135,10 +174,21 @@ async function seedGamingData() {
                     faker.number.float({ min: 3.5, max: 5.0, fractionDigits: 1 })
                 ]
             );
+            const productId = res.insertId;
             inserted++;
+
+            // Insert product_images (หลายรูปต่อสินค้า)
+            const variants = CATEGORY_IMAGE_VARIANTS[p.category] || [imageUrl];
+            for (let i = 0; i < variants.length; i++) {
+                await connection.execute(
+                    'INSERT INTO product_images (product_id, image_url, sort_order) VALUES (?, ?, ?)',
+                    [productId, variants[i], i]
+                );
+                imagesInserted++;
+            }
         }
 
-        console.log(`\n🎉 ดำเนินการ Seed ข้อมูล ${inserted} ชิ้นเสร็จสิ้น! (AI-Generated Photo Version)`);
+        console.log(`\n🎉 ดำเนินการ Seed ข้อมูล ${inserted} สินค้า + ${imagesInserted} รูปภาพ เสร็จสิ้น!`);
         console.log('📸 รูปภาพ Static อยู่ที่ client/public/products/');
 
     } catch (error: any) {

@@ -29,6 +29,7 @@ const ProductDetail = () => {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading]                 = useState(true);
   const [quantity, setQuantity]               = useState(1);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const changeQuantity = (dir: 'inc' | 'dec') => {
     if (dir === 'dec' && quantity > 1) setQuantity(q => q - 1);
@@ -46,6 +47,7 @@ const ProductDetail = () => {
         const { data: all } = await axios.get('http://localhost:3000/products', { headers });
         setRelatedProducts(all.filter((p: Product) => p.category?.name === current.category?.name && p.id !== current.id).slice(0, 4));
         setQuantity(1);
+        setSelectedImageIndex(0);
       } catch (err) { console.error(err); }
       finally { setLoading(false); window.scrollTo(0, 0); }
     };
@@ -67,7 +69,18 @@ const ProductDetail = () => {
     <div style={{ minHeight: '100vh', background: 'var(--color-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-muted)', fontFamily: 'Orbitron, sans-serif', letterSpacing: '0.1em' }}>ไม่พบสินค้า</div>
   );
 
-  const imgSrc = product.imageUrl ?? product.image_url ?? 'https://dummyimage.com/600x400/000/fff?text=No+Image';
+  // สร้างรายการรูปภาพทั้งหมด
+  const allImages: string[] = [];
+  if ((product as any).images && (product as any).images.length > 0) {
+    (product as any).images.forEach((img: any) => {
+      allImages.push(`http://localhost:3000${img.imageUrl}`);
+    });
+  }
+  // ถ้าไม่มี images ให้ใช้ imageUrl เดิม
+  if (allImages.length === 0) {
+    allImages.push(product.imageUrl ?? product.image_url ?? 'https://dummyimage.com/600x400/000/fff?text=No+Image');
+  }
+  const currentImage = allImages[selectedImageIndex] || allImages[0];
 
   return (
     <main style={{ width: '100%', minHeight: '100vh', background: 'var(--color-bg)', color: 'var(--color-text)', fontFamily: "'Kanit', sans-serif", paddingBottom: '6rem' }}>
@@ -88,11 +101,33 @@ const ProductDetail = () => {
       <section className="pd-hero" aria-label="รายละเอียดสินค้า">
         <div className="pd-img-panel">
           <span className="pd-new-badge">New Arrival</span>
-          <img src={imgSrc} alt={product.name}
-            style={{ maxHeight: '28rem', maxWidth: '100%', objectFit: 'contain', transition: 'transform 0.5s', position: 'relative', zIndex: 1, mixBlendMode: 'multiply' }}
+          {/* รูปหลัก */}
+          <img src={currentImage} alt={product.name}
+            style={{ maxHeight: '28rem', maxWidth: '100%', objectFit: 'contain', transition: 'transform 0.5s, opacity 0.3s', position: 'relative', zIndex: 1, mixBlendMode: 'multiply' }}
             onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.05)')}
             onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
             onError={e => { e.currentTarget.src = 'https://dummyimage.com/600x400/000/fff?text=Nexus+Gear'; }} />
+          {/* Thumbnail Bar */}
+          {allImages.length > 1 && (
+            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              {allImages.map((imgUrl, idx) => (
+                <button key={idx} type="button" onClick={() => setSelectedImageIndex(idx)}
+                  style={{
+                    width: '4rem', height: '4rem', borderRadius: '8px', overflow: 'hidden',
+                    border: idx === selectedImageIndex ? '2px solid var(--color-primary)' : '2px solid rgba(255,255,255,0.1)',
+                    background: '#fff', cursor: 'pointer', padding: '4px',
+                    boxShadow: idx === selectedImageIndex ? '0 0 12px rgba(220,38,38,0.4)' : 'none',
+                    transition: 'all 0.2s', opacity: idx === selectedImageIndex ? 1 : 0.6,
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.borderColor = 'var(--color-primary)'; }}
+                  onMouseLeave={e => { if (idx !== selectedImageIndex) { e.currentTarget.style.opacity = '0.6'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; } }}>
+                  <img src={imgUrl} alt={`${product.name} ${idx + 1}`}
+                    style={{ width: '100%', height: '100%', objectFit: 'contain', mixBlendMode: 'multiply' }}
+                    onError={e => { e.currentTarget.src = 'https://dummyimage.com/60x60/000/fff?text=N'; }} />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         <div className="pd-info-panel">
           <span className="pd-category-badge">{product.category?.name ?? 'GAMING GEAR'}</span>

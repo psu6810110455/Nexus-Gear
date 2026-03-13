@@ -1,6 +1,8 @@
 import { Module, Global } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 import { AppController }   from './app.controller';
 import { AppService }      from './app.service';
@@ -15,12 +17,16 @@ import { DashboardModule }  from './dashboard/dashboard.module';
 import { CartModule }       from './cart/cart.module';
 import { ProfileModule }    from './profile/profile.module';
 import { MailModule }       from './mail/mail.module';
-import { PaymentModule }    from './payment/payment.module'; // ✨ เพิ่มบรรทัดนี้
+import { PaymentModule }    from './payment/payment.module';
 
 @Global()
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'),
+      serveRoot: '/uploads',
+    }),
     TypeOrmModule.forRoot({
       type:             'mysql',
       host:             '127.0.0.1',

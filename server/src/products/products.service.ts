@@ -1,9 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as fs from 'fs';
+import * as path from 'path';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
+import { ProductImage } from './entities/product-image.entity';
 import { Category } from './entities/category.entity';
 import { OrderItem } from '../orders/entities/order-item.entity';
 
@@ -12,6 +15,8 @@ export class ProductsService {
   constructor(
     @InjectRepository(Product)
     private productsRepository: Repository<Product>,
+    @InjectRepository(ProductImage)
+    private productImagesRepository: Repository<ProductImage>,
     @InjectRepository(Category)
     private categoriesRepository: Repository<Category>,
     @InjectRepository(OrderItem)
@@ -33,7 +38,8 @@ export class ProductsService {
 
   findAll(search?: string, category?: string, includeHidden: boolean = false, minPrice?: number, maxPrice?: number) {
     const query = this.productsRepository.createQueryBuilder('product')
-      .leftJoinAndSelect('product.category', 'category');
+      .leftJoinAndSelect('product.category', 'category')
+      .leftJoinAndSelect('product.images', 'images');
 
     if (!includeHidden) {
       query.andWhere('product.isHidden = :isHidden', { isHidden: false });
@@ -44,7 +50,6 @@ export class ProductsService {
     }
 
     if (category && category !== 'All') {
-      // ใช้ LOWER และ LIKE เพื่อให้ไม่สนตัวพิมพ์เล็กใหญ่ในกรณีที่มีปัญหา
       query.andWhere('LOWER(category.name) = LOWER(:category)', { category });
     }
 
@@ -56,19 +61,24 @@ export class ProductsService {
       query.andWhere('product.price <= :maxPrice', { maxPrice });
     }
 
+    query.addOrderBy('images.sortOrder', 'ASC');
+
     return query.getMany();
   }
 
   async findOne(id: number) {
     const product = await this.productsRepository.findOne({
       where: { id },
-      relations: ['category'],
+      relations: ['category', 'images'],
     });
     if (!product) throw new NotFoundException(`Product #${id} not found`);
+    // เรียงลำดับรูปภาพ
+    if (product.images) {
+      product.images.sort((a, b) => a.sortOrder - b.sortOrder);
+    }
     return product;
   }
 
-  // ✅ แก้: update ให้รองรับ categoryId เหมือน create
   async update(id: number, updateProductDto: UpdateProductDto) {
     const product = await this.productsRepository.findOne({
       where: { id },
@@ -77,11 +87,8 @@ export class ProductsService {
     if (!product) throw new NotFoundException(`Product #${id} not found`);
 
     const { categoryId, ...rest } = updateProductDto;
-
-    // อัปเดตฟิลด์ปกติ
     Object.assign(product, rest);
 
-    // อัปเดต category ถ้ามี categoryId ส่งมา
     if (categoryId !== undefined) {
       if (categoryId === null) {
         product.category = null;
@@ -101,7 +108,7 @@ export class ProductsService {
     return this.productsRepository.remove(product);
   }
 
-  // ── ดึงรีวิวของสินค้า (จาก order_items ที่มี rating) ──────────────────
+  // ── ดึงรีวิวของสินค้า ──
   async getReviews(productId: number) {
     const items = await this.orderItemsRepository.find({
       where: { product: { id: productId } },
@@ -116,5 +123,56 @@ export class ProductsService {
         review: item.review ?? null,
         user:   { name: item.order?.user?.name ?? 'ลูกค้า' },
       }));
+  }
+
+  // ── อัปโหลดรูปสินค้า (สูงสุด 4 รูป) ──
+  async uploadImages(productId: number, files: Express.Multer.File[]) {
+    const product = await this.productsRepository.findOne({
+      where: { id: productId },
+      relations: ['images'],
+    });
+    if (!product) throw new NotFoundException(`Product #${productId} not found`);
+
+    const currentCount = product.images?.length || 0;
+    if (currentCount + files.length > 4) {
+      throw new BadRequestException(
+        `สินค้านี้มีรูปอยู่แล้ว ${currentCount} รูป สามารถเพิ่มได้อีก ${4 - currentCount} รูปเท่านั้น (สูงสุด 4 รูป)`,
+      );
+    }
+
+    const images: ProductImage[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const img = this.productImagesRepository.create({
+        imageUrl: `/uploads/products/${files[i].filename}`,
+        sortOrder: currentCount + i,
+        productId,
+      });
+      images.push(await this.productImagesRepository.save(img));
+    }
+
+    // อัปเดต image_url หลักของ product ด้วยรูปแรก (ถ้ายังไม่มี)
+    if (!product.imageUrl && images.length > 0) {
+      product.imageUrl = images[0].imageUrl;
+      await this.productsRepository.save(product);
+    }
+
+    return { message: `อัปโหลดสำเร็จ ${files.length} รูป`, images };
+  }
+
+  // ── ลบรูปสินค้า ──
+  async deleteImage(productId: number, imageId: number) {
+    const image = await this.productImagesRepository.findOne({
+      where: { id: imageId, productId },
+    });
+    if (!image) throw new NotFoundException(`Image #${imageId} not found`);
+
+    // ลบไฟล์จริงจาก disk
+    const filePath = path.join(process.cwd(), image.imageUrl);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
+    await this.productImagesRepository.remove(image);
+    return { message: 'ลบรูปสำเร็จ' };
   }
 }

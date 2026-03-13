@@ -1,5 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { Category } from './category.entity';
+import { ProductImage } from './product-image.entity';
 
 @Entity('products')
 export class Product {
@@ -34,4 +35,8 @@ export class Product {
 
   @Column({ name: 'rating_average', type: 'float', default: 0, nullable: true })
   rating_average: number;
-}
+
+  // รูปภาพหลายรูปของสินค้า
+  @OneToMany(() => ProductImage, (image) => image.product, { eager: true, cascade: true })
+  images: ProductImage[];
+}

@@ -52,6 +52,18 @@ export const updateProduct = (id: number, data: object) =>
 export const deleteProduct = (id: number) =>
   api.delete(`/products/${id}`).then((r) => r.data);
 
+// ── Product Images ────────────────────────────────────────────
+export const uploadProductImages = (productId: number, files: File[]) => {
+  const formData = new FormData();
+  files.forEach((f) => formData.append('images', f));
+  return api.post(`/products/${productId}/images`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }).then((r) => r.data);
+};
+
+export const deleteProductImage = (productId: number, imageId: number) =>
+  api.delete(`/products/${productId}/images/${imageId}`).then((r) => r.data);
+
 // ── Categories ────────────────────────────────────────────────
 export const getCategories = () =>
   api.get('/categories').then((r) => r.data);

@@ -2,13 +2,14 @@
 // src/features/admin/pages/AdminPage.tsx
 // ============================================================
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   getProducts, createProduct, updateProduct, deleteProduct,
   getCategories, createCategory, updateCategory, deleteCategory,
+  uploadProductImages, deleteProductImage,
 } from '../../../shared/services/api';
 import type { Category, Product } from '../../../shared/types';
-import { Plus, Edit, Trash2, X, Upload, Save, CheckCircle, AlertTriangle, EyeOff, Eye } from 'lucide-react';
+import { Plus, Edit, Trash2, X, Save, CheckCircle, AlertTriangle, EyeOff, Eye, ImagePlus } from 'lucide-react';
 import AdminLayout from '../../navigation/components/AdminLayout';
 
 // ── Types ─────────────────────────────────────────────────────
@@ -17,6 +18,11 @@ interface FormData {
   stock: string; imageUrl: string; categoryId: string;
 }
 const EMPTY_FORM: FormData = { name: '', description: '', price: '', stock: '', imageUrl: '', categoryId: '' };
+
+interface ExistingImage { id: number; imageUrl: string; sortOrder: number; }
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+const MAX_IMAGES = 4;
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 // ── Sub-components ────────────────────────────────────────────
 
@@ -80,71 +86,119 @@ const DeleteConfirmModal = ({ onConfirm, onCancel }: DeleteConfirmModalProps) =>
 
 interface ProductFormModalProps {
   form: FormData; categories: Category[]; isEditing: boolean; submitting: boolean;
+  pendingFiles: File[]; existingImages: ExistingImage[];
   onFormChange: (f: FormData) => void; onSubmit: () => void; onClose: () => void;
+  onAddFiles: (files: File[]) => void; onRemovePendingFile: (idx: number) => void;
+  onDeleteExistingImage: (img: ExistingImage) => void;
 }
-const ProductFormModal = ({ form, categories, isEditing, submitting, onFormChange, onSubmit, onClose }: ProductFormModalProps) => (
-  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
-    <div className="bg-[#0a0a0a] border border-[#FF0000]/50 w-full max-w-lg rounded-3xl shadow-[0_0_50px_rgba(153,0,0,0.5)] overflow-hidden">
-      <div className="bg-[#2E0505]/40 p-6 border-b border-[#990000]/20 flex justify-between items-center">
-        <h3 className="text-xl font-['Orbitron'] font-bold text-[#F2F4F6]">{isEditing ? 'แก้ไขสินค้า' : 'เพิ่มสินค้าใหม่'}</h3>
-        <button onClick={onClose} className="p-2 hover:bg-[#990000] rounded-full transition text-[#F2F4F6]/50 hover:text-white"><X size={20} /></button>
-      </div>
-      <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto font-['Kanit']">
-        <div className="flex justify-center mb-2">
-          <div className="w-24 h-24 bg-black border-2 border-dashed border-[#990000]/50 rounded-xl flex items-center justify-center overflow-hidden hover:border-[#FF0000] transition">
-            {form.imageUrl ? (
-              <img src={form.imageUrl} alt="preview" className="w-full h-full object-contain p-1"
-                onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-            ) : <Upload className="text-[#F2F4F6]/30" size={28} />}
-          </div>
+const ProductFormModal = ({ form, categories, isEditing, submitting, pendingFiles, existingImages, onFormChange, onSubmit, onClose, onAddFiles, onRemovePendingFile, onDeleteExistingImage }: ProductFormModalProps) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const totalImages = existingImages.length + pendingFiles.length;
+  const canAdd = totalImages < MAX_IMAGES;
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const valid = files.filter(f => {
+      if (!ALLOWED_TYPES.includes(f.type)) return false;
+      if (f.size > MAX_FILE_SIZE) return false;
+      return true;
+    });
+    const remaining = MAX_IMAGES - totalImages;
+    onAddFiles(valid.slice(0, remaining));
+    e.target.value = '';
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
+      <div className="bg-[#0a0a0a] border border-[#FF0000]/50 w-full max-w-lg rounded-3xl shadow-[0_0_50px_rgba(153,0,0,0.5)] overflow-hidden">
+        <div className="bg-[#2E0505]/40 p-6 border-b border-[#990000]/20 flex justify-between items-center">
+          <h3 className="text-xl font-['Orbitron'] font-bold text-[#F2F4F6]">{isEditing ? 'แก้ไขสินค้า' : 'เพิ่มสินค้าใหม่'}</h3>
+          <button onClick={onClose} className="p-2 hover:bg-[#990000] rounded-full transition text-[#F2F4F6]/50 hover:text-white"><X size={20} /></button>
         </div>
-        {[
-          { label: 'URL รูปภาพ', key: 'imageUrl', type: 'text', placeholder: 'https://...' },
-          { label: 'ชื่อสินค้า *', key: 'name', type: 'text', placeholder: 'เช่น ROG Phone 8' },
-        ].map(({ label, key, type, placeholder }) => (
-          <div key={key}>
-            <label className="text-xs font-['Orbitron'] text-[#FF0000] mb-2 block uppercase tracking-wider">{label}</label>
-            <input type={type} value={(form as any)[key]} onChange={(e) => onFormChange({ ...form, [key]: e.target.value })}
-              placeholder={placeholder}
+        <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto font-['Kanit']">
+
+          {/* ── Image Upload Section ── */}
+          <div>
+            <label className="text-xs font-['Orbitron'] text-[#FF0000] mb-2 block uppercase tracking-wider">
+              รูปภาพสินค้า ({totalImages}/{MAX_IMAGES})
+            </label>
+            <div className="grid grid-cols-4 gap-3">
+              {/* Existing images */}
+              {existingImages.map((img) => (
+                <div key={`ex-${img.id}`} className="relative w-full aspect-square bg-black border border-[#990000]/30 rounded-xl overflow-hidden group">
+                  <img src={`http://localhost:3000${img.imageUrl}`} alt="" className="w-full h-full object-contain p-1" />
+                  <button type="button" onClick={() => onDeleteExistingImage(img)} className="absolute top-1 right-1 w-5 h-5 bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                    <X size={12} className="text-white" />
+                  </button>
+                </div>
+              ))}
+              {/* Pending files preview */}
+              {pendingFiles.map((f, idx) => (
+                <div key={`pf-${idx}`} className="relative w-full aspect-square bg-black border border-green-500/30 rounded-xl overflow-hidden group">
+                  <img src={URL.createObjectURL(f)} alt="" className="w-full h-full object-contain p-1" />
+                  <button type="button" onClick={() => onRemovePendingFile(idx)} className="absolute top-1 right-1 w-5 h-5 bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                    <X size={12} className="text-white" />
+                  </button>
+                  <span className="absolute bottom-1 left-1 bg-green-600 text-white text-[8px] px-1 rounded">ใหม่</span>
+                </div>
+              ))}
+              {/* Add button */}
+              {canAdd && (
+                <button type="button" onClick={() => fileInputRef.current?.click()}
+                  className="w-full aspect-square bg-black border-2 border-dashed border-[#990000]/50 rounded-xl flex flex-col items-center justify-center gap-1 hover:border-[#FF0000] transition cursor-pointer">
+                  <ImagePlus className="text-[#F2F4F6]/30" size={24} />
+                  <span className="text-[9px] text-[#F2F4F6]/30">เพิ่มรูป</span>
+                </button>
+              )}
+            </div>
+            <p className="text-[9px] text-[#F2F4F6]/30 mt-2">รองรับ JPG, PNG, WebP (ไม่เกิน 5MB ต่อรูป)</p>
+            <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={handleFileSelect} className="hidden" />
+          </div>
+
+          {/* ── Name ── */}
+          <div>
+            <label className="text-xs font-['Orbitron'] text-[#FF0000] mb-2 block uppercase tracking-wider">ชื่อสินค้า *</label>
+            <input type="text" value={form.name} onChange={(e) => onFormChange({ ...form, name: e.target.value })}
+              placeholder="เช่น ROG Phone 8"
               className="w-full bg-[#000000] border border-[#990000]/30 rounded-lg px-4 py-2.5 text-[#F2F4F6] text-sm focus:border-[#FF0000] outline-none transition" />
           </div>
-        ))}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-xs font-['Orbitron'] text-[#FF0000] mb-2 block uppercase tracking-wider">หมวดหมู่</label>
-            <select value={form.categoryId} onChange={(e) => onFormChange({ ...form, categoryId: e.target.value })}
-              className="w-full bg-[#000000] border border-[#990000]/30 rounded-lg px-3 py-2.5 text-sm text-[#F2F4F6] focus:border-[#FF0000] outline-none transition">
-              <option value="">-- เลือก --</option>
-              {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-['Orbitron'] text-[#FF0000] mb-2 block uppercase tracking-wider">หมวดหมู่</label>
+              <select value={form.categoryId} onChange={(e) => onFormChange({ ...form, categoryId: e.target.value })}
+                className="w-full bg-[#000000] border border-[#990000]/30 rounded-lg px-3 py-2.5 text-sm text-[#F2F4F6] focus:border-[#FF0000] outline-none transition">
+                <option value="">-- เลือก --</option>
+                {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-['Orbitron'] text-[#FF0000] mb-2 block uppercase tracking-wider">ราคา (฿) *</label>
+              <input type="number" value={form.price} onChange={(e) => onFormChange({ ...form, price: e.target.value })} placeholder="0"
+                className="w-full bg-[#000000] border border-[#990000]/30 rounded-lg px-4 py-2.5 text-[#F2F4F6] text-sm focus:border-[#FF0000] outline-none transition" />
+            </div>
           </div>
           <div>
-            <label className="text-xs font-['Orbitron'] text-[#FF0000] mb-2 block uppercase tracking-wider">ราคา (฿) *</label>
-            <input type="number" value={form.price} onChange={(e) => onFormChange({ ...form, price: e.target.value })} placeholder="0"
+            <label className="text-xs font-['Orbitron'] text-[#FF0000] mb-2 block uppercase tracking-wider">จำนวนสต็อก</label>
+            <input type="number" value={form.stock} onChange={(e) => onFormChange({ ...form, stock: e.target.value })} placeholder="0"
               className="w-full bg-[#000000] border border-[#990000]/30 rounded-lg px-4 py-2.5 text-[#F2F4F6] text-sm focus:border-[#FF0000] outline-none transition" />
           </div>
+          <div>
+            <label className="text-xs font-['Orbitron'] text-[#FF0000] mb-2 block uppercase tracking-wider">คำอธิบาย</label>
+            <textarea value={form.description} onChange={(e) => onFormChange({ ...form, description: e.target.value })}
+              placeholder="รายละเอียดสินค้า..." rows={2}
+              className="w-full bg-[#000000] border border-[#990000]/30 rounded-lg px-4 py-2.5 text-[#F2F4F6] text-sm focus:border-[#FF0000] outline-none transition resize-none" />
+          </div>
         </div>
-        <div>
-          <label className="text-xs font-['Orbitron'] text-[#FF0000] mb-2 block uppercase tracking-wider">จำนวนสต็อก</label>
-          <input type="number" value={form.stock} onChange={(e) => onFormChange({ ...form, stock: e.target.value })} placeholder="0"
-            className="w-full bg-[#000000] border border-[#990000]/30 rounded-lg px-4 py-2.5 text-[#F2F4F6] text-sm focus:border-[#FF0000] outline-none transition" />
+        <div className="p-5 bg-[#2E0505]/20 border-t border-[#990000]/20">
+          <button onClick={onSubmit} disabled={submitting}
+            className="w-full bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] disabled:opacity-50 text-white py-3 rounded-xl font-['Orbitron'] font-bold tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95">
+            <Save size={20} /> {submitting ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}
+          </button>
         </div>
-        <div>
-          <label className="text-xs font-['Orbitron'] text-[#FF0000] mb-2 block uppercase tracking-wider">คำอธิบาย</label>
-          <textarea value={form.description} onChange={(e) => onFormChange({ ...form, description: e.target.value })}
-            placeholder="รายละเอียดสินค้า..." rows={2}
-            className="w-full bg-[#000000] border border-[#990000]/30 rounded-lg px-4 py-2.5 text-[#F2F4F6] text-sm focus:border-[#FF0000] outline-none transition resize-none" />
-        </div>
-      </div>
-      <div className="p-5 bg-[#2E0505]/20 border-t border-[#990000]/20">
-        <button onClick={onSubmit} disabled={submitting}
-          className="w-full bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] disabled:opacity-50 text-white py-3 rounded-xl font-['Orbitron'] font-bold tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95">
-          <Save size={20} /> {submitting ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}
-        </button>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // ── Main Page ─────────────────────────────────────────────────
 function AdminPage() {
@@ -162,6 +216,8 @@ function AdminPage() {
   const [showCategoryManager, setShowCategoryManager]       = useState(false);
   const [categoryNameInput, setCategoryNameInput]           = useState('');
   const [editingCategoryId, setEditingCategoryId]           = useState<number | null>(null);
+  const [pendingFiles, setPendingFiles]                     = useState<File[]>([]);
+  const [existingImages, setExistingImages]                 = useState<ExistingImage[]>([]);
 
   useEffect(() => { fetchProducts(); fetchCategories(); }, []);
 
@@ -194,11 +250,13 @@ function AdminPage() {
     catch { showToast('ลบหมวดหมู่ไม่สำเร็จ', 'error'); }
   };
 
-  const openAddForm = () => { setEditingProduct(null); setForm(EMPTY_FORM); setShowForm(true); };
+  const openAddForm = () => { setEditingProduct(null); setForm(EMPTY_FORM); setPendingFiles([]); setExistingImages([]); setShowForm(true); };
   const openEditForm = (p: Product) => {
     setEditingProduct(p);
     setForm({ name: p.name, description: p.description || '', price: String(p.price), stock: String(p.stock ?? ''),
       imageUrl: p.imageUrl || '', categoryId: p.category && typeof p.category === 'object' ? String((p.category as Category).id) : '' });
+    setPendingFiles([]);
+    setExistingImages((p as any).images || []);
     setShowForm(true);
   };
 
@@ -208,11 +266,33 @@ function AdminPage() {
     const payload = { name: form.name, description: form.description, price: Number(form.price),
       stock: Number(form.stock), imageUrl: form.imageUrl, categoryId: form.categoryId ? Number(form.categoryId) : undefined };
     try {
-      if (editingProduct) { await updateProduct(editingProduct.id, payload); showToast('แก้ไขสินค้าสำเร็จ', 'success'); }
-      else { await createProduct(payload); showToast('เพิ่มสินค้าสำเร็จ', 'success'); }
-      setShowForm(false); fetchProducts();
+      let productId: number;
+      if (editingProduct) {
+        await updateProduct(editingProduct.id, payload);
+        productId = editingProduct.id;
+        showToast('แก้ไขสินค้าสำเร็จ', 'success');
+      } else {
+        const created = await createProduct(payload);
+        productId = created.id;
+        showToast('เพิ่มสินค้าสำเร็จ', 'success');
+      }
+      // อัปโหลดรูปใหม่ (ถ้ามี)
+      if (pendingFiles.length > 0) {
+        await uploadProductImages(productId, pendingFiles);
+        showToast(`อัปโหลดรูปสำเร็จ ${pendingFiles.length} รูป`, 'success');
+      }
+      setShowForm(false); setPendingFiles([]); setExistingImages([]); fetchProducts();
     } catch { showToast('เกิดข้อผิดพลาด', 'error'); }
     finally { setSubmitting(false); }
+  };
+
+  const handleDeleteExistingImage = async (img: ExistingImage) => {
+    if (!editingProduct) return;
+    try {
+      await deleteProductImage(editingProduct.id, img.id);
+      setExistingImages(prev => prev.filter(i => i.id !== img.id));
+      showToast('ลบรูปสำเร็จ', 'success');
+    } catch { showToast('ลบรูปไม่สำเร็จ', 'error'); }
   };
 
   const handleDelete = async (id: number) => {
@@ -265,7 +345,11 @@ function AdminPage() {
       )}
       {showForm && (
         <ProductFormModal form={form} categories={categories} isEditing={!!editingProduct}
-          submitting={submitting} onFormChange={setForm} onSubmit={handleSubmit} onClose={() => setShowForm(false)} />
+          submitting={submitting} pendingFiles={pendingFiles} existingImages={existingImages}
+          onFormChange={setForm} onSubmit={handleSubmit} onClose={() => { setShowForm(false); setPendingFiles([]); setExistingImages([]); }}
+          onAddFiles={(files) => setPendingFiles(prev => [...prev, ...files])}
+          onRemovePendingFile={(idx) => setPendingFiles(prev => prev.filter((_, i) => i !== idx))}
+          onDeleteExistingImage={handleDeleteExistingImage} />
       )}
 
       {/* ── Page Header ── */}

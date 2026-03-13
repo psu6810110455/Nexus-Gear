@@ -171,7 +171,7 @@ const Login = () => {
             <IconGoogle /> ล็อกอินด้วย Google
           </button>
 
-          <p style={{ textAlign: 'center', marginTop: '1.5rem', color: '#fff' }}>
+          <p style={{ textAlign: 'center', marginTop: '2rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.08)', color: '#ccc', fontSize: '0.95rem' }}>
             ยังไม่มีบัญชี?{' '}
             <Link to="/register" style={{ color: 'var(--color-primary)', fontWeight: 'bold', marginLeft: '4px' }}>สมัครสมาชิก</Link>
           </p>

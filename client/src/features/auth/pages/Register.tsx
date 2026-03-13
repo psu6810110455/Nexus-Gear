@@ -57,12 +57,46 @@ const TermsModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
           <h2 style={{ color: 'var(--color-primary)', margin: 0, fontFamily: 'Orbitron, sans-serif' }}>TERMS & PRIVACY</h2>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#888', fontSize: '24px', cursor: 'pointer' }}>&times;</button>
         </div>
-        <div style={{ padding: '24px', color: '#ccc', lineHeight: '1.6', fontSize: '0.95rem', textAlign: 'left' }}>
-          <h3 style={{ color: '#fff' }}>1. ข้อกำหนดและเงื่อนไข</h3>
-          <p>ยินดีต้อนรับสู่ Nexus Gear ข้อมูลที่คุณให้จะถูกนำไปใช้เพื่อการซื้อขายอุปกรณ์เกมมิ่งและการยืนยันตัวตนเท่านั้น...</p>
-          <h3 style={{ color: '#fff' }}>2. นโยบายความเป็นส่วนตัว</h3>
-          <p>เราให้ความสำคัญกับการเก็บรักษาข้อมูลส่วนบุคคลของคุณตามมาตรฐานความปลอดภัย เพื่อป้องกันการเข้าถึงข้อมูลโดยไม่ได้รับอนุญาต...</p>
-          <p style={{ marginTop: '40px', fontSize: '0.8rem', color: '#666' }}>อัปเดตล่าสุด: 3 มีนาคม 2026</p>
+        <div style={{ padding: '24px', color: '#ccc', lineHeight: '1.8', fontSize: '0.9rem', textAlign: 'left' }}>
+          <h3 style={{ color: '#fff', marginBottom: '0.5rem' }}>1. ข้อกำหนดและเงื่อนไขการใช้งาน</h3>
+          <p>เว็บไซต์ Nexus Gear ("เว็บไซต์") เป็นแพลตฟอร์มจำหน่ายอุปกรณ์เสริมสำหรับเล่นเกมบนมือถือ ดำเนินการโดย Nexus Gear ผู้ใช้งานตกลงปฏิบัติตามข้อกำหนดเหล่านี้เมื่อสมัครสมาชิกหรือใช้บริการเว็บไซต์</p>
+          <ul style={{ paddingLeft: '1.25rem', margin: '0.5rem 0' }}>
+            <li>ผู้ใช้ต้องมีอายุไม่ต่ำกว่า 13 ปี หรือได้รับความยินยอมจากผู้ปกครอง</li>
+            <li>ข้อมูลที่กรอกในการสมัครสมาชิกต้องเป็นข้อมูลจริงและถูกต้อง</li>
+            <li>ห้ามใช้งานเว็บไซต์เพื่อวัตถุประสงค์ที่ผิดกฎหมายหรือฉ้อโกง</li>
+            <li>ราคาสินค้าและโปรโมชันอาจเปลี่ยนแปลงได้โดยไม่ต้องแจ้งล่วงหน้า</li>
+            <li>Nexus Gear ขอสงวนสิทธิ์ในการระงับหรือยกเลิกบัญชีที่ละเมิดข้อกำหนด</li>
+          </ul>
+
+          <h3 style={{ color: '#fff', marginTop: '1.5rem', marginBottom: '0.5rem' }}>2. นโยบายความเป็นส่วนตัว</h3>
+          <p>Nexus Gear เคารพความเป็นส่วนตัวของผู้ใช้ทุกท่าน เราเก็บรวบรวมและใช้ข้อมูลส่วนบุคคลเท่าที่จำเป็นเพื่อการให้บริการเท่านั้น</p>
+
+          <h4 style={{ color: '#ddd', marginTop: '1rem', marginBottom: '0.25rem' }}>ข้อมูลที่เราเก็บรวบรวม:</h4>
+          <ul style={{ paddingLeft: '1.25rem', margin: '0.5rem 0' }}>
+            <li><strong>ข้อมูลบัญชี:</strong> ชื่อ, อีเมล, รหัสผ่าน (เข้ารหัส bcrypt)</li>
+            <li><strong>ข้อมูลการสั่งซื้อ:</strong> ที่อยู่จัดส่ง, ประวัติคำสั่งซื้อ, วิธีการชำระเงิน</li>
+            <li><strong>ข้อมูลเทคนิค:</strong> IP Address, ประเภทเบราว์เซอร์ (เพื่อการรักษาความปลอดภัย)</li>
+          </ul>
+
+          <h4 style={{ color: '#ddd', marginTop: '1rem', marginBottom: '0.25rem' }}>วัตถุประสงค์ในการใช้ข้อมูล:</h4>
+          <ul style={{ paddingLeft: '1.25rem', margin: '0.5rem 0' }}>
+            <li>ประมวลผลคำสั่งซื้อและจัดส่งสินค้า</li>
+            <li>ยืนยันตัวตนและรักษาความปลอดภัยของบัญชี</li>
+            <li>ส่งการแจ้งเตือนเกี่ยวกับสถานะคำสั่งซื้อ</li>
+            <li>ปรับปรุงประสบการณ์การใช้งานเว็บไซต์</li>
+          </ul>
+
+          <h4 style={{ color: '#ddd', marginTop: '1rem', marginBottom: '0.25rem' }}>สิทธิ์ของผู้ใช้:</h4>
+          <ul style={{ paddingLeft: '1.25rem', margin: '0.5rem 0' }}>
+            <li>เข้าถึง แก้ไข หรือลบข้อมูลส่วนบุคคลของท่านได้ตลอดเวลา</li>
+            <li>ยกเลิกการสมัครรับข่าวสารได้ทุกเมื่อ</li>
+            <li>ร้องขอให้ลบบัญชีและข้อมูลทั้งหมดออกจากระบบ</li>
+          </ul>
+
+          <h3 style={{ color: '#fff', marginTop: '1.5rem', marginBottom: '0.5rem' }}>3. การรักษาความปลอดภัย</h3>
+          <p>เราใช้การเข้ารหัสรหัสผ่านด้วย bcrypt, ระบบ JWT Token สำหรับการยืนยันตัวตน, และ HTTPS สำหรับการสื่อสารข้อมูลทั้งหมด เราจะไม่เปิดเผยข้อมูลส่วนบุคคลแก่บุคคลที่สามโดยไม่ได้รับความยินยอม ยกเว้นตามที่กฎหมายกำหนด</p>
+
+          <p style={{ marginTop: '2rem', fontSize: '0.8rem', color: '#666' }}>อัปเดตล่าสุด: 14 มีนาคม 2026 | Nexus Gear &copy; 2026</p>
         </div>
         <div style={{ padding: '15px 20px', borderTop: '1px solid #333', textAlign: 'right' }}>
           <button onClick={onClose} className="btn-primary" style={{ padding: '8px 25px', fontSize: '0.9rem' }}>รับทราบ</button>
@@ -157,12 +191,12 @@ const Register = () => {
       <div className="auth-container">
         <div className="auth-bg-lines" aria-hidden="true" />
         <div className="auth-card">
-          <div style={{ position: 'relative', marginBottom: '0.5rem' }}>
-            <Link to="/" style={{ position: 'absolute', top: 0, right: 0, background: 'var(--color-primary-hover)', color: '#fff', padding: '6px 14px', borderRadius: '4px', fontSize: '0.85rem', textDecoration: 'none' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+            <Link to="/" style={{ background: 'var(--color-primary-hover)', color: '#fff', padding: '6px 14px', borderRadius: '4px', fontSize: '0.85rem', textDecoration: 'none', zIndex: 10 }}>
               กลับสู่หน้าหลัก
             </Link>
-            <h1 className="auth-title">สร้างบัญชีผู้ใช้</h1>
           </div>
+          <h1 className="auth-title">สร้างบัญชีผู้ใช้</h1>
 
           <form onSubmit={handleSubmit} noValidate>
             <div style={{ marginBottom: '1.75rem' }}>
@@ -231,7 +265,7 @@ const Register = () => {
             <IconGoogle /> สมัครใช้งานด้วย Google
           </button>
 
-          <p style={{ textAlign: 'center', marginTop: '1.5rem', color: '#fff' }}>
+          <p style={{ textAlign: 'center', marginTop: '2rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.08)', color: '#ccc', fontSize: '0.95rem' }}>
             มีบัญชีอยู่แล้ว? <Link to="/login" style={{ color: 'var(--color-primary)', fontWeight: 'bold', marginLeft: '4px' }}>เข้าสู่ระบบ</Link>
           </p>
         </div>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 const ForgotPassword = () => {
@@ -14,10 +15,9 @@ const ForgotPassword = () => {
     setError('');
 
     try {
-      // ⚠️ ยิง API ไปที่หลังบ้าน (เปลี่ยน URL ให้ตรงกับพอร์ต Backend ของคุณ ถ้าไม่ใช่ 3000)
       const response = await axios.post('http://localhost:3000/auth/forgot-password', { email });
       setMessage(response.data.message || 'ระบบได้ส่งลิงก์สำหรับตั้งรหัสผ่านใหม่ไปที่อีเมลของคุณแล้วครับ');
-      setEmail(''); // ล้างช่องกรอกอีเมล
+      setEmail('');
     } catch (err: any) {
       setError(
         err.response?.data?.message || 'เกิดข้อผิดพลาดในการส่งข้อมูล กรุณาลองใหม่อีกครั้ง'
@@ -28,63 +28,77 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
-      <div className="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-md border border-gray-700">
-        <h2 className="text-3xl font-bold text-center mb-6 text-red-500">NEXUS GEAR</h2>
-        <h3 className="text-xl font-semibold text-center mb-2">ลืมรหัสผ่านใช่ไหม?</h3>
-        <p className="text-gray-400 text-center mb-6 text-sm">
-          กรุณากรอกอีเมลที่คุณใช้สมัครสมาชิก เราจะส่งลิงก์สำหรับตั้งรหัสผ่านใหม่ไปให้คุณ
-        </p>
-
-        {/* แสดงข้อความสำเร็จ */}
-        {message && (
-          <div className="bg-green-900 border border-green-500 text-green-200 px-4 py-3 rounded mb-4 text-sm text-center">
-            {message}
-          </div>
-        )}
-
-        {/* แสดงข้อความ Error */}
-        {error && (
-          <div className="bg-red-900 border border-red-500 text-red-200 px-4 py-3 rounded mb-4 text-sm text-center">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label htmlFor="email" className="block text-gray-300 text-sm font-bold mb-2">
-              อีเมล
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
-              className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
-              required
-            />
+    <div className="auth-page-wrapper">
+      <div className="auth-container">
+        <div className="auth-bg-lines" aria-hidden="true" />
+        <div className="auth-card" style={{ position: 'relative' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+            <Link
+              to="/login"
+              style={{
+                background: 'var(--color-primary-hover)', color: '#fff',
+                padding: '6px 14px', borderRadius: '4px', fontSize: '0.8rem', textDecoration: 'none',
+                zIndex: 10
+              }}
+            >
+              กลับไปหน้าเข้าสู่ระบบ
+            </Link>
           </div>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={`w-full py-2 px-4 font-bold rounded transition-colors ${
-              isLoading
-                ? 'bg-gray-600 cursor-not-allowed text-gray-400'
-                : 'bg-red-600 hover:bg-red-700 text-white'
-            }`}
-          >
-            {isLoading ? 'กำลังส่งข้อมูล...' : 'ส่งลิงก์รีเซ็ตรหัสผ่าน'}
-          </button>
-        </form>
+          <h1 className="auth-title">ลืมรหัสผ่าน</h1>
 
-        <div className="mt-6 text-center">
-          <a href="/login" className="text-sm text-gray-400 hover:text-red-400 transition-colors">
-            กลับไปหน้าเข้าสู่ระบบ
-          </a>
+          <p style={{ color: '#999', textAlign: 'center', marginBottom: '2rem', fontSize: '0.9rem' }}>
+            กรุณากรอกอีเมลที่คุณใช้สมัครสมาชิก เราจะส่งลิงก์สำหรับตั้งรหัสผ่านใหม่ไปให้คุณ
+          </p>
+
+          {/* แสดงข้อความสำเร็จ */}
+          {message && (
+            <div style={{
+              background: 'rgba(22, 163, 74, 0.15)', border: '1px solid rgba(22, 163, 74, 0.4)',
+              color: '#86efac', padding: '12px 16px', borderRadius: '8px', marginBottom: '1rem',
+              fontSize: '0.9rem', textAlign: 'center'
+            }}>
+              {message}
+            </div>
+          )}
+
+          {/* แสดงข้อความ Error */}
+          {error && (
+            <div style={{
+              background: 'rgba(220, 38, 38, 0.15)', border: '1px solid rgba(220, 38, 38, 0.4)',
+              color: '#fca5a5', padding: '12px 16px', borderRadius: '8px', marginBottom: '1rem',
+              fontSize: '0.9rem', textAlign: 'center'
+            }}>
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} noValidate>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label htmlFor="email" style={{ display: 'block', color: '#fff', marginBottom: '0.5rem', textAlign: 'left' }}>อีเมล</label>
+              <div className="auth-input-wrap">
+                <input
+                  id="email" type="email" placeholder="your@email.com"
+                  className="auth-input" value={email}
+                  onChange={(e) => setEmail(e.target.value)} required
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit" disabled={isLoading} className="btn-primary"
+              style={{
+                width: '100%', padding: '14px', fontFamily: 'Orbitron, sans-serif',
+                fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em',
+                opacity: isLoading ? 0.6 : 1, cursor: isLoading ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {isLoading ? 'กำลังส่งข้อมูล...' : 'ส่งลิงก์รีเซ็ตรหัสผ่าน'}
+            </button>
+          </form>
         </div>
       </div>
+      <div className="auth-bottom-bar" aria-hidden="true" />
     </div>
   );
 };

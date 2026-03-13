@@ -3,7 +3,7 @@
 // ============================================================
 
 import { useEffect, useState, useCallback } from 'react';
-import { Search, AlertTriangle, CheckCircle, Package, TrendingDown, TrendingUp, BarChart3 } from 'lucide-react';
+import { Search, AlertTriangle, CheckCircle, Package, TrendingDown, TrendingUp, BarChart3, X } from 'lucide-react';
 import { getProducts, updateProduct } from '../../../shared/services/api';
 import type { Product, Category } from '../../../shared/types';
 import AdminLayout from '../../navigation/components/AdminLayout';
@@ -87,13 +87,14 @@ const AdminStockPage = () => {
 
       {/* ── Toast ── */}
       {toast && (
-        <div className={`fixed top-5 right-5 z-[9999] flex items-center gap-3 px-5 py-4 rounded-xl text-sm font-bold shadow-2xl border animate-in slide-in-from-right duration-300 font-['Kanit'] ${
+        <div onClick={() => setToast(null)} className={`fixed top-5 right-5 z-[9999] flex items-center gap-3 px-5 py-4 rounded-xl text-sm font-bold shadow-2xl border animate-in slide-in-from-right duration-300 font-['Kanit'] cursor-pointer hover:opacity-80 transition-opacity ${
           toast.ok
             ? 'bg-black border-green-500 text-green-400 shadow-[0_0_20px_rgba(34,197,94,0.4)]'
             : 'bg-black border-[#FF0000] text-[#FF0000] shadow-[0_0_20px_rgba(255,0,0,0.4)]'
         }`}>
           {toast.ok ? <CheckCircle className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}
           {toast.msg}
+          <X size={16} className="ml-2 opacity-50 hover:opacity-100" />
         </div>
       )}
 

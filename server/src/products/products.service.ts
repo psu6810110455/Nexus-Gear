@@ -38,8 +38,7 @@ export class ProductsService {
 
   findAll(search?: string, category?: string, includeHidden: boolean = false, minPrice?: number, maxPrice?: number) {
     const query = this.productsRepository.createQueryBuilder('product')
-      .leftJoinAndSelect('product.category', 'category')
-      .leftJoinAndSelect('product.images', 'images');
+      .leftJoinAndSelect('product.category', 'category');
 
     if (!includeHidden) {
       query.andWhere('product.isHidden = :isHidden', { isHidden: false });
@@ -61,7 +60,7 @@ export class ProductsService {
       query.andWhere('product.price <= :maxPrice', { maxPrice });
     }
 
-    query.addOrderBy('images.sortOrder', 'ASC');
+    query.addOrderBy('product.id', 'ASC');
 
     return query.getMany();
   }
@@ -152,8 +151,7 @@ export class ProductsService {
 
     // อัปเดต image_url หลักของ product ด้วยรูปแรก (ถ้ายังไม่มี)
     if (!product.imageUrl && images.length > 0) {
-      product.imageUrl = images[0].imageUrl;
-      await this.productsRepository.save(product);
+      await this.productsRepository.update(productId, { imageUrl: images[0].imageUrl });
     }
 
     return { message: `อัปโหลดสำเร็จ ${files.length} รูป`, images };

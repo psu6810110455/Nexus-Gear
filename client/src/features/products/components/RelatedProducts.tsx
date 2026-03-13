@@ -37,10 +37,10 @@ function RelatedProducts({ products }: RelatedProductsProps) {
                   -15%
                 </div>
                 <img
-                  src={p.imageUrl || p.image_url || 'https://placehold.co/400x400'}
+                  src={p.imageUrl || p.image_url || 'https://dummyimage.com/400x400/000/fff'}
                   alt={p.name}
                   className="max-h-full object-contain group-hover:scale-110 transition duration-500 mix-blend-multiply"
-                  onError={(e) => { e.currentTarget.src = 'https://placehold.co/400x400/png?text=NEXUS'; }}
+                  onError={(e) => { e.currentTarget.src = 'https://dummyimage.com/400x400/000/fff&text=NEXUS'; }}
                 />
               </div>
               <div className="p-4">

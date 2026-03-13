@@ -205,10 +205,10 @@ function ProductList() {
                             <div className="h-[220px] bg-white p-6 relative flex items-center justify-center overflow-hidden">
                                 <div className="absolute top-3 right-3 bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow">HOT</div>
                                 <img 
-                                    src={product.imageUrl || product.image_url || 'https://placehold.co/400x400'} 
+                                    src={product.imageUrl || product.image_url || 'https://dummyimage.com/400x400/000/fff'} 
                                     alt={product.name}
                                     className="max-h-full max-w-full object-contain group-hover:scale-110 transition duration-500 mix-blend-multiply"
-                                    onError={(e) => { e.currentTarget.src = 'https://placehold.co/400x400/png?text=Nexus'; }}
+                                    onError={(e) => { e.currentTarget.src = 'https://dummyimage.com/400x400/000/fff&text=Nexus'; }}
                                 />
                                 <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition duration-300"></div>
                             </div>

@@ -43,8 +43,9 @@ export class ProductsService {
       query.andWhere('product.name LIKE :search', { search: `%${search}%` });
     }
 
-    if (category) {
-      query.andWhere('category.name = :category', { category });
+    if (category && category !== 'All') {
+      // ใช้ LOWER และ LIKE เพื่อให้ไม่สนตัวพิมพ์เล็กใหญ่ในกรณีที่มีปัญหา
+      query.andWhere('LOWER(category.name) = LOWER(:category)', { category });
     }
 
     return query.getMany();

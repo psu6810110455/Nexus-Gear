@@ -127,13 +127,13 @@ const ProductDetailPage: React.FC = () => {
                 src={
                   product.imageUrl ||
                   product.image_url ||
-                  "https://placehold.co/600x400?text=No+Image"
+                  "https://dummyimage.com/600x400/000/fff&text=No+Image"
                 }
                 alt={product.name}
                 className="max-h-full w-auto object-contain hover:scale-105 transition duration-500 drop-shadow-[0_0_15px_rgba(255,0,0,0.15)]"
                 onError={(e) => {
                   e.currentTarget.src =
-                    "https://placehold.co/600x400/png?text=Nexus+Gear";
+                    "https://dummyimage.com/600x400/000/fff&text=Nexus+Gear";
                 }}
               />
             </div>
@@ -142,16 +142,16 @@ const ProductDetailPage: React.FC = () => {
             <div className="flex gap-4 overflow-x-auto pb-2 w-full justify-center">
               {[
                 product.imageUrl || product.image_url,
-                "https://placehold.co/100x100/111/dc2626?text=Side",
-                "https://placehold.co/100x100/111/dc2626?text=Back",
-                "https://placehold.co/100x100/111/dc2626?text=Box",
+                "https://dummyimage.com/100x100/111/dc2626&text=Side",
+                "https://dummyimage.com/100x100/111/dc2626&text=Back",
+                "https://dummyimage.com/100x100/111/dc2626&text=Box",
               ].map((img, idx) => (
                 <button
                   key={idx}
                   className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition ${idx === 0 ? "border-red-600" : "border-white/10 hover:border-white/30"} flex-shrink-0 bg-white`}
                 >
                   <img
-                    src={img || "https://placehold.co/100"}
+                    src={img || "https://dummyimage.com/100x100/000/fff"}
                     alt="Thumbnail"
                     className="w-full h-full object-contain mix-blend-multiply opacity-80 hover:opacity-100"
                   />
@@ -336,12 +336,12 @@ const ProductDetailPage: React.FC = () => {
                       src={
                         rel.imageUrl ||
                         rel.image_url ||
-                        "https://placehold.co/400x400"
+                        "https://dummyimage.com/400x400/000/fff"
                       }
                       className="max-h-full object-contain group-hover:scale-110 transition duration-500 mix-blend-multiply"
                       onError={(e) => {
                         e.currentTarget.src =
-                          "https://placehold.co/400x400/png?text=NEXUS";
+                          "https://dummyimage.com/400x400/000/fff&text=NEXUS";
                       }}
                     />
                   </div>

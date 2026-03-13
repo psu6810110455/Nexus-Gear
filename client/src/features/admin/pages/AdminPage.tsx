@@ -322,8 +322,8 @@ function AdminPage() {
                   <td className="py-4 pl-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-black rounded border border-[#990000]/50 flex items-center justify-center overflow-hidden">
-                        <img src={p.imageUrl || 'https://placehold.co/50'} alt="" className="w-full h-full object-contain p-1"
-                          onError={(e) => { e.currentTarget.src = 'https://placehold.co/50'; }} />
+                        <img src={p.imageUrl || 'https://dummyimage.com/50x50/000/fff'} alt="" className="w-full h-full object-contain p-1"
+                          onError={(e) => { e.currentTarget.src = 'https://dummyimage.com/50x50/000/fff'; }} />
                       </div>
                       <span className="font-bold text-[#F2F4F6] font-['Kanit']">{p.name} {p.isHidden && <span className="text-xs bg-red-500/20 text-red-500 px-2 py-0.5 rounded-full ml-2">ซ่อนอยู่</span>}</span>
                     </div>

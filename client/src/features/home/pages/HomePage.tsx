@@ -118,7 +118,7 @@ function HomePage() {
             <div className="hero-image-glow" />
             <img key={activeSlide} src={current.imageUrl ?? current.image_url} alt={current.name}
               className={`hero-img ${isAnimating ? 'slide-exit' : 'slide-enter'}`}
-              onError={e => { e.currentTarget.src = 'https://placehold.co/400x400/111/dc2626?text=NEXUS'; }} />
+              onError={e => { e.currentTarget.src = 'https://dummyimage.com/400x400/111/dc2626&text=NEXUS'; }} />
           </div>
         </div>
         <div className="slider-nav">
@@ -141,7 +141,7 @@ function HomePage() {
           {products.map(product => (
             <div key={product.id} className="product-tile" onClick={() => navigate(`/products/${product.id}`)}>
               <img src={product.imageUrl ?? product.image_url} alt={product.name} className="product-tile-img"
-                onError={e => { e.currentTarget.src = 'https://placehold.co/400x400/111/dc2626?text=NO+IMG'; }} />
+                onError={e => { e.currentTarget.src = 'https://dummyimage.com/400x400/111/dc2626&text=NO+IMG'; }} />
               <div className="product-tile-info">
                 <div className="tile-name">{product.name}</div>
                 <div className="tile-price">฿{Number(product.price).toLocaleString()}</div>

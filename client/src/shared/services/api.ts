@@ -12,6 +12,19 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// ── Auto-logout on 401 ───────────────────────────────────────
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
 // ── Auth ──────────────────────────────────────────────────────
 export const loginApi = (email: string, password: string) =>
   api.post('/auth/login', { email, password }).then((r) => r.data);

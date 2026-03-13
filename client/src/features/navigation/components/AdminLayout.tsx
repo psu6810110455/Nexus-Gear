@@ -50,7 +50,7 @@ const AdminLayout = ({ children, breadcrumb = 'จัดการสินค้
           <img
             src="/nexus-logo.png" alt="Logo"
             className="w-8 h-8 object-contain relative z-10"
-            onError={(e) => { e.currentTarget.src = 'https://placehold.co/50x50/000000/red?text=NX'; }}
+            onError={(e) => { e.currentTarget.src = 'https://dummyimage.com/50x50/000/fff/000000/red?text=NX'; }}
           />
           <span className="font-['Orbitron'] font-black text-[#F2F4F6] text-lg tracking-wider relative z-10 drop-shadow-[0_0_5px_rgba(255,0,0,0.5)]">
             ADMIN

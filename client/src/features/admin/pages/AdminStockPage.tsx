@@ -240,10 +240,10 @@ const AdminStockPage = () => {
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center overflow-hidden border border-[#990000]/30 shrink-0">
                           <img
-                            src={p.imageUrl || 'https://placehold.co/40x40?text=N'}
+                            src={p.imageUrl || 'https://dummyimage.com/40x40/000/fff&text=N'}
                             alt={p.name}
                             className="max-w-full max-h-full object-contain"
-                            onError={(e) => { e.currentTarget.src = 'https://placehold.co/40x40?text=N'; }}
+                            onError={(e) => { e.currentTarget.src = 'https://dummyimage.com/40x40/000/fff&text=N'; }}
                           />
                         </div>
                         <span className="text-sm text-[#F2F4F6] font-bold font-['Kanit'] line-clamp-1 group-hover:text-white transition">

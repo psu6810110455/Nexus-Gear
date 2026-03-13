@@ -105,7 +105,7 @@ import { Toaster } from 'sonner';
 function App() {
   return (
     <AuthProvider>
-      <Toaster richColors position="top-center" expand toastOptions={{ duration: 2000 }} />
+      <Toaster richColors position="top-center" toastOptions={{ duration: 2000 }} visibleToasts={1} />
       <AppContent />
     </AuthProvider>
   );

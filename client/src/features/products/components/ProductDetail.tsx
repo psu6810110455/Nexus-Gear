@@ -67,7 +67,7 @@ const ProductDetail = () => {
     <div style={{ minHeight: '100vh', background: 'var(--color-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-muted)', fontFamily: 'Orbitron, sans-serif', letterSpacing: '0.1em' }}>ไม่พบสินค้า</div>
   );
 
-  const imgSrc = product.imageUrl ?? product.image_url ?? 'https://placehold.co/600x400?text=No+Image';
+  const imgSrc = product.imageUrl ?? product.image_url ?? 'https://dummyimage.com/600x400/000/fff&text=No+Image';
 
   return (
     <main style={{ width: '100%', minHeight: '100vh', background: 'var(--color-bg)', color: 'var(--color-text)', fontFamily: "'Kanit', sans-serif", paddingBottom: '6rem' }}>
@@ -92,7 +92,7 @@ const ProductDetail = () => {
             style={{ maxHeight: '28rem', maxWidth: '100%', objectFit: 'contain', transition: 'transform 0.5s', position: 'relative', zIndex: 1, mixBlendMode: 'multiply' }}
             onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.05)')}
             onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
-            onError={e => { e.currentTarget.src = 'https://placehold.co/600x400/png?text=Nexus+Gear'; }} />
+            onError={e => { e.currentTarget.src = 'https://dummyimage.com/600x400/000/fff&text=Nexus+Gear'; }} />
         </div>
         <div className="pd-info-panel">
           <span className="pd-category-badge">{product.category?.name ?? 'GAMING GEAR'}</span>
@@ -199,11 +199,11 @@ const ProductDetail = () => {
                   <div key={rel.id} className="pd-rel-card" onClick={() => navigate(`/products/${rel.id}`)}>
                     <div style={{ height: '11rem', background: '#fff', padding: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
                       <span style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'var(--color-primary)', color: '#fff', fontSize: '0.58rem', fontWeight: 700, padding: '2px 7px', borderRadius: '3px', fontFamily: 'Orbitron, sans-serif' }}>-15%</span>
-                      <img src={rel.imageUrl ?? rel.image_url ?? 'https://placehold.co/400x400'} alt={rel.name}
+                      <img src={rel.imageUrl ?? rel.image_url ?? 'https://dummyimage.com/400x400/000/fff'} alt={rel.name}
                         style={{ maxHeight: '100%', objectFit: 'contain', transition: 'transform 0.5s', mixBlendMode: 'multiply' }}
                         onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.1)')}
                         onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
-                        onError={e => { e.currentTarget.src = 'https://placehold.co/400x400/png?text=NEXUS'; }}
+                        onError={e => { e.currentTarget.src = 'https://dummyimage.com/400x400/000/fff&text=NEXUS'; }}
                         onClick={e => e.stopPropagation()} />
                     </div>
                     <div style={{ padding: '0.9rem' }}>

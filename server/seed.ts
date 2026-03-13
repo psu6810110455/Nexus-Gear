@@ -23,20 +23,20 @@ const CATEGORIES = [
 ];
 
 const REAL_PRODUCTS = [
-    { name: 'ROG Phone 7 Ultimate', category: 'มือถือเกมมิ่ง', price: 42990, image: 'https://dlcdnwebimgs.asus.com/gain/44268636-6202-4048-96bd-276632057342/w800', desc: 'สุดยอดสมาร์ทโฟนเกมมิ่งแห่งปี พร้อมระบบระบายความร้อน AeroActive Cooler 7' },
-    { name: 'Black Shark 5 Pro', category: 'มือถือเกมมิ่ง', price: 28900, image: 'https://m.media-amazon.com/images/I/61imgK9J+lL.jpg', desc: 'สมาร์ทโฟนเกมมิ่งสายพันธุ์ดุ พร้อมปุ่ม Shoulder Trigger ของแท้' },
-    { name: 'RedMagic 8 Pro Titanium', category: 'มือถือเกมมิ่ง', price: 31500, image: 'https://m.media-amazon.com/images/I/71Xm0tQ0bBL._AC_SL1500_.jpg', desc: 'มือถือเรือธงสำหรับเกมเมอร์ขั้นสุดด้วยดีไซน์ขอบเหลี่ยมล้ำอนาคต' },
-    { name: 'HyperX Cloud Alpha Wireless', category: 'หูฟัง', price: 3290, image: 'https://row.hyperx.com/cdn/shop/products/hyperx_cloud_alpha_red_1_main_900x.jpg', desc: 'หูฟังเกมมิ่งระดับโปร ใช้งานไร้สายได้นานสูงสุดถึง 300 ชั่วโมง' },
-    { name: 'SteelSeries Arctis Nova Pro', category: 'หูฟัง', price: 12500, image: 'https://m.media-amazon.com/images/I/619BkvKW35L._AC_SL1500_.jpg', desc: 'หูฟังไฮเอนด์ พลังเสียงระดับ High-Res Audio' },
-    { name: 'Razer Kishi V2 for Android', category: 'จอยควบคุม', price: 3590, image: 'https://m.media-amazon.com/images/I/61iXE1nZkGL.jpg', desc: 'จอยเกมติดมือถือ สัมผัสประหนึ่งคอนโซลแท้ๆ' },
-    { name: 'ROG Kunai 3 Gamepad', category: 'จอยควบคุม', price: 4290, image: 'https://dlcdnwebimgs.asus.com/gain/57F833C8-94D9-4824-913A-98C152B336A1', desc: 'Gamepad ROG ดีไซน์ Modular ถอดเปลี่ยนได้ดั่งใจ' },
-    { name: 'Flydigi Apex 3 Elite', category: 'จอยควบคุม', price: 2990, image: 'https://m.media-amazon.com/images/I/61K-x+w+pXIL._AC_SL1500_.jpg', desc: 'จอยเกมมิ่งที่นักแข่ง eSport เลือกใช้ พร้อมจอ LED บันทึกโปรไฟล์ได้' },
-    { name: 'Black Shark Finger Sleeves', category: 'ถุงนิ้วเกมมิ่ง', price: 190, image: 'https://m.media-amazon.com/images/I/61+y+w+pXIL._AC_SL1500_.jpg', desc: 'ถุงนิ้ว Carbon Fiber ลดแรงเสียดทาน สไลด์ลื่นไม่มีสะดุด' },
-    { name: 'Razer Gaming Finger Sleeve', category: 'ถุงนิ้วเกมมิ่ง', price: 390, image: 'https://m.media-amazon.com/images/I/51w7pM9h5NL._AC_SL1500_.jpg', desc: 'ถุงนิ้วระดับโปรจาก Razer ทำจากเงินและไนลอน ระบายอากาศได้เยี่ยม' },
-    { name: 'Black Shark Magnetic Cooler', category: 'พัดลมระบายอากาศ', price: 1590, image: 'https://m.media-amazon.com/images/I/61t-XhJ-xRL.jpg', desc: 'พัดลมทำความเย็นพลังแม่เหล็กติดหลังโทรศัพท์ ใช้งานสะดวก' },
-    { name: 'Razer Phone Cooler Chroma', category: 'พัดลมระบายอากาศ', price: 2190, image: 'https://m.media-amazon.com/images/I/61o4uD0KhtL._AC_SL1500_.jpg', desc: 'พัดลมแม่เหล็กพร้อมไฟ RGB สวยจัดเต็มสไตล์ Razer' },
-    { name: 'Logitech G Pro X Superlight', category: 'อุปกรณ์เสริมอื่นๆ', price: 5490, image: 'https://m.media-amazon.com/images/I/71wF7YDIQkL._AC_SL1500_.jpg', desc: 'เมาส์เกมมิ่งไร้สายยอดฮิตของโปรเพลเยอร์ น้ำหนักเบาเพียง 63 กรัม' },
-    { name: 'Razer BlackWidow V3 Pro', category: 'อุปกรณ์เสริมอื่นๆ', price: 4290, image: 'https://m.media-amazon.com/images/I/81vJNEKzZIL._AC_SL1500_.jpg', desc: 'คีย์บอร์ดเกมมิ่งไร้สาย ทัชสกรีนและสวิตช์ Green ตอบสนองไว' }
+    { name: 'ROG Phone 7 Ultimate', category: 'มือถือเกมมิ่ง', price: 42990, image: 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=500&h=500&q=80', desc: 'สุดยอดสมาร์ทโฟนเกมมิ่งแห่งปี พร้อมระบบระบายความร้อน AeroActive Cooler 7' },
+    { name: 'Black Shark 5 Pro', category: 'มือถือเกมมิ่ง', price: 28900, image: 'https://images.unsplash.com/photo-1585060544812-6b45742d762f?auto=format&fit=crop&w=500&h=500&q=80', desc: 'สมาร์ทโฟนเกมมิ่งสายพันธุ์ดุ พร้อมปุ่ม Shoulder Trigger ของแท้' },
+    { name: 'RedMagic 8 Pro Titanium', category: 'มือถือเกมมิ่ง', price: 31500, image: 'https://images.unsplash.com/photo-1622485603417-af92ba667d4f?auto=format&fit=crop&w=500&h=500&q=80', desc: 'มือถือเรือธงสำหรับเกมเมอร์ขั้นสุดด้วยดีไซน์ขอบเหลี่ยมล้ำอนาคต' },
+    { name: 'HyperX Cloud Alpha Wireless', category: 'หูฟัง', price: 3290, image: 'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?auto=format&fit=crop&w=500&h=500&q=80', desc: 'หูฟังเกมมิ่งระดับโปร ใช้งานไร้สายได้นานสูงสุดถึง 300 ชั่วโมง' },
+    { name: 'SteelSeries Arctis Nova Pro', category: 'หูฟัง', price: 12500, image: 'https://images.unsplash.com/photo-1551645120-d70bfe84c826?auto=format&fit=crop&w=500&h=500&q=80', desc: 'หูฟังไฮเอนด์ พลังเสียงระดับ High-Res Audio' },
+    { name: 'Razer Kishi V2 for Android', category: 'จอยควบคุม', price: 3590, image: 'https://images.unsplash.com/photo-1600861194942-f56f1dc9ebc4?auto=format&fit=crop&w=500&h=500&q=80', desc: 'จอยเกมติดมือถือ สัมผัสประหนึ่งคอนโซลแท้ๆ' },
+    { name: 'ROG Kunai 3 Gamepad', category: 'จอยควบคุม', price: 4290, image: 'https://images.unsplash.com/photo-1592155931584-901ac15763e3?auto=format&fit=crop&w=500&h=500&q=80', desc: 'Gamepad ROG ดีไซน์ Modular ถอดเปลี่ยนได้ดั่งใจ' },
+    { name: 'Flydigi Apex 3 Elite', category: 'จอยควบคุม', price: 2990, image: 'https://images.unsplash.com/photo-1612287232202-029ceea98093?auto=format&fit=crop&w=500&h=500&q=80', desc: 'จอยเกมมิ่งที่นักแข่ง eSport เลือกใช้ พร้อมจอ LED บันทึกโปรไฟล์ได้' },
+    { name: 'Black Shark Finger Sleeves', category: 'ถุงนิ้วเกมมิ่ง', price: 190, image: 'https://images.unsplash.com/photo-1563298723-dcfebaa392e3?auto=format&fit=crop&w=500&h=500&q=80', desc: 'ถุงนิ้ว Carbon Fiber ลดแรงเสียดทาน สไลด์ลื่นไม่มีสะดุด' },
+    { name: 'Razer Gaming Finger Sleeve', category: 'ถุงนิ้วเกมมิ่ง', price: 390, image: 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?auto=format&fit=crop&w=500&h=500&q=80', desc: 'ถุงนิ้วระดับโปรจาก Razer ทำจากเงินและไนลอน ระบายอากาศได้เยี่ยม' },
+    { name: 'Black Shark Magnetic Cooler', category: 'พัดลมระบายอากาศ', price: 1590, image: 'https://images.unsplash.com/photo-1587202372634-32705e3bf49c?auto=format&fit=crop&w=500&h=500&q=80', desc: 'พัดลมทำความเย็นพลังแม่เหล็กติดหลังโทรศัพท์ ใช้งานสะดวก' },
+    { name: 'Razer Phone Cooler Chroma', category: 'พัดลมระบายอากาศ', price: 2190, image: 'https://images.unsplash.com/photo-1605330364239-2b0f49fe8e69?auto=format&fit=crop&w=500&h=500&q=80', desc: 'พัดลมแม่เหล็กพร้อมไฟ RGB สวยจัดเต็มสไตล์ Razer' },
+    { name: 'Logitech G Pro X Superlight', category: 'อุปกรณ์เสริมอื่นๆ', price: 5490, image: 'https://images.unsplash.com/photo-1527814050087-3c00e7ee6c9a?auto=format&fit=crop&w=500&h=500&q=80', desc: 'เมาส์เกมมิ่งไร้สายยอดฮิตของโปรเพลเยอร์ น้ำหนักเบาเพียง 63 กรัม' },
+    { name: 'Razer BlackWidow V3 Pro', category: 'อุปกรณ์เสริมอื่นๆ', price: 4290, image: 'https://images.unsplash.com/photo-1511467687858-23d19286d8b4?auto=format&fit=crop&w=500&h=500&q=80', desc: 'คีย์บอร์ดเกมมิ่งไร้สาย ทัชสกรีนและสวิตช์ Green ตอบสนองไว' }
 ];
 
 async function seedGamingData() {

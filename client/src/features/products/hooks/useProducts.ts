@@ -33,11 +33,20 @@ export const useProducts = (initialFilters?: ProductFilterParams): UseProductsRe
       setProducts(productList);
 
       const counts = extractCategoriesFromProducts(productList);
-      // ✅ Fix category disappearing UI Bug: Only update categories & counts if we aren't filtering by category (i.e. we are viewing 'All' and therefore get the whole list)
-      if (!filters?.category || filters.category === 'All' || categories.length <= 1) {
-        setCategories(Object.keys(counts));
-        setCategoryCounts(counts);
-      }
+
+      // ✅ Fix category disappearing UI Bug: Using functional state update carefully avoids stale closure issues from the empty dependency array []
+      setCategories((prevCategories) => {
+        if (!filters?.category || filters.category === 'All' || prevCategories.length <= 1) {
+          return Object.keys(counts);
+        }
+        return prevCategories;
+      });
+      setCategoryCounts((prevCounts) => {
+        if (!filters?.category || filters.category === 'All' || Object.keys(prevCounts).length <= 1) {
+          return counts;
+        }
+        return prevCounts;
+      });
     } catch (err: any) {
       // ✅ แก้: แยก error message ออกให้ชัดเจน ช่วย debug ได้ง่ายขึ้น
       let message = 'เกิดข้อผิดพลาดในการโหลดสินค้า';

@@ -17,11 +17,15 @@ export class ProductsController {
     @Query('search') search?: string,
     @Query('category') category?: string,
     @Query('includeHidden') includeHidden?: string,
+    @Query('minPrice') minPrice?: string,
+    @Query('maxPrice') maxPrice?: string,
   ) {
     return this.productsService.findAll(
       search,
       category,
       includeHidden === 'true',
+      minPrice ? Number(minPrice) : undefined,
+      maxPrice ? Number(maxPrice) : undefined,
     );
   }
 

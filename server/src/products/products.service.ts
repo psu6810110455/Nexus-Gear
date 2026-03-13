@@ -31,7 +31,7 @@ export class ProductsService {
     return this.productsRepository.save(product);
   }
 
-  findAll(search?: string, category?: string, includeHidden: boolean = false) {
+  findAll(search?: string, category?: string, includeHidden: boolean = false, minPrice?: number, maxPrice?: number) {
     const query = this.productsRepository.createQueryBuilder('product')
       .leftJoinAndSelect('product.category', 'category');
 
@@ -46,6 +46,14 @@ export class ProductsService {
     if (category && category !== 'All') {
       // ใช้ LOWER และ LIKE เพื่อให้ไม่สนตัวพิมพ์เล็กใหญ่ในกรณีที่มีปัญหา
       query.andWhere('LOWER(category.name) = LOWER(:category)', { category });
+    }
+
+    if (minPrice !== undefined) {
+      query.andWhere('product.price >= :minPrice', { minPrice });
+    }
+
+    if (maxPrice !== undefined) {
+      query.andWhere('product.price <= :maxPrice', { maxPrice });
     }
 
     return query.getMany();

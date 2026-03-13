@@ -33,8 +33,11 @@ export const useProducts = (initialFilters?: ProductFilterParams): UseProductsRe
       setProducts(productList);
 
       const counts = extractCategoriesFromProducts(productList);
-      setCategories(Object.keys(counts));
-      setCategoryCounts(counts);
+      // ✅ Fix category disappearing UI Bug: Only update categories & counts if we aren't filtering by category (i.e. we are viewing 'All' and therefore get the whole list)
+      if (!filters?.category || filters.category === 'All' || categories.length <= 1) {
+        setCategories(Object.keys(counts));
+        setCategoryCounts(counts);
+      }
     } catch (err: any) {
       // ✅ แก้: แยก error message ออกให้ชัดเจน ช่วย debug ได้ง่ายขึ้น
       let message = 'เกิดข้อผิดพลาดในการโหลดสินค้า';

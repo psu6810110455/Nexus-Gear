@@ -78,7 +78,10 @@ const CancelOrderModal = ({
   if (!isOpen || !order) return null;
 
   const finalReason = reason === "อื่นๆ" ? customReason.trim() : reason;
-  const canSubmit = finalReason.length > 0;
+  const canSubmit =
+    finalReason.length > 0 &&
+    bankName.trim().length > 0 &&
+    bankAccount.trim().length > 0;
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
@@ -200,11 +203,11 @@ const CancelOrderModal = ({
           {/* ข้อมูลบัญชีสำหรับคืนเงิน */}
           <div className="bg-zinc-900/50 rounded-xl p-4 border border-zinc-800 space-y-3">
             <p className="text-orange-400 text-xs font-bold flex items-center gap-1.5">
-              💳 ข้อมูลบัญชีสำหรับคืนเงิน (ไม่บังคับ)
+              💳 ข้อมูลบัญชีสำหรับคืนเงิน
             </p>
             <div>
               <label className="text-zinc-500 text-xs mb-1 block">
-                ชื่อธนาคาร
+                ชื่อธนาคาร *
               </label>
               <select
                 value={bankName}
@@ -234,7 +237,7 @@ const CancelOrderModal = ({
             </div>
             <div>
               <label className="text-zinc-500 text-xs mb-1 block">
-                เลขบัญชี
+                เลขบัญชี *
               </label>
               <input
                 value={bankAccount}
@@ -245,10 +248,13 @@ const CancelOrderModal = ({
             </div>
           </div>
 
-          <p className="text-zinc-600 text-xs bg-zinc-900/50 border border-zinc-800 rounded-xl p-3">
-            ⚠️ สามารถยกเลิกได้เฉพาะคำสั่งซื้อที่ยังไม่ได้รับการจัดส่ง (สถานะ:
-            รอตรวจสอบ / ชำระเงินแล้ว)
-          </p>
+          <div className="bg-yellow-500/10 border border-yellow-500/40 rounded-xl p-3 flex items-center justify-center gap-2">
+            <span className="text-yellow-400 text-xs font-bold text-center leading-relaxed">
+              ⚠️ สามารถยกเลิกได้เฉพาะคำสั่งซื้อที่ยังไม่ได้รับการจัดส่ง
+              <br />
+              (สถานะ: รอตรวจสอบ)
+            </span>
+          </div>
         </div>
 
         {/* Footer */}

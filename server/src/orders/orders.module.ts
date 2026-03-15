@@ -8,10 +8,12 @@ import { OrderItem } from './entities/order-item.entity';
 import { Product } from '../products/entities/product.entity';
 import { User } from '../users/entities/user.entity';
 import { Cart } from '../cart/entities/cart.entity';
+import { ChatModule } from '../chat/chat.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Order, OrderItem, Product, User, Cart]),
+    ChatModule,
     MulterModule.register({ dest: './uploads/slips' }),
   ],
   controllers: [OrdersController],

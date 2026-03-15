@@ -17,7 +17,7 @@ const TABS = [
     id: "all",
     label: "ทั้งหมด",
     icon: ClipboardList,
-    count: (o: Order[]) => 0,
+    count: () => 0,
   },
   {
     id: "pending",

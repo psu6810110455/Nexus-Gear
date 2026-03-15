@@ -193,11 +193,12 @@ export const ProfilePage = () => {
     setRatings((prev) => ({ ...prev, [orderId]: score }));
   };
 
+  // @ts-ignore - unused function
   const openStatusModal = (label: string) => {
     let filteredOrders: Order[] = [];
     if (label === "ที่ต้องชำระ") {
       filteredOrders = orders.filter((o) => o.status === "pending_payment");
-    } else if (label === "ที่ต้องจัดส่ง") {
+    } else if (label === "ที่ต้องจัดส่ง") {``
       filteredOrders = orders.filter((o) => o.status === "processing");
     } else if (label === "ที่ต้องได้รับ") {
       filteredOrders = orders.filter((o) => o.status === "shipping");

@@ -17,7 +17,6 @@ const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(null);
-  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
 
@@ -47,13 +46,12 @@ const ProductDetail: React.FC = () => {
         setProduct(currentProduct);
 
         const allProductsRes = await axios.get('http://localhost:3000/products', { headers });
-        const related = allProductsRes.data.filter((p: Product) => {
+        allProductsRes.data.filter((p: Product) => {
            const catName1 = typeof p.category === 'object' ? p.category?.name : p.category;
            const catName2 = typeof currentProduct.category === 'object' ? currentProduct.category?.name : currentProduct.category;
            return catName1 === catName2 && p.id !== currentProduct.id;
         }).slice(0, 4);
 
-        setRelatedProducts(related);
         setLoading(false);
         setQuantity(1);
       } catch (err) {

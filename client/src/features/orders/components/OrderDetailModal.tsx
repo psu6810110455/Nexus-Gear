@@ -280,6 +280,8 @@ const OrderDetailModal = ({
   const isCancelled = order.status === "cancelled";
   const isRefunded = order.refund_status === "refunded";
   const isRejected = order.refund_status === "rejected";
+  // ยกเลิกด้วยเหตุผลสลิปปลอม → ปฏิเสธการคืนเงินทันที ไม่แสดง refund form
+  const isFakeSlip = isCancelled && !!order.cancel_reason?.includes("สลิปปลอม");
 
   return (
     <>
@@ -705,7 +707,7 @@ const OrderDetailModal = ({
               )}
 
               {/* ── Rejected Status (ปฏิเสธการคืนเงิน) ── */}
-              {isCancelled && isRejected && (
+              {isCancelled && (isRejected || isFakeSlip) && (
                 <div className="bg-red-500/5 p-4 rounded-xl border border-red-500/20 space-y-3">
                   <div className="flex items-center gap-2 text-red-500 font-bold text-sm uppercase">
                     <Ban size={16} /> ปฏิเสธการคืนเงิน
@@ -718,116 +720,120 @@ const OrderDetailModal = ({
               )}
 
               {/* ── Refund Form (ยกเลิกแล้วแต่ยังไม่คืนเงิน) ── */}
-              {isCancelled && !isRefunded && !isRejected && onRefund && (
-                <div className="bg-yellow-500/5 p-4 rounded-xl border border-yellow-500/20 space-y-4">
-                  <div className="flex items-center gap-2 text-yellow-500 font-bold text-sm uppercase">
-                    <DollarSign size={16} /> คืนเงินลูกค้า
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-zinc-500 text-xs mb-1 block">
-                        ยอดเงินที่คืน (฿)
-                      </label>
-                      <input
-                        type="number"
-                        placeholder={order.total_price}
-                        value={refundAmount}
-                        onChange={(e) => setRefundAmount(e.target.value)}
-                        className="w-full bg-zinc-900 border border-zinc-700 focus:border-yellow-500/50 text-zinc-200 text-sm rounded-xl px-4 py-2.5 outline-none placeholder-zinc-600 transition-colors"
-                      />
+              {isCancelled &&
+                !isRefunded &&
+                !isRejected &&
+                !isFakeSlip &&
+                onRefund && (
+                  <div className="bg-yellow-500/5 p-4 rounded-xl border border-yellow-500/20 space-y-4">
+                    <div className="flex items-center gap-2 text-yellow-500 font-bold text-sm uppercase">
+                      <DollarSign size={16} /> คืนเงินลูกค้า
                     </div>
-                    <div>
-                      <label className="text-zinc-500 text-xs mb-1 block">
-                        ช่องทางคืนเงิน *
-                      </label>
-                      <select
-                        value={refundChannel}
-                        onChange={(e) => setRefundChannel(e.target.value)}
-                        className="w-full bg-zinc-900 border border-zinc-700 focus:border-yellow-500/50 text-zinc-200 text-sm rounded-xl px-4 py-2.5 outline-none transition-colors"
-                      >
-                        <option value="">-- เลือก --</option>
-                        {REFUND_CHANNELS.map((c) => (
-                          <option key={c} value={c}>
-                            {c}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* อัปโหลดสลิปคืนเงิน */}
-                  <div>
-                    <label className="text-zinc-500 text-xs mb-1 flex items-center gap-1">
-                      <Upload size={11} /> สลิปการคืนเงิน (รูปภาพ)
-                    </label>
-                    {refundPreview ? (
-                      <div className="flex items-center gap-3 bg-zinc-900/60 border border-zinc-700 rounded-xl p-3">
-                        <img
-                          src={refundPreview}
-                          alt="refund-slip"
-                          className="w-14 h-16 object-cover rounded-lg border border-zinc-700 cursor-pointer"
-                          onClick={() => setLightboxSrc(refundPreview)}
-                        />
-                        <div className="flex-1">
-                          <p className="text-green-400 text-xs font-bold">
-                            อัปโหลดสำเร็จ ✓
-                          </p>
-                          <button
-                            onClick={() => {
-                              setRefundFile(null);
-                              setRefundPreview(null);
-                            }}
-                            className="text-zinc-500 hover:text-red-400 text-xs mt-1 transition-colors"
-                          >
-                            ลบ / เปลี่ยนรูป
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed border-zinc-700 hover:border-yellow-500/50 rounded-xl cursor-pointer transition-colors group">
-                        <Upload
-                          size={16}
-                          className="text-zinc-600 group-hover:text-yellow-400 transition-colors"
-                        />
-                        <span className="text-zinc-500 text-sm group-hover:text-zinc-300 transition-colors">
-                          คลิกเพื่ออัปโหลดสลิปคืนเงิน
-                        </span>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-zinc-500 text-xs mb-1 block">
+                          ยอดเงินที่คืน (฿)
+                        </label>
                         <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleRefundFileChange}
-                          className="hidden"
+                          type="number"
+                          placeholder={order.total_price}
+                          value={refundAmount}
+                          onChange={(e) => setRefundAmount(e.target.value)}
+                          className="w-full bg-zinc-900 border border-zinc-700 focus:border-yellow-500/50 text-zinc-200 text-sm rounded-xl px-4 py-2.5 outline-none placeholder-zinc-600 transition-colors"
                         />
-                      </label>
-                    )}
-                  </div>
+                      </div>
+                      <div>
+                        <label className="text-zinc-500 text-xs mb-1 block">
+                          ช่องทางคืนเงิน *
+                        </label>
+                        <select
+                          value={refundChannel}
+                          onChange={(e) => setRefundChannel(e.target.value)}
+                          className="w-full bg-zinc-900 border border-zinc-700 focus:border-yellow-500/50 text-zinc-200 text-sm rounded-xl px-4 py-2.5 outline-none transition-colors"
+                        >
+                          <option value="">-- เลือก --</option>
+                          {REFUND_CHANNELS.map((c) => (
+                            <option key={c} value={c}>
+                              {c}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
 
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleRefundSubmit}
-                      disabled={!refundChannel || refundLoading}
-                      className="flex-1 py-3 bg-yellow-600 hover:bg-yellow-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
-                    >
-                      {refundLoading
-                        ? "กำลังดำเนินการ..."
-                        : "💰 ยืนยันการคืนเงิน"}
-                    </button>
-                    {onRejectRefund && (
+                    {/* อัปโหลดสลิปคืนเงิน */}
+                    <div>
+                      <label className="text-zinc-500 text-xs mb-1 flex items-center gap-1">
+                        <Upload size={11} /> สลิปการคืนเงิน (รูปภาพ)
+                      </label>
+                      {refundPreview ? (
+                        <div className="flex items-center gap-3 bg-zinc-900/60 border border-zinc-700 rounded-xl p-3">
+                          <img
+                            src={refundPreview}
+                            alt="refund-slip"
+                            className="w-14 h-16 object-cover rounded-lg border border-zinc-700 cursor-pointer"
+                            onClick={() => setLightboxSrc(refundPreview)}
+                          />
+                          <div className="flex-1">
+                            <p className="text-green-400 text-xs font-bold">
+                              อัปโหลดสำเร็จ ✓
+                            </p>
+                            <button
+                              onClick={() => {
+                                setRefundFile(null);
+                                setRefundPreview(null);
+                              }}
+                              className="text-zinc-500 hover:text-red-400 text-xs mt-1 transition-colors"
+                            >
+                              ลบ / เปลี่ยนรูป
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed border-zinc-700 hover:border-yellow-500/50 rounded-xl cursor-pointer transition-colors group">
+                          <Upload
+                            size={16}
+                            className="text-zinc-600 group-hover:text-yellow-400 transition-colors"
+                          />
+                          <span className="text-zinc-500 text-sm group-hover:text-zinc-300 transition-colors">
+                            คลิกเพื่ออัปโหลดสลิปคืนเงิน
+                          </span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleRefundFileChange}
+                            className="hidden"
+                          />
+                        </label>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2">
                       <button
-                        onClick={async () => {
-                          setRefundLoading(true);
-                          await onRejectRefund(order.id);
-                          setRefundLoading(false);
-                        }}
-                        disabled={refundLoading}
-                        className="flex-1 py-3 bg-red-900/40 hover:bg-red-800/60 border border-red-500/30 disabled:opacity-40 disabled:cursor-not-allowed text-red-400 font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+                        onClick={handleRefundSubmit}
+                        disabled={!refundChannel || refundLoading}
+                        className="flex-1 py-3 bg-yellow-600 hover:bg-yellow-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
                       >
-                        <Ban size={16} /> ปฏิเสธการคืนเงิน
+                        {refundLoading
+                          ? "กำลังดำเนินการ..."
+                          : "💰 ยืนยันการคืนเงิน"}
                       </button>
-                    )}
+                      {onRejectRefund && (
+                        <button
+                          onClick={async () => {
+                            setRefundLoading(true);
+                            await onRejectRefund(order.id);
+                            setRefundLoading(false);
+                          }}
+                          disabled={refundLoading}
+                          className="flex-1 py-3 bg-red-900/40 hover:bg-red-800/60 border border-red-500/30 disabled:opacity-40 disabled:cursor-not-allowed text-red-400 font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+                        >
+                          <Ban size={16} /> ปฏิเสธการคืนเงิน
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
           </div>
         </div>

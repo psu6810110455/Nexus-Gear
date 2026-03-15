@@ -10,6 +10,7 @@ import {
   Truck,
   PackageCheck,
   Ban,
+  RotateCcw,
 } from "lucide-react";
 
 const STATUS_DISPLAY: Record<
@@ -64,7 +65,18 @@ const STATUS_DISPLAY: Record<
     glow: "",
     icon: <Ban size={11} />,
   },
+  returned: {
+    text: "คืนสินค้า",
+    badge: "text-orange-400 border-orange-400/40 bg-orange-400/10",
+    bar: "bg-orange-400",
+    glow: "hover:shadow-[0_0_24px_-6px_rgba(251,146,60,0.2)]",
+    icon: <RotateCcw size={11} />,
+  },
 };
+
+// ตรวจว่าเป็น "คืนสินค้า" หรือ "ยกเลิก"
+const isReturnOrder = (order: { cancel_reason?: string | null }) =>
+  order.cancel_reason?.startsWith("ขอคืนสินค้า:") ?? false;
 
 const formatThaiDate = (dateString: string) => {
   const d = new Date(dateString);
@@ -96,15 +108,23 @@ interface Order {
   created_at: string;
   items: OrderItem[];
   is_rated?: boolean;
+  completed_at?: string | null;
+  refund_status?: string;
+  cancel_reason?: string | null;
 }
 interface OrderCardProps {
   order: Order;
   onSelect: (order: Order) => void;
   onCancel?: () => void;
+  onReturn?: () => void;
 }
 
-const OrderCard = ({ order, onSelect, onCancel }: OrderCardProps) => {
-  const s = STATUS_DISPLAY[order.status] ?? {
+const OrderCard = ({ order, onSelect, onCancel, onReturn }: OrderCardProps) => {
+  const displayKey =
+    order.status === "cancelled" && isReturnOrder(order)
+      ? "returned"
+      : order.status;
+  const s = STATUS_DISPLAY[displayKey] ?? {
     text: order.status,
     badge: "text-zinc-400 border-zinc-700 bg-zinc-800",
     bar: "bg-zinc-600",
@@ -113,6 +133,34 @@ const OrderCard = ({ order, onSelect, onCancel }: OrderCardProps) => {
   };
   const first = order.items[0];
   const ratable = order.status === "completed" && !order.is_rated;
+
+  // คำนวณว่าสามารถคืนสินค้าได้หรือไม่ (ภายใน 3 วัน)
+  const canReturn = (() => {
+    if (order.status !== "completed") return false;
+    const ref = order.completed_at || order.created_at;
+    const daysSince =
+      (Date.now() - new Date(ref).getTime()) / (1000 * 60 * 60 * 24);
+    return daysSince <= 3;
+  })();
+
+  // สถานะการคืนเงินสำหรับ cancelled
+  const refundLabel =
+    order.status === "cancelled"
+      ? order.refund_status === "refunded"
+        ? {
+            text: "คืนเงินสำเร็จ",
+            cls: "text-green-400 border-green-400/40 bg-green-400/10",
+          }
+        : order.refund_status === "rejected"
+          ? {
+              text: "ปฏิเสธการคืนเงิน",
+              cls: "text-red-400 border-red-400/40 bg-red-400/10",
+            }
+          : {
+              text: "แจ้งการคืนเงิน",
+              cls: "text-yellow-400 border-yellow-400/40 bg-yellow-400/10",
+            }
+      : null;
 
   return (
     <article
@@ -179,23 +227,37 @@ const OrderCard = ({ order, onSelect, onCancel }: OrderCardProps) => {
         </div>
 
         {/* Col 4: Status badge */}
-        <div className="hidden md:flex justify-center shrink-0 w-[150px] border-l border-zinc-800/50 pl-4">
+        <div className="hidden md:flex flex-col items-center justify-center gap-1 shrink-0 w-[150px] border-l border-zinc-800/50 pl-4">
           <span
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[11px] font-bold whitespace-nowrap ${s.badge}`}
           >
             {s.icon} {s.text}
           </span>
+          {refundLabel && (
+            <span
+              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[9px] font-bold whitespace-nowrap ${refundLabel.cls}`}
+            >
+              {refundLabel.text}
+            </span>
+          )}
         </div>
 
         {/* Col 5: Actions */}
         <div className="flex flex-col gap-1.5 shrink-0 border-l border-zinc-800/50 pl-4 w-[136px]">
           {/* mobile: status pill */}
-          <div className="md:hidden flex justify-end mb-0.5">
+          <div className="md:hidden flex flex-col items-end gap-0.5 mb-0.5">
             <span
               className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[9px] font-bold ${s.badge}`}
             >
               {s.icon} {s.text}
             </span>
+            {refundLabel && (
+              <span
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[8px] font-bold ${refundLabel.cls}`}
+              >
+                {refundLabel.text}
+              </span>
+            )}
           </div>
 
           <button
@@ -225,6 +287,14 @@ const OrderCard = ({ order, onSelect, onCancel }: OrderCardProps) => {
               className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs uppercase tracking-widest transition-all active:scale-95 bg-red-500/10 border border-red-500/40 text-red-400 hover:bg-red-500/20 hover:border-red-500/70 hover:text-red-300"
             >
               <XCircle size={12} className="shrink-0" /> ยกเลิก
+            </button>
+          )}
+          {canReturn && onReturn && (
+            <button
+              onClick={onReturn}
+              className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs uppercase tracking-widest transition-all active:scale-95 bg-orange-500/10 border border-orange-500/40 text-orange-400 hover:bg-orange-500/20 hover:border-orange-500/70 hover:text-orange-300"
+            >
+              <RotateCcw size={12} className="shrink-0" /> คืนสินค้า
             </button>
           )}
         </div>

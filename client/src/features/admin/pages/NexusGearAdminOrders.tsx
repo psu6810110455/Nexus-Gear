@@ -8,7 +8,10 @@ import {
   getOrders,
   updateOrderStatus,
   cancelOrder,
+  processRefund,
+  rejectRefund,
 } from "../../../shared/services/api";
+import { getSocket } from "../../../shared/services/socket";
 import type { Order } from "../../../shared/types";
 
 import AdminLayout from "../../navigation/components/AdminLayout";
@@ -37,6 +40,27 @@ const NexusGearAdminOrders = () => {
 
   useEffect(() => {
     setTimeout(fetchOrders, 500);
+  }, []);
+
+  // ── Socket.io real-time updates ──
+  useEffect(() => {
+    const socket = getSocket();
+    const handleUpdate = (updated: Order) => {
+      setOrders((prev) =>
+        prev.map((o) => (o.id === updated.id ? { ...o, ...updated } : o)),
+      );
+      setSelectedOrder((prev) =>
+        prev && prev.id === updated.id ? { ...prev, ...updated } : prev,
+      );
+    };
+    socket.on("orderUpdated", handleUpdate);
+    socket.on("orderCancelled", handleUpdate);
+    socket.on("refundProcessed", handleUpdate);
+    return () => {
+      socket.off("orderUpdated", handleUpdate);
+      socket.off("orderCancelled", handleUpdate);
+      socket.off("refundProcessed", handleUpdate);
+    };
   }, []);
 
   const fetchOrders = async () => {
@@ -98,6 +122,81 @@ const NexusGearAdminOrders = () => {
       );
     } catch {
       showToast("เกิดข้อผิดพลาดในการยกเลิก", false);
+    }
+  };
+
+  const handleRefund = async (orderId: number, formData: FormData) => {
+    try {
+      const updated = await processRefund(orderId, formData);
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === orderId
+            ? {
+                ...o,
+                refund_amount: updated.refund_amount,
+                refund_channel: updated.refund_channel,
+                refund_slip: updated.refund_slip,
+                refund_status: updated.refund_status,
+                refunded_at: updated.refunded_at,
+              }
+            : o,
+        ),
+      );
+      setSelectedOrder((prev) =>
+        prev && prev.id === orderId
+          ? {
+              ...prev,
+              refund_amount: updated.refund_amount,
+              refund_channel: updated.refund_channel,
+              refund_slip: updated.refund_slip,
+              refund_status: updated.refund_status,
+              refunded_at: updated.refunded_at,
+            }
+          : prev,
+      );
+      showToast("คืนเงินสำเร็จ!", true);
+    } catch {
+      showToast("เกิดข้อผิดพลาดในการคืนเงิน", false);
+    }
+  };
+
+  const handleQuickCancel = async (orderId: number) => {
+    try {
+      await cancelOrder(orderId, "สลิปปลอม / หลักฐานไม่ถูกต้อง", true);
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === orderId
+            ? {
+                ...o,
+                status: "cancelled",
+                cancel_reason: "สลิปปลอม / หลักฐานไม่ถูกต้อง",
+              }
+            : o,
+        ),
+      );
+      setSelectedOrder(null);
+      showToast("ยกเลิกด่วนสำเร็จ! (สลิปปลอม)", true);
+    } catch {
+      showToast("เกิดข้อผิดพลาดในการยกเลิก", false);
+    }
+  };
+
+  const handleRejectRefund = async (orderId: number) => {
+    try {
+      const updated = await rejectRefund(orderId);
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === orderId ? { ...o, refund_status: updated.refund_status } : o,
+        ),
+      );
+      setSelectedOrder((prev) =>
+        prev && prev.id === orderId
+          ? { ...prev, refund_status: updated.refund_status }
+          : prev,
+      );
+      showToast("ปฏิเสธการคืนเงินสำเร็จ!", true);
+    } catch {
+      showToast("เกิดข้อผิดพลาดในการปฏิเสธ", false);
     }
   };
 
@@ -176,6 +275,7 @@ const NexusGearAdminOrders = () => {
           loading={loading}
           onViewOrder={(order) => setSelectedOrder(order)}
           onCancelOrder={(order) => setCancelTarget(order)}
+          onUpdateStatus={handleUpdateStatus}
         />
       </div>
 
@@ -185,6 +285,9 @@ const NexusGearAdminOrders = () => {
         onClose={() => setSelectedOrder(null)}
         order={selectedOrder}
         onUpdateStatus={handleUpdateStatus}
+        onRefund={handleRefund}
+        onQuickCancel={handleQuickCancel}
+        onRejectRefund={handleRejectRefund}
       />
 
       <AdminCancelOrderModal

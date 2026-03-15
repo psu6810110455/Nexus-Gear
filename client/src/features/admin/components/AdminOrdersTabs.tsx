@@ -17,7 +17,7 @@ const TABS = [
   { label: "เตรียมจัดส่ง", value: "to_ship" },
   { label: "ระหว่างขนส่ง", value: "shipped" },
   { label: "สำเร็จ", value: "completed" },
-  { label: "ยกเลิก", value: "cancelled" },
+  { label: "ยกเลิก/คืนสินค้า", value: "cancelled" },
 ];
 
 const AdminOrdersTabs = ({

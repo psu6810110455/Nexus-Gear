@@ -10,8 +10,10 @@ import {
   Package,
   Star,
   Ban,
+  RotateCcw,
   CreditCard,
   ImageIcon,
+  ArrowRight,
 } from "lucide-react";
 import type { Order } from "../../../shared/types";
 
@@ -50,13 +52,23 @@ const STATUS: Record<
     cls: "text-zinc-500   border-zinc-600/40   bg-zinc-700/20",
     icon: <Ban size={11} />,
   },
+  returned: {
+    label: "คืนสินค้า",
+    cls: "text-orange-400 border-orange-400/40 bg-orange-400/10",
+    icon: <RotateCcw size={11} />,
+  },
 };
+
+// ตรวจว่าเป็น "คืนสินค้า" หรือ "ยกเลิก"
+const isReturnOrder = (order: Order) =>
+  order.cancel_reason?.startsWith("ขอคืนสินค้า:") ?? false;
 
 interface AdminOrdersTableProps {
   orders: Order[];
   loading: boolean;
   onViewOrder: (order: Order) => void;
   onCancelOrder: (order: Order) => void;
+  onUpdateStatus?: (orderId: number, newStatus: string) => void;
 }
 
 // ── Skeleton ───────────────────────────────────────────────────
@@ -117,6 +129,7 @@ const AdminOrdersTable = ({
   loading,
   onViewOrder,
   onCancelOrder,
+  onUpdateStatus,
 }: AdminOrdersTableProps) => (
   <div className="rounded-2xl border border-zinc-800/70 overflow-hidden shadow-[0_4px_24px_-4px_rgba(0,0,0,0.6)] bg-[#0e0e0e]">
     <div className="overflow-x-auto">
@@ -153,7 +166,11 @@ const AdminOrdersTable = ({
             <EmptyRows />
           ) : (
             orders.map((order, idx) => {
-              const s = STATUS[order.status];
+              const displayKey =
+                order.status === "cancelled" && isReturnOrder(order)
+                  ? "returned"
+                  : order.status;
+              const s = STATUS[displayKey];
               const canCancel =
                 order.status !== "cancelled" && order.status !== "completed";
               const isEven = idx % 2 === 0;
@@ -258,6 +275,37 @@ const AdminOrdersTable = ({
                   {/* Col 5: Actions */}
                   <td className="px-5 py-4">
                     <div className="flex items-center justify-center gap-2">
+                      {/* Quick status update for paid → to_ship */}
+                      {order.status === "paid" && onUpdateStatus && (
+                        <button
+                          onClick={() => onUpdateStatus(order.id, "to_ship")}
+                          title="เตรียมจัดส่ง"
+                          className="h-8 px-2.5 flex items-center justify-center gap-1 rounded-lg bg-blue-500/15 border border-blue-500/40 text-blue-400 hover:bg-blue-500 hover:border-blue-500 hover:text-white transition-all active:scale-95 text-[10px] font-bold whitespace-nowrap"
+                        >
+                          <PackageOpen size={13} /> เตรียมส่ง{" "}
+                          <ArrowRight size={11} />
+                        </button>
+                      )}
+                      {/* Quick status update for to_ship → shipped */}
+                      {order.status === "to_ship" && onUpdateStatus && (
+                        <button
+                          onClick={() => onUpdateStatus(order.id, "shipped")}
+                          title="ยืนยันการส่งของ"
+                          className="h-8 px-2.5 flex items-center justify-center gap-1 rounded-lg bg-indigo-500/15 border border-indigo-500/40 text-indigo-400 hover:bg-indigo-500 hover:border-indigo-500 hover:text-white transition-all active:scale-95 text-[10px] font-bold whitespace-nowrap"
+                        >
+                          <Truck size={13} /> ส่งแล้ว <ArrowRight size={11} />
+                        </button>
+                      )}
+                      {/* Quick status update for shipped → completed */}
+                      {order.status === "shipped" && onUpdateStatus && (
+                        <button
+                          onClick={() => onUpdateStatus(order.id, "completed")}
+                          title="ยืนยันสำเร็จ"
+                          className="h-8 px-2.5 flex items-center justify-center gap-1 rounded-lg bg-green-500/15 border border-green-500/40 text-green-400 hover:bg-green-500 hover:border-green-500 hover:text-white transition-all active:scale-95 text-[10px] font-bold whitespace-nowrap"
+                        >
+                          <Star size={13} /> สำเร็จ <ArrowRight size={11} />
+                        </button>
+                      )}
                       <button
                         onClick={() => onViewOrder(order)}
                         title="ดูรายละเอียด"

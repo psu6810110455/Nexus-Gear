@@ -1,12 +1,15 @@
-// features/orders/components/OrderDetailModal.tsx
+// features/admin/components/orders/modals/OrderDetailModal.tsx
 
 import { useState } from "react";
-import { X, MapPin, Package, ZoomIn } from "lucide-react";
+import { X, MapPin, Package } from "lucide-react";
 import { type Order } from "../../../shared/types";
 
 import AdminDeliveryTimeline from "../../admin/components/orders/AdminDeliveryTimeline";
 import AdminSlipViewer from "../../admin/components/orders/AdminSlipViewer";
-import AdminCancelDetails from "../../admin/components/orders/AdminCancelDetails";
+import {
+  CancelDetailsLeft,
+  CancelDetailsRight,
+} from "../../admin/components/orders/AdminCancelDetails";
 
 // ── Types ─────────────────────────────────────────────────────
 interface Props {
@@ -19,7 +22,7 @@ interface Props {
   onRejectRefund?: (orderId: number) => Promise<void>;
 }
 
-// ── Image Lightbox ─────────────────────────────────────────────
+// ── Lightbox ──────────────────────────────────────────────────
 const ImageLightbox = ({
   src,
   onClose,
@@ -28,12 +31,12 @@ const ImageLightbox = ({
   onClose: () => void;
 }) => (
   <div
-    className="fixed inset-0 md:left-64 z-[200] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in cursor-pointer"
+    className="fixed inset-0 md:left-64 z-[200] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer"
     onClick={onClose}
   >
     <button
       onClick={onClose}
-      className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors z-10"
+      className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white z-10"
     >
       <X size={24} />
     </button>
@@ -44,6 +47,34 @@ const ImageLightbox = ({
       onClick={(e) => e.stopPropagation()}
     />
   </div>
+);
+
+// ── Status badge ──────────────────────────────────────────────
+const STATUS_BADGE: Record<string, string> = {
+  pending: "bg-amber-500/15 text-amber-400 border-amber-500/30",
+  paid: "bg-cyan-500/15 text-cyan-400 border-cyan-500/30",
+  to_ship: "bg-blue-500/15 text-blue-400 border-blue-500/30",
+  shipped: "bg-purple-500/15 text-purple-400 border-purple-500/30",
+  completed: "bg-green-500/15 text-green-400 border-green-500/30",
+  cancelled: "bg-red-500/15 text-red-400 border-red-500/30",
+  returned: "bg-orange-500/15 text-orange-400 border-orange-500/30",
+};
+
+const THAI_STATUS: Record<string, string> = {
+  pending: "รอตรวจสอบ",
+  paid: "ชำระเงินแล้ว",
+  to_ship: "เตรียมจัดส่ง",
+  shipped: "จัดส่งแล้ว",
+  completed: "สำเร็จ",
+  cancelled: "ยกเลิก",
+  returned: "คืนสินค้า",
+};
+
+// ── Section Header ─────────────────────────────────────────────
+const SectionLabel = ({ label }: { label: string }) => (
+  <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-[0.15em]">
+    {label}
+  </p>
 );
 
 // ── Component ─────────────────────────────────────────────────
@@ -64,20 +95,13 @@ const OrderDetailModal = ({
   const isCancelled = order.status === "cancelled";
   const isReturnOrder =
     isCancelled && !!order.cancel_reason?.startsWith("ขอคืนสินค้า:");
-
-  const getThaiStatus = (status: string) => {
-    if (status === "cancelled" && isReturnOrder) return "คืนสินค้า";
-    return (
-      {
-        pending: "รอตรวจสอบ",
-        paid: "ชำระเงินแล้ว",
-        to_ship: "เตรียมจัดส่ง",
-        shipped: "จัดส่งแล้ว",
-        completed: "สำเร็จ",
-        cancelled: "ยกเลิก",
-      }[status] || status
-    );
-  };
+  const thaiStatus = isReturnOrder
+    ? "คืนสินค้า"
+    : THAI_STATUS[order.status] || order.status;
+  const badgeCls = isReturnOrder
+    ? STATUS_BADGE.returned
+    : (STATUS_BADGE[order.status] ??
+      "bg-zinc-800 text-zinc-400 border-zinc-700");
 
   return (
     <>
@@ -86,122 +110,157 @@ const OrderDetailModal = ({
       )}
 
       <div className="fixed inset-0 md:left-64 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-        <div className="bg-[#0f0f0f] border border-red-500/30 w-full max-w-4xl rounded-2xl shadow-[0_0_30px_rgba(220,38,38,0.2)] overflow-hidden animate-fade-in max-h-[92vh] flex flex-col">
-          {/* Header */}
-          <header className="p-6 border-b border-white/10 flex justify-between items-center bg-gradient-to-r from-red-900/20 to-transparent">
-            <div>
-              <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-bold text-white tracking-wider">
-                  รายละเอียดคำสั่งซื้อ
-                </h2>
-                <span
-                  className={`px-3 py-1 text-xs font-bold rounded-full border uppercase ${
-                    isReturnOrder
-                      ? "bg-orange-500/20 text-orange-400 border-orange-500/20"
-                      : isCancelled
-                        ? "bg-red-500/20 text-red-400 border-red-500/20"
-                        : "bg-green-500/20 text-green-500 border-green-500/20"
-                  }`}
-                >
-                  {getThaiStatus(order.status)}
-                </span>
-              </div>
-              <p className="text-zinc-400 text-sm mt-1">
-                รหัสคำสั่งซื้อ: ORD-{new Date().getFullYear() + 543}-
-                {String(order.id).padStart(3, "0")}
-              </p>
+        <div className="bg-[#0f0f0f] border border-red-500/20 w-full max-w-3xl rounded-2xl shadow-[0_0_30px_rgba(220,38,38,0.15)] overflow-hidden animate-fade-in max-h-[92vh] flex flex-col">
+          {/* ── Header ── */}
+          <header className="px-6 py-4 border-b border-white/8 flex justify-between items-center bg-gradient-to-r from-red-900/15 to-transparent shrink-0">
+            <div className="flex items-center gap-2.5">
+              <h2 className="text-lg font-bold text-white">
+                รายละเอียดคำสั่งซื้อ
+              </h2>
+              <span
+                className={`px-2.5 py-0.5 text-xs font-bold rounded-full border ${badgeCls}`}
+              >
+                {thaiStatus}
+              </span>
             </div>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-white/10 rounded-full transition-colors text-zinc-400 hover:text-white"
-            >
-              <X size={24} />
-            </button>
+            <div className="flex items-center gap-4">
+              <p className="text-zinc-500 text-xs hidden sm:block">
+                ORD-{new Date().getFullYear() + 543}-
+                {String(order.id).padStart(3, "0")}
+                {order.user?.name && (
+                  <span className="ml-2 text-zinc-600">
+                    · {order.user.name}
+                  </span>
+                )}
+              </p>
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-white/8 rounded-full transition-colors text-zinc-500 hover:text-white"
+              >
+                <X size={20} />
+              </button>
+            </div>
           </header>
 
-          {/* Body */}
-          <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto flex-1">
-            {/* Left: Timeline + Address + Items */}
-            <div className="space-y-6">
-              <AdminDeliveryTimeline
-                status={order.status}
-                cancelReason={order.cancel_reason}
-              />
+          {/* ── Body ── */}
+          <div className="overflow-y-auto flex-1">
+            {/* ═══ ส่วนบน ═══ */}
+            <div className="p-6 space-y-4">
+              <SectionLabel label="ข้อมูลคำสั่งซื้อ" />
 
-              {/* Address */}
-              <div className="bg-zinc-900/50 p-4 rounded-xl border border-zinc-800">
-                <div className="flex items-center gap-2 text-red-500 mb-3 font-bold text-sm uppercase">
-                  <MapPin size={16} /> ที่อยู่ในการจัดส่ง
-                </div>
-                <p className="text-white font-medium">
-                  {order.user?.name || "ไม่ระบุชื่อ"}
-                </p>
-                <p className="text-zinc-400 text-sm mt-1 leading-relaxed">
-                  {order.shipping_address}
-                </p>
-              </div>
+              {/* 2 col: ซ้าย = Timeline + ที่อยู่ + สินค้า / ขวา = Slip + ปุ่ม */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                {/* ── ซ้าย ── */}
+                <div className="space-y-4">
+                  <AdminDeliveryTimeline
+                    status={order.status}
+                    cancelReason={order.cancel_reason}
+                  />
 
-              {/* Items */}
-              <div className="bg-zinc-900/50 p-4 rounded-xl border border-zinc-800">
-                <div className="flex items-center gap-2 text-red-500 mb-3 font-bold text-sm uppercase">
-                  <Package size={16} /> รายการสินค้า
-                </div>
-                <div className="space-y-3">
-                  {order.items.map((item, i) => (
-                    <div
-                      key={i}
-                      className="flex justify-between items-center p-2 hover:bg-white/5 rounded-lg transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-zinc-800 rounded-md overflow-hidden border border-zinc-700 shrink-0 flex items-center justify-center">
-                          {item.product.image_url ? (
-                            <img
-                              src={item.product.image_url}
-                              alt={item.product.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <Package size={16} className="text-zinc-600" />
-                          )}
-                        </div>
-                        <div>
-                          <p className="text-white text-sm font-medium">
-                            {item.product.name}
-                          </p>
-                          <p className="text-zinc-500 text-xs">
-                            x{item.quantity} ชิ้น
-                          </p>
-                        </div>
-                      </div>
-                      <p className="text-red-400 font-bold">
-                        ฿{Number(item.price_at_purchase).toLocaleString()}
+                  {/* ที่อยู่ */}
+                  <div className="bg-zinc-900/50 rounded-xl border border-zinc-800 overflow-hidden">
+                    <div className="flex items-center gap-2 text-red-500 px-4 py-3 border-b border-zinc-800/50 font-bold text-xs uppercase tracking-widest">
+                      <MapPin size={13} /> ที่อยู่ในการจัดส่ง
+                    </div>
+                    <div className="px-4 py-3">
+                      <p className="text-white text-sm font-semibold">
+                        {order.user?.name || "ไม่ระบุชื่อ"}
+                      </p>
+                      <p className="text-zinc-400 text-sm mt-1 leading-relaxed">
+                        {order.shipping_address}
                       </p>
                     </div>
-                  ))}
-                </div>
-              </div>
+                  </div>
 
-              {/* Cancel details (left col, cancelled only) */}
-              {isCancelled && (
-                <AdminCancelDetails
+                  {/* รายการสินค้า */}
+                  <div className="bg-zinc-900/50 rounded-xl border border-zinc-800 overflow-hidden">
+                    <div className="flex items-center gap-2 text-red-500 px-4 py-3 border-b border-zinc-800/50 font-bold text-xs uppercase tracking-widest">
+                      <Package size={13} /> รายการสินค้า
+                      <span className="ml-auto text-zinc-600 font-normal normal-case">
+                        {order.items.length} รายการ
+                      </span>
+                    </div>
+                    <div className="divide-y divide-zinc-800/40">
+                      {order.items.map((item, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center justify-between px-4 py-3 hover:bg-white/3 transition-colors"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-9 h-9 bg-zinc-800 rounded-lg overflow-hidden border border-zinc-700 shrink-0 flex items-center justify-center">
+                              {item.product.image_url ? (
+                                <img
+                                  src={item.product.image_url}
+                                  alt={item.product.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <Package size={14} className="text-zinc-600" />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-white text-sm font-medium truncate">
+                                {item.product.name}
+                              </p>
+                              <p className="text-zinc-500 text-xs mt-0.5">
+                                x{item.quantity} ชิ้น
+                              </p>
+                            </div>
+                          </div>
+                          <p className="text-red-400 font-bold text-sm shrink-0 ml-3">
+                            ฿{Number(item.price_at_purchase).toLocaleString()}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-between px-4 py-3 border-t border-zinc-800/50 bg-zinc-900/30">
+                      <span className="text-zinc-500 text-xs font-bold uppercase tracking-widest">
+                        ยอดรวมทั้งสิ้น
+                      </span>
+                      <span className="text-red-500 font-black text-lg">
+                        ฿{Number(order.total_price).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ── ขวา: Slip + ยอด + ปุ่ม ── */}
+                <AdminSlipViewer
                   order={order}
                   onLightbox={setLightboxSrc}
-                  onRefund={onRefund}
-                  onRejectRefund={onRejectRefund}
+                  onUpdateStatus={onUpdateStatus}
+                  onQuickCancel={onQuickCancel}
+                  onClose={onClose}
+                  quickCancelLoading={quickCancelLoading}
+                  setQuickCancelLoading={setQuickCancelLoading}
                 />
-              )}
+              </div>
             </div>
 
-            {/* Right: Slip + Total + Actions */}
-            <AdminSlipViewer
-              order={order}
-              onLightbox={setLightboxSrc}
-              onUpdateStatus={onUpdateStatus}
-              onQuickCancel={onQuickCancel}
-              onClose={onClose}
-              quickCancelLoading={quickCancelLoading}
-              setQuickCancelLoading={setQuickCancelLoading}
-            />
+            {/* ═══ เส้นแบ่ง (cancelled only) ═══ */}
+            {isCancelled && (
+              <>
+                <div className="h-px bg-zinc-800/80 mx-6" />
+
+                {/* ═══ ส่วนล่าง ═══ */}
+                <div className="p-6 space-y-4">
+                  <SectionLabel label="รายละเอียดการยกเลิก / คืนเงิน" />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                    {/* ซ้าย: Cancel Reason */}
+                    <CancelDetailsLeft order={order} />
+
+                    {/* ขวา: BankInfo + RefundDone/Form */}
+                    <CancelDetailsRight
+                      order={order}
+                      onLightbox={setLightboxSrc}
+                      onRefund={onRefund}
+                      onRejectRefund={onRejectRefund}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-// features/orders/components/AdminCancelDetails.tsx
+// features/admin/components/orders/AdminCancelDetails.tsx
 
 import { useState } from "react";
 import {
@@ -23,49 +23,29 @@ interface Props {
   onRejectRefund?: (orderId: number) => Promise<void>;
 }
 
-const AdminCancelDetails = ({
-  order,
-  onLightbox,
-  onRefund,
-  onRejectRefund,
-}: Props) => {
-  const [refundAmount, setRefundAmount] = useState("");
-  const [refundChannel, setRefundChannel] = useState("");
-  const [refundFile, setRefundFile] = useState<File | null>(null);
-  const [refundPreview, setRefundPreview] = useState<string | null>(null);
-  const [refundLoading, setRefundLoading] = useState(false);
+// ── shared state hook ─────────────────────────────────────────
+// ใช้ร่วมระหว่าง Left และ Right ผ่าน props
+export interface CancelDetailsState {
+  refundAmount: string;
+  refundChannel: string;
+  refundFile: File | null;
+  refundPreview: string | null;
+  refundLoading: boolean;
+  setRefundAmount: (v: string) => void;
+  setRefundChannel: (v: string) => void;
+  setRefundFile: (v: File | null) => void;
+  setRefundPreview: (v: string | null) => void;
+  setRefundLoading: (v: boolean) => void;
+  handleRefundFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleRefundSubmit: () => Promise<void>;
+}
 
+// ── Left: Refund Timeline + Cancel Reason ─────────────────────
+export const CancelDetailsLeft = ({ order }: { order: Order }) => {
   const isReturnOrder = !!order.cancel_reason?.startsWith("ขอคืนสินค้า:");
   const isRefunded = order.refund_status === "refunded";
   const isRejected = order.refund_status === "rejected";
   const isFakeSlip = !!order.cancel_reason?.includes("สลิปปลอม");
-  const refundSlipUrl = order.refund_slip
-    ? `http://localhost:3000/uploads/slips/${order.refund_slip}`
-    : null;
-
-  const handleRefundFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setRefundFile(file);
-    const reader = new FileReader();
-    reader.onloadend = () => setRefundPreview(reader.result as string);
-    reader.readAsDataURL(file);
-  };
-
-  const handleRefundSubmit = async () => {
-    if (!onRefund || !refundChannel) return;
-    setRefundLoading(true);
-    const fd = new FormData();
-    fd.append("refundAmount", refundAmount || order.total_price);
-    fd.append("refundChannel", refundChannel);
-    if (refundFile) fd.append("refundSlip", refundFile);
-    await onRefund(order.id, fd);
-    setRefundLoading(false);
-    setRefundAmount("");
-    setRefundChannel("");
-    setRefundFile(null);
-    setRefundPreview(null);
-  };
 
   return (
     <div className="space-y-4">
@@ -122,7 +102,7 @@ const AdminCancelDetails = ({
         </div>
       </div>
 
-      {/* Cancel Reason + เงื่อนไข + ปฏิเสธ */}
+      {/* Cancel Reason */}
       {order.cancel_reason && (
         <div
           className={`p-4 rounded-xl space-y-3 ${isReturnOrder ? "bg-orange-500/5 border border-orange-500/20" : "bg-red-500/5 border border-red-500/20"}`}
@@ -176,12 +156,64 @@ const AdminCancelDetails = ({
           )}
         </div>
       )}
+    </div>
+  );
+};
 
+// ── Right: Bank Info + Refund Done + Refund Form ──────────────
+export const CancelDetailsRight = ({
+  order,
+  onLightbox,
+  onRefund,
+  onRejectRefund,
+}: Props) => {
+  const [refundAmount, setRefundAmount] = useState("");
+  const [refundChannel, setRefundChannel] = useState("");
+  const [refundFile, setRefundFile] = useState<File | null>(null);
+  const [refundPreview, setRefundPreview] = useState<string | null>(null);
+  const [refundLoading, setRefundLoading] = useState(false);
+
+  const isRefunded = order.refund_status === "refunded";
+  const isRejected = order.refund_status === "rejected";
+  const isFakeSlip = !!order.cancel_reason?.includes("สลิปปลอม");
+  const refundSlipUrl = order.refund_slip
+    ? `http://localhost:3000/uploads/slips/${order.refund_slip}`
+    : null;
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setRefundFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setRefundPreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const handleSubmit = async () => {
+    if (!onRefund || !refundChannel) return;
+    setRefundLoading(true);
+    const fd = new FormData();
+    fd.append("refundAmount", refundAmount || order.total_price);
+    fd.append("refundChannel", refundChannel);
+    if (refundFile) fd.append("refundSlip", refundFile);
+    await onRefund(order.id, fd);
+    setRefundLoading(false);
+    setRefundAmount("");
+    setRefundChannel("");
+    setRefundFile(null);
+    setRefundPreview(null);
+  };
+
+  const hasBankInfo =
+    order.refund_bank_name ||
+    order.refund_bank_account ||
+    order.user?.bank_name ||
+    order.user?.bank_account;
+
+  return (
+    <div className="space-y-4">
       {/* Bank Info */}
-      {(order.refund_bank_name ||
-        order.refund_bank_account ||
-        order.user?.bank_name ||
-        order.user?.bank_account) && (
+      {hasBankInfo && (
         <div className="bg-orange-500/5 p-4 rounded-xl border border-orange-500/20 space-y-3">
           <div className="flex items-center gap-2 text-orange-400 font-bold text-sm uppercase">
             <CreditCard size={16} /> ข้อมูลบัญชีลูกค้า (สำหรับคืนเงิน)
@@ -290,7 +322,6 @@ const AdminCancelDetails = ({
             </div>
           </div>
 
-          {/* Upload slip */}
           <div>
             <label className="text-zinc-500 text-xs mb-1 flex items-center gap-1">
               <Upload size={11} /> สลิปการคืนเงิน (รูปภาพ)
@@ -330,7 +361,7 @@ const AdminCancelDetails = ({
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={handleRefundFileChange}
+                  onChange={handleFileChange}
                   className="hidden"
                 />
               </label>
@@ -339,7 +370,7 @@ const AdminCancelDetails = ({
 
           <div className="flex gap-2">
             <button
-              onClick={handleRefundSubmit}
+              onClick={handleSubmit}
               disabled={!refundChannel || refundLoading}
               className="flex-1 py-3 bg-yellow-600 hover:bg-yellow-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
             >
@@ -364,5 +395,13 @@ const AdminCancelDetails = ({
     </div>
   );
 };
+
+// ── Default export: combined (backward compat) ────────────────
+const AdminCancelDetails = (props: Props) => (
+  <div className="space-y-4">
+    <CancelDetailsLeft order={props.order} />
+    <CancelDetailsRight {...props} />
+  </div>
+);
 
 export default AdminCancelDetails;

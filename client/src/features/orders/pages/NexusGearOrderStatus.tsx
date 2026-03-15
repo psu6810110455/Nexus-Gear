@@ -83,10 +83,13 @@ const NexusGearOrderStatus = () => {
     socket.on("orderUpdated", replaceOrder);
     socket.on("orderCancelled", replaceOrder);
     socket.on("refundProcessed", replaceOrder);
+    // ✨ NEW: Listen for reject refund events
+    socket.on("refundRejected", replaceOrder);
     return () => {
       socket.off("orderUpdated", replaceOrder);
       socket.off("orderCancelled", replaceOrder);
       socket.off("refundProcessed", replaceOrder);
+      socket.off("refundRejected", replaceOrder);
     };
   }, [replaceOrder]);
 
@@ -192,6 +195,46 @@ const NexusGearOrderStatus = () => {
 
   const filtered = filterByTab(orders, activeTab);
 
+  // ── Sort: เรียงตาม workflow ───────────────────────────────────
+  // pending → paid → to_ship → shipped → completed
+  // → cancelled (ยกเลิก): pending → refunded → rejected
+  // → cancelled (คืนสินค้า): pending → refunded → rejected
+  const STATUS_RANK: Record<string, number> = {
+    pending: 0,
+    paid: 1,
+    to_ship: 2,
+    shipped: 3,
+    completed: 4,
+  };
+  const QUICK_CANCEL = "สลิปปลอม / หลักฐานไม่ถูกต้อง";
+  const isReturnOrd = (o: Order) =>
+    o.status === "cancelled" && !!o.cancel_reason?.startsWith("ขอคืนสินค้า:");
+  const refundPriority = (o: Order): number => {
+    if (o.refund_status === "rejected" || o.cancel_reason === QUICK_CANCEL)
+      return 2;
+    if (o.refund_status === "refunded") return 1;
+    return 0;
+  };
+
+  const sortedFiltered = [...filtered].sort((a, b) => {
+    const aReturn = isReturnOrd(a);
+    const bReturn = isReturnOrd(b);
+    const aCancel = a.status === "cancelled";
+    const bCancel = b.status === "cancelled";
+    const aRank = STATUS_RANK[a.status] ?? 99;
+    const bRank = STATUS_RANK[b.status] ?? 99;
+
+    if (!aCancel && !bCancel)
+      return aRank !== bRank ? aRank - bRank : b.id - a.id;
+    if (!aCancel && bCancel) return -1;
+    if (aCancel && !bCancel) return 1;
+    if (!aReturn && bReturn) return -1;
+    if (aReturn && !bReturn) return 1;
+    const refundDiff = refundPriority(a) - refundPriority(b);
+    if (refundDiff !== 0) return refundDiff;
+    return b.id - a.id;
+  });
+
   // ── render ────────────────────────────────────────────────
   return (
     <section className="w-full min-h-screen bg-[var(--clr-bg-base)] text-white p-4 md:p-10 font-sans relative animate-fade-in">
@@ -232,7 +275,7 @@ const NexusGearOrderStatus = () => {
         />
 
         {/* Column headers (desktop) */}
-        {!loading && filtered.length > 0 && (
+        {!loading && sortedFiltered.length > 0 && (
           <div className="hidden md:grid grid-cols-12 gap-4 px-8 py-3 mb-3 text-[11px] font-bold text-zinc-500 uppercase tracking-widest bg-[var(--clr-bg-card)] rounded-xl border border-zinc-800/60">
             <div className="col-span-2 text-center">หมายเลขออเดอร์</div>
             <div className="col-span-4 text-center">รายการสินค้า</div>
@@ -246,10 +289,10 @@ const NexusGearOrderStatus = () => {
         <div className="flex flex-col gap-3">
           {loading ? (
             [1, 2, 3, 4].map((n) => <OrderSkeleton key={n} />)
-          ) : filtered.length === 0 ? (
+          ) : sortedFiltered.length === 0 ? (
             <OrderEmpty />
           ) : (
-            filtered.map((order) => (
+            sortedFiltered.map((order) => (
               <OrderCard
                 key={order.id}
                 order={order}

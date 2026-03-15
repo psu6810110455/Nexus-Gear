@@ -158,6 +158,7 @@ const NexusGearOrderStatus = () => {
             ? {
                 ...o,
                 status: "cancelled",
+                cancel_reason: reason,
                 refund_bank_name: bankName || null,
                 refund_bank_account: bankAccount || null,
                 refund_status:

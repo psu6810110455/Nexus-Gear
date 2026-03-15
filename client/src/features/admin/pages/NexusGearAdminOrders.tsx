@@ -112,7 +112,13 @@ const NexusGearAdminOrders = () => {
       await cancelOrder(orderId, payload.reason, payload.restock);
       setOrders((prev) =>
         prev.map((o) =>
-          o.id === orderId ? { ...o, status: "cancelled" as any } : o,
+          o.id === orderId
+            ? {
+                ...o,
+                status: "cancelled" as any,
+                cancel_reason: payload.reason,
+              }
+            : o,
         ),
       );
       setCancelTarget(null);

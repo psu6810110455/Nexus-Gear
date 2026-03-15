@@ -56,10 +56,12 @@ const NexusGearAdminOrders = () => {
     socket.on("orderUpdated", handleUpdate);
     socket.on("orderCancelled", handleUpdate);
     socket.on("refundProcessed", handleUpdate);
+    socket.on("refundRejected", handleUpdate);
     return () => {
       socket.off("orderUpdated", handleUpdate);
       socket.off("orderCancelled", handleUpdate);
       socket.off("refundProcessed", handleUpdate);
+      socket.off("refundRejected", handleUpdate);
     };
   }, []);
 
@@ -108,7 +110,6 @@ const NexusGearAdminOrders = () => {
     },
   ) => {
     try {
-      // ส่ง reason + restock ไปยัง PATCH /orders/:id/cancel
       await cancelOrder(orderId, payload.reason, payload.restock);
       setOrders((prev) =>
         prev.map((o) =>
@@ -217,6 +218,50 @@ const NexusGearAdminOrders = () => {
     return matchTab && matchSearch;
   });
 
+  // ── Sort: เรียงตาม workflow ───────────────────────────────────
+  // pending → paid → to_ship → shipped → completed
+  // → cancelled (ยกเลิก): pending → refunded → rejected
+  // → cancelled (คืนสินค้า): pending → refunded → rejected
+  const STATUS_RANK: Record<string, number> = {
+    pending: 0,
+    paid: 1,
+    to_ship: 2,
+    shipped: 3,
+    completed: 4,
+  };
+  const QUICK_CANCEL = "สลิปปลอม / หลักฐานไม่ถูกต้อง";
+  const isReturnOrd = (o: Order) =>
+    o.status === "cancelled" && !!o.cancel_reason?.startsWith("ขอคืนสินค้า:");
+  const refundPriority = (o: Order): number => {
+    if (o.refund_status === "rejected" || o.cancel_reason === QUICK_CANCEL)
+      return 2;
+    if (o.refund_status === "refunded") return 1;
+    return 0;
+  };
+
+  const sortedFiltered = [...filtered].sort((a, b) => {
+    const aReturn = isReturnOrd(a);
+    const bReturn = isReturnOrd(b);
+    const aCancel = a.status === "cancelled";
+    const bCancel = b.status === "cancelled";
+    const aRank = STATUS_RANK[a.status] ?? 99;
+    const bRank = STATUS_RANK[b.status] ?? 99;
+
+    // active orders เรียงตาม workflow ก่อน
+    if (!aCancel && !bCancel)
+      return aRank !== bRank ? aRank - bRank : b.id - a.id;
+    // cancelled ลงท้าย active
+    if (!aCancel && bCancel) return -1;
+    if (aCancel && !bCancel) return 1;
+    // ภายใน cancelled: ยกเลิก (ไม่ใช่คืนสินค้า) ก่อน คืนสินค้า
+    if (!aReturn && bReturn) return -1;
+    if (aReturn && !bReturn) return 1;
+    // ภายใน group เดียวกัน: pending → refunded → rejected
+    const refundDiff = refundPriority(a) - refundPriority(b);
+    if (refundDiff !== 0) return refundDiff;
+    return b.id - a.id;
+  });
+
   return (
     <AdminLayout breadcrumb="จัดการคำสั่งซื้อ">
       {/* ── Toast ── */}
@@ -277,7 +322,7 @@ const NexusGearAdminOrders = () => {
       {/* ── Table ── */}
       <div className="bg-[#000000]/60 border border-[#990000]/20 rounded-2xl overflow-hidden backdrop-blur-md">
         <AdminOrdersTable
-          orders={filtered}
+          orders={sortedFiltered}
           loading={loading}
           onViewOrder={(order) => setSelectedOrder(order)}
           onCancelOrder={(order) => setCancelTarget(order)}

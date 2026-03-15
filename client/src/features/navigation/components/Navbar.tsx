@@ -282,7 +282,7 @@ const Navbar = () => {
             ))}
             {isLoggedIn && user?.role === 'admin' && (
               <li>
-                <Link to="/admin" className="nb-nav-link admin">จัดการสินค้า</Link>
+                <Link to="/admin" className="nb-nav-link admin">ศูนย์บริหารสินค้า</Link>
               </li>
             )}
           </ul>
@@ -397,7 +397,7 @@ const Navbar = () => {
             </>
           )}
           {isLoggedIn && user?.role === 'admin' && (
-            <li><Link to="/admin" className="nb-mobile-link admin" onClick={closeMobile}>⚙️ จัดการสินค้า</Link></li>
+            <li><Link to="/admin" className="nb-mobile-link admin" onClick={closeMobile}>⚙️ ศูนย์บริหารสินค้า</Link></li>
           )}
         </ul>
 

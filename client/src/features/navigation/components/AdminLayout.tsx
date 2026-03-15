@@ -13,8 +13,8 @@ import {
 const menuItems = [
   { label: 'แดชบอร์ด',         icon: LayoutDashboard, path: '/dashboard' },
   { label: 'จัดการคำสั่งซื้อ', icon: ShoppingBag,     path: '/admin/orders' },
-  { label: 'จัดการสินค้า',     icon: Package,         path: '/admin' },
-  { label: 'จัดการหมวดหมู่',   icon: Layers,          path: '' }, // ✅ Use empty path to denote it as an action button
+  { label: 'ศูนย์บริหารสินค้า',     icon: Package,         path: '/admin' },
+  { label: 'จัดการหมวดหมู่',   icon: Layers,          path: '#', isCategoryTrigger: true }, // ✅ Use empty path to denote it as an action button
   { label: 'จัดการสต็อก',      icon: BarChart3,       path: '/admin/stock' },
   { label: 'แชทกับลูกค้า',   icon: MessageSquare,   path: '/admin/chat' },
 ];
@@ -25,7 +25,7 @@ interface AdminLayoutProps {
   onCategoryClick?: () => void;
 }
 
-const AdminLayout = ({ children, breadcrumb = 'จัดการสินค้า', onCategoryClick }: AdminLayoutProps) => {
+const AdminLayout = ({ children, breadcrumb = 'ศูนย์บริหารสินค้า', onCategoryClick }: AdminLayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -43,12 +43,12 @@ const AdminLayout = ({ children, breadcrumb = 'จัดการสินค้
           background: #000000;
         }
         ::-webkit-scrollbar-thumb {
-          background: #2E0505;
+          background: #3f3f46;
           border-radius: 10px;
           border: 2px solid #000000;
         }
         ::-webkit-scrollbar-thumb:hover {
-          background: #990000;
+          background: #52525b;
         }
         
         /* Firefox */

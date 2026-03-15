@@ -331,7 +331,7 @@ function AdminPage() {
   });
 
   return (
-    <AdminLayout breadcrumb="จัดการสินค้า" onCategoryClick={() => setShowCategoryManager(true)}>
+    <AdminLayout breadcrumb="ศูนย์บริหารสินค้า" onCategoryClick={() => setShowCategoryManager(true)}>
 
       {/* ── Toast ── */}
       {toast && (
@@ -370,8 +370,8 @@ function AdminPage() {
       {/* ── Page Header ── */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-['Orbitron'] font-bold text-[#F2F4F6] tracking-widest uppercase">PRODUCTS</h1>
-          <p className="text-[#F2F4F6]/40 text-sm mt-1 font-['Kanit']">จัดการสินค้าทั้งหมดในระบบ</p>
+          <h1 className="text-3xl font-['Orbitron'] font-bold text-[#F2F4F6] tracking-widest uppercase">INVENTORY</h1>
+          <p className="text-[#F2F4F6]/40 text-sm mt-1 font-['Kanit']">ศูนย์รวบรวมและบริหารจัดการสินค้าทั้งหมด</p>
         </div>
         <button onClick={openAddForm}
           className="bg-[#990000] hover:bg-[#FF0000] text-white px-5 py-2.5 rounded-lg flex items-center gap-2 font-['Kanit'] font-bold shadow-[0_0_15px_rgba(153,0,0,0.5)] transition hover:scale-105 active:scale-95">

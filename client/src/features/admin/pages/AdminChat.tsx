@@ -387,14 +387,14 @@ const AdminChat: React.FC = () => {
               {/* Messages */}
               <div 
                 ref={scrollRef}
-                className="flex-1 overflow-y-auto p-4 md:p-6 md:pr-10 space-y-4 md:space-y-6 flex flex-col scroll-smooth"
+                className="flex-1 overflow-y-auto p-4 md:p-6 md:pr-4 space-y-4 md:space-y-6 flex flex-col scroll-smooth"
               >
                 {selectedSession.messages.map((msg, i) => {
                   const showProduct = msg.metadata?.productId;
                   const isAdmin = msg.sender === 'admin';
                   return (
                     <div key={msg.id || i} className={`w-full flex ${isAdmin ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`flex flex-col ${isAdmin ? 'items-end' : 'items-start'} max-w-[85%] sm:max-w-[75%] md:max-w-[70%] lg:max-w-[65%]`}>
+                      <div className={`flex flex-col ${isAdmin ? 'items-end' : 'items-start'} ${isAdmin ? 'max-w-[75%] md:max-w-[50%] lg:max-w-[40%]' : 'max-w-[85%] md:max-w-[70%] lg:max-w-[65%]'}`}>
                         {showProduct && !isAdmin && (
                           <div className="mb-2 p-2 bg-[#18181b] border border-red-600/30 rounded-xl flex gap-3 max-w-[300px]">
                             {msg.metadata?.productImage && (

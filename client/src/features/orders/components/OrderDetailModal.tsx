@@ -164,12 +164,7 @@ const ImageLightbox = ({
   </div>
 );
 
-const REFUND_CHANNELS = [
-  "โอนผ่านธนาคาร",
-  "คืนเงินผ่าน QR",
-  "Credit ในระบบ",
-  "เงินสด",
-];
+const REFUND_CHANNELS = ["โอนผ่านธนาคาร", "คืนเงินผ่าน QR"];
 
 const OrderDetailModal = ({
   isOpen,

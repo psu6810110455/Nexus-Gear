@@ -26,12 +26,7 @@ interface Props {
   onConfirm: (orderId: number, payload: CancelPayload) => Promise<void>;
 }
 
-const REFUND_CHANNELS = [
-  "โอนผ่านธนาคาร",
-  "คืนเงินผ่าน QR",
-  "Credit ในระบบ",
-  "เงินสด",
-];
+const REFUND_CHANNELS = ["โอนผ่านธนาคาร", "คืนเงินผ่าน QR"];
 
 const AdminCancelOrderModal = ({
   isOpen,

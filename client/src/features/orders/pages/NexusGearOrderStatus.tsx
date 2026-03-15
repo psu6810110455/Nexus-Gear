@@ -364,12 +364,35 @@ const NexusGearOrderStatus = () => {
                     <label className="text-zinc-500 text-xs mb-1 block">
                       ชื่อธนาคาร
                     </label>
-                    <input
+                    <select
                       value={returnBankName}
                       onChange={(e) => setReturnBankName(e.target.value)}
-                      placeholder="เช่น กสิกรไทย, กรุงเทพ, ไทยพาณิชย์..."
-                      className="w-full bg-zinc-900 border border-zinc-700 focus:border-orange-500/50 text-zinc-200 text-sm rounded-lg px-3 py-2.5 outline-none placeholder-zinc-600 transition-colors"
-                    />
+                      className="w-full bg-zinc-900 border border-zinc-700 focus:border-orange-500/50 text-zinc-200 text-sm rounded-lg px-3 py-2.5 outline-none transition-colors"
+                    >
+                      <option value="">-- เลือกธนาคาร --</option>
+                      <option value="กสิกรไทย (KBANK)">กสิกรไทย (KBANK)</option>
+                      <option value="กรุงเทพ (BBL)">กรุงเทพ (BBL)</option>
+                      <option value="กรุงไทย (KTB)">กรุงไทย (KTB)</option>
+                      <option value="ไทยพาณิชย์ (SCB)">ไทยพาณิชย์ (SCB)</option>
+                      <option value="กรุงศรี (BAY)">กรุงศรี (BAY)</option>
+                      <option value="ทหารไทยธนชาต (TTB)">
+                        ทหารไทยธนชาต (TTB)
+                      </option>
+                      <option value="ออมสิน (GSB)">ออมสิน (GSB)</option>
+                      <option value="เกียรตินาคินภัทร (KKP)">
+                        เกียรตินาคินภัทร (KKP)
+                      </option>
+                      <option value="ซีไอเอ็มบี (CIMB)">
+                        ซีไอเอ็มบี (CIMB)
+                      </option>
+                      <option value="ยูโอบี (UOB)">ยูโอบี (UOB)</option>
+                      <option value="แลนด์แอนด์เฮ้าส์ (LHBANK)">
+                        แลนด์แอนด์เฮ้าส์ (LHBANK)
+                      </option>
+                      <option value="พร้อมเพย์ (PromptPay)">
+                        พร้อมเพย์ (PromptPay)
+                      </option>
+                    </select>
                   </div>
                   <div>
                     <label className="text-zinc-500 text-xs mb-1 block">

@@ -15,10 +15,10 @@ import { getSocket } from "../../../shared/services/socket";
 import type { Order } from "../../../shared/types";
 
 import AdminLayout from "../../navigation/components/AdminLayout";
-import AdminOrdersTabs from "../components/AdminOrdersTabs";
-import AdminOrdersTable from "../components/AdminOrdersTable";
+import AdminOrdersTabs from "../components/orders/AdminOrdersTabs";
+import AdminOrdersTable from "../components/orders/AdminOrdersTable";
 import OrderDetailModal from "../../orders/components/OrderDetailModal";
-import AdminCancelOrderModal from "../components/AdminCancelOrderModal";
+import AdminCancelOrderModal from "../components/orders/modals/AdminCancelOrderModal";
 
 const THAI_STATUS: Record<string, string> = {
   pending: "รอชำระเงิน",

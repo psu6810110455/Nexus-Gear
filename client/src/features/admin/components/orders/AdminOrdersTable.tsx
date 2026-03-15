@@ -18,7 +18,7 @@ import {
   ShieldX,
   Clock3,
 } from "lucide-react";
-import type { Order } from "../../../shared/types";
+import type { Order } from "../../../../shared/types";
 
 // ── Status config ──────────────────────────────────────────────
 const STATUS: Record<

@@ -235,8 +235,8 @@ const AdminOrdersTable = ({
                       )}
                       {/* Refund status badge */}
                       {order.status === "cancelled" &&
-                        order.refund_status &&
-                        order.refund_status !== "none" && (
+                        (order.refund_status &&
+                        order.refund_status !== "none" ? (
                           <span
                             className={`inline-flex items-center justify-center gap-1 min-w-[120px] px-2 py-0.5 rounded-full border text-[9px] font-bold ${
                               order.refund_status === "refunded"
@@ -262,7 +262,12 @@ const AdminOrdersTable = ({
                               </>
                             )}
                           </span>
-                        )}
+                        ) : order.cancel_reason ===
+                          "สลิปปลอม / หลักฐานไม่ถูกต้อง" ? (
+                          <span className="inline-flex items-center justify-center gap-1 min-w-[120px] px-2 py-0.5 rounded-full border text-[9px] font-bold text-red-400 border-red-500/30 bg-red-500/10">
+                            <ShieldX size={9} /> ปฏิเสธการคืนเงิน
+                          </span>
+                        ) : null)}
                     </div>
                   </td>
 

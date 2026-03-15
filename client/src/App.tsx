@@ -101,7 +101,7 @@ function AppContent() {
       </Routes>
 
       {!hideNavbar && <Footer />}
-      {!hideNavbar && <ChatWidget />}
+      <ChatWidget />
     </div>
   );
 }

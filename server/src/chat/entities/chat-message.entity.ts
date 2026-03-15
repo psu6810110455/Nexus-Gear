@@ -22,6 +22,9 @@ export class ChatMessage {
   @Column({ default: false })
   isRead: boolean;
 
+  @Column({ type: 'simple-json', nullable: true })
+  metadata: any;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }

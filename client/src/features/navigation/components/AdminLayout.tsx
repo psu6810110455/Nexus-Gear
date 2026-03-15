@@ -30,8 +30,33 @@ const AdminLayout = ({ children, breadcrumb = 'จัดการสินค้
   const location = useLocation();
 
   return (
-    <div className="flex min-h-screen bg-[#000000] text-[#F2F4F6] font-['Kanit'] selection:bg-[#990000] selection:text-white relative overflow-hidden">
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&family=Orbitron:wght@400;700;900&display=swap');`}</style>
+    <div className="flex h-screen bg-[#000000] text-[#F2F4F6] font-['Kanit'] selection:bg-[#990000] selection:text-white relative overflow-hidden">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&family=Orbitron:wght@400;700;900&display=swap');
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+          width: 8px;
+          height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+          background: #000000;
+        }
+        ::-webkit-scrollbar-thumb {
+          background: #2E0505;
+          border-radius: 10px;
+          border: 2px solid #000000;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+          background: #990000;
+        }
+        
+        /* Firefox */
+        * {
+          scrollbar-width: thin;
+          scrollbar-color: #2E0505 #000000;
+        }
+      `}</style>
 
       {/* ── Background ── */}
       <div className="fixed inset-0 z-0 pointer-events-none">
@@ -41,7 +66,7 @@ const AdminLayout = ({ children, breadcrumb = 'จัดการสินค้
       </div>
 
       {/* ── Sidebar ── */}
-      <aside className="w-64 bg-[#000000]/95 border-r border-[#990000]/50 flex flex-col fixed h-full z-50 backdrop-blur-xl">
+      <aside className="w-64 bg-[#000000]/95 border-r border-[#990000]/50 flex flex-col z-50 backdrop-blur-xl shrink-0">
         {/* Logo */}
         <div
           className="p-6 flex items-center gap-3 border-b border-[#990000]/30 cursor-pointer group relative overflow-hidden"
@@ -107,7 +132,7 @@ const AdminLayout = ({ children, breadcrumb = 'จัดการสินค้
       </aside>
 
       {/* ── Main Content ── */}
-      <div className="flex-1 ml-64 flex flex-col relative z-10">
+      <div className="flex-1 flex flex-col relative z-10 min-w-0">
         {/* Topbar */}
         <header className="flex items-center justify-between px-8 py-3 border-b border-[#990000]/20 bg-[#0a0000]/80 backdrop-blur-sm sticky top-0 z-40">
           <div className="flex items-center gap-3">
@@ -127,8 +152,8 @@ const AdminLayout = ({ children, breadcrumb = 'จัดการสินค้
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-8">
-          {children}
+        <main className="flex-1 overflow-hidden">
+            {children}
         </main>
       </div>
     </div>

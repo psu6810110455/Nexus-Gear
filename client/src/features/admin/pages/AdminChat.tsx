@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { Send, User as UserIcon, MessageSquare, Search } from 'lucide-react';
+import { Send, User as UserIcon, MessageSquare, Search, Info, Package, Smile, Clock } from 'lucide-react';
 import AdminLayout from '../../navigation/components/AdminLayout';
 import { useAuth } from '../../auth/context/AuthContext';
 
@@ -10,6 +10,11 @@ interface ChatMessage {
   sender: 'user' | 'admin';
   message: string;
   isRead: boolean;
+  metadata?: {
+    productId?: number;
+    productName?: string;
+    productImage?: string;
+  };
   createdAt: string;
   user?: {
     id: number;
@@ -22,82 +27,192 @@ interface ChatMessage {
 interface ChatSession {
   userId: number;
   userName: string;
+  userPicture?: string;
   lastMessage: string;
   lastTime: string;
   unreadCount: number;
   messages: ChatMessage[];
+  isTyping: boolean;
 }
 
+const QUICK_RESPONSES = [
+  "สวัสดีครับ Nexus Gear ยินดีให้บริการครับ มีอะไรให้ช่วยไหมครับ?",
+  "ขอบคุณที่สนใจสินค้าของเราครับ รายการนี้พร้อมส่งครับ",
+  "ขออภัยในความความล่าช้าครับ ทางเรากำลังตรวจสอบข้อมูลให้ครับ",
+  "แจ้งเลขพัสดุเรียบร้อยครับ สามารถตรวจสอบได้ในระบบเลยครับ",
+  "หากได้รับสินค้าแล้วรบกวนรีวิวให้คะแนนด้วยนะครับ ขอบคุณครับ"
+];
+
 const AdminChat: React.FC = () => {
-  const { user } = useAuth();
+  const { } = useAuth();
   const [sessions, setSessions] = useState<Record<number, ChatSession>>({});
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [inputValue, setInputValue] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const socketRef = useRef<Socket | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const selectedUserIdRef = useRef<number | null>(null);
 
   useEffect(() => {
+    selectedUserIdRef.current = selectedUserId;
+    if (selectedUserId) {
+      setSessions(prev => {
+        if (!prev[selectedUserId]) return prev;
+        return {
+          ...prev,
+          [selectedUserId]: {
+            ...prev[selectedUserId],
+            unreadCount: 0
+          }
+        };
+      });
+    }
+  }, [selectedUserId]);
+
+  const addMessagesToSession = (userId: number, msgOrHistory: ChatMessage | ChatMessage[]) => {
+    setSessions(prev => {
+      const current = prev[userId] || {
+        userId,
+        userName: `User #${userId}`,
+        lastMessage: '',
+        lastTime: new Date().toISOString(),
+        unreadCount: 0,
+        messages: [],
+        isTyping: false
+      };
+
+      const incoming = Array.isArray(msgOrHistory) ? msgOrHistory : [msgOrHistory];
+      let newMessages = [...current.messages];
+
+      incoming.forEach(msg => {
+        // 1. Try to find/replace optimistic match (no ID)
+        const optIndex = newMessages.findIndex(m => !m.id && m.message === msg.message && m.sender === msg.sender);
+        if (optIndex > -1) {
+          newMessages[optIndex] = msg;
+        } else {
+          // 2. Check for duplicate by real ID
+          if (msg.id && newMessages.some(m => m.id === msg.id)) return;
+          newMessages.push(msg);
+        }
+      });
+
+      // Sort by time
+      newMessages.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+      const lastMsg = newMessages[newMessages.length - 1];
+      const isCurrentlySelected = selectedUserIdRef.current === userId;
+
+      return {
+        ...prev,
+        [userId]: {
+          ...current,
+          lastMessage: lastMsg?.message || current.lastMessage,
+          lastTime: lastMsg?.createdAt || current.lastTime,
+          messages: newMessages,
+          unreadCount: (!isCurrentlySelected && incoming.some(m => m.sender === 'user')) 
+            ? (current.unreadCount + 1)
+            : (isCurrentlySelected ? 0 : current.unreadCount)
+        }
+      };
+    });
+  };
+
+  useEffect(() => {
+    // Initialize socket once
     const socket = io('http://localhost:3000');
     socketRef.current = socket;
 
-    // Listen for new messages from anyone
     socket.on('adminNewMessage', (msg: ChatMessage) => {
-      setSessions(prev => {
-        const userId = msg.userId;
-        const currentSession = prev[userId] || {
-          userId,
-          userName: msg.user?.name || `User #${userId}`,
-          lastMessage: '',
-          lastTime: '',
-          unreadCount: 0,
-          messages: [],
-        };
+      if (msg.sender === 'user') {
+        const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3');
+        audio.play().catch(() => {});
+      }
+      addMessagesToSession(msg.userId, msg);
+    });
 
-        const updatedMessages = [...currentSession.messages, msg];
-        
+    socket.on('newMessage', (msg: ChatMessage) => {
+       // Just in case we receive it via room broadcast too
+       addMessagesToSession(msg.userId, msg);
+    });
+
+    socket.on('adminTyping', (data: { userId: number; isTyping: boolean }) => {
+      setSessions(prev => {
+        if (!prev[data.userId]) return prev;
         return {
           ...prev,
-          [userId]: {
-            ...currentSession,
-            lastMessage: msg.message,
-            lastTime: msg.createdAt,
-            unreadCount: (selectedUserId !== userId && msg.sender === 'user') 
-              ? currentSession.unreadCount + 1 
-              : currentSession.unreadCount,
-            messages: updatedMessages,
+          [data.userId]: {
+            ...prev[data.userId],
+            isTyping: data.isTyping
           }
         };
       });
     });
 
+    socket.on('messageHistory', (history: ChatMessage[]) => {
+      if (history.length > 0) {
+        addMessagesToSession(history[0].userId, history);
+      } else if (selectedUserIdRef.current) {
+        // Ensure session exists if history is empty
+        addMessagesToSession(selectedUserIdRef.current, []);
+      }
+    });
+
+    socket.on('adminSessionsHistory', (initialMessages: ChatMessage[]) => {
+      initialMessages.forEach(msg => {
+        setSessions(prev => {
+          if (prev[msg.userId]) return prev;
+          return {
+            ...prev,
+            [msg.userId]: {
+              userId: msg.userId,
+              userName: msg.user?.name || `User #${msg.userId}`,
+              userPicture: msg.user?.picture,
+              lastMessage: msg.message,
+              lastTime: msg.createdAt,
+              unreadCount: 0, // Simplified for now
+              messages: [msg],
+              isTyping: false
+            }
+          };
+        });
+      });
+    });
+
+    // Ask for all sessions on load
+    socket.emit('adminGetAllSessions');
+
     return () => {
       socket.disconnect();
     };
-  }, [selectedUserId]);
+  }, []); // Only once
 
+  // Separate effect for joining rooms when selectedUserId changes
   useEffect(() => {
-    if (selectedUserId) {
-      // When selecting a user, join their room to see history or focus
-      socketRef.current?.emit('join', { userId: selectedUserId });
-      
-      // Also fetch history specifically
-      socketRef.current?.on('messageHistory', (history: ChatMessage[]) => {
-        setSessions(prev => ({
+    if (selectedUserId && socketRef.current) {
+      // Ensure session exists immediately
+      setSessions(prev => {
+        if (prev[selectedUserId]) return prev;
+        return {
           ...prev,
           [selectedUserId]: {
-            ...prev[selectedUserId],
-            messages: history,
+            userId: selectedUserId,
+            userName: `User #${selectedUserId}`,
+            lastMessage: '',
+            lastTime: new Date().toISOString(),
             unreadCount: 0,
+            messages: [],
+            isTyping: false
           }
-        }));
+        };
       });
+      socketRef.current.emit('join', { userId: selectedUserId });
     }
   }, [selectedUserId]);
 
   useEffect(() => {
     scrollToBottom();
-  }, [selectedUserId, sessions[selectedUserId || -1]?.messages.length]);
+  }, [selectedUserId, sessions[selectedUserId || -1]?.messages.length, sessions[selectedUserId || -1]?.isTyping]);
 
   const scrollToBottom = () => {
     if (scrollRef.current) {
@@ -105,32 +220,87 @@ const AdminChat: React.FC = () => {
     }
   };
 
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputValue.trim() || !selectedUserId) return;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+    
+    // Typing status
+    if (selectedUserId) {
+      socketRef.current?.emit('typing', { userId: selectedUserId, sender: 'admin', isTyping: true });
+      
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = setTimeout(() => {
+        socketRef.current?.emit('typing', { userId: selectedUserId, sender: 'admin', isTyping: false });
+      }, 3000);
+    }
+  };
+
+  const handleSendMessage = (e?: React.FormEvent, text?: string) => {
+    e?.preventDefault();
+    const messageToSend = text || inputValue;
+    if (!messageToSend.trim() || !selectedUserId) return;
+
+    // Optimistic Update
+    const optimisticMsg: ChatMessage = {
+      id: 0, // Temp ID
+      userId: selectedUserId,
+      sender: 'admin',
+      message: messageToSend.trim(),
+      isRead: true,
+      createdAt: new Date().toISOString(),
+    };
+
+    addMessagesToSession(selectedUserId, optimisticMsg);
 
     socketRef.current?.emit('sendMessage', {
       userId: selectedUserId,
       sender: 'admin',
-      message: inputValue.trim(),
+      message: messageToSend.trim(),
     });
 
-    setInputValue('');
+    if (!text) setInputValue('');
+    socketRef.current?.emit('typing', { userId: selectedUserId, sender: 'admin', isTyping: false });
   };
 
-  const activeSessions = Object.values(sessions).sort((a, b) => 
-    new Date(b.lastTime).getTime() - new Date(a.lastTime).getTime()
-  ).filter(s => s.userName.toLowerCase().includes(searchTerm.toLowerCase()));
+  const activeSessions = Object.values(sessions)
+    .sort((a, b) => new Date(b.lastTime).getTime() - new Date(a.lastTime).getTime())
+    .filter(s => {
+      const isSearchMatched = s.userName.toLowerCase().includes(searchTerm.toLowerCase());
+      if (!isSearchMatched) return false;
+
+      // Filter by 7 days (7 * 24 * 60 * 60 * 1000 ms)
+      const lastTimeMs = new Date(s.lastTime).getTime();
+      const nowMs = new Date().getTime();
+      const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+      
+      // If unreadCount > 0, always show (wake up)
+      if (s.unreadCount > 0) return true;
+      
+      return (nowMs - lastTimeMs) < sevenDaysMs;
+    });
 
   const selectedSession = selectedUserId ? sessions[selectedUserId] : null;
 
+  const getLastMessagePreview = (session: ChatSession) => {
+    if (session.isTyping) return 'กำลังพิมพ์...';
+    if (!session.lastMessage) return 'ยังไม่มีข้อความ';
+    
+    // Check if the last message was sent by admin
+    const lastMsg = session.messages.length > 0 ? session.messages[session.messages.length - 1] : null;
+    const prefix = lastMsg?.sender === 'admin' ? 'คุณ: ' : '';
+    return `${prefix}${session.lastMessage}`;
+  };
+
   return (
     <AdminLayout breadcrumb="แชทกับลูกค้า">
-      <div className="h-[calc(100vh-180px)] bg-[#0a0a0a] border border-[#990000]/30 rounded-3xl overflow-hidden flex font-['Kanit']">
+      <div className="flex flex-col h-full bg-[#0a0a0a] border border-[#990000]/30 rounded-3xl overflow-hidden font-['Kanit']">
         
+      <div className="flex flex-1 overflow-hidden relative">
         {/* Sidebar: Session List */}
-        <div className="w-80 border-r border-[#990000]/20 flex flex-col bg-[#000000]/40">
+        <div className="w-64 border-r border-[#990000]/20 flex flex-col bg-[#000000]/40 shrink-0">
           <div className="p-4 border-b border-[#990000]/20">
+            <h3 className="text-white font-bold mb-3 flex items-center gap-2">
+              <MessageSquare size={18} className="text-red-600" /> ห้องแชททั้งหมด
+            </h3>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
               <input 
@@ -151,12 +321,19 @@ const AdminChat: React.FC = () => {
                 <button 
                   key={session.userId} 
                   onClick={() => setSelectedUserId(session.userId)}
-                  className={`w-full p-4 flex gap-3 border-b border-[#990000]/10 hover:bg-[#2E0505]/20 transition text-left ${
+                  className={`w-full p-4 flex gap-3 border-b border-[#990000]/10 hover:bg-[#2E0505]/20 transition text-left relative ${
                     selectedUserId === session.userId ? 'bg-[#2E0505]/40 border-l-4 border-l-red-600' : ''
                   }`}
                 >
-                  <div className="w-12 h-12 rounded-full bg-red-600/10 flex items-center justify-center border border-red-600/30 shrink-0">
-                    <UserIcon size={20} className="text-red-500" />
+                  <div className="relative">
+                    <div className="w-12 h-12 rounded-full border border-[#990000]/30 overflow-hidden bg-red-600/10 flex items-center justify-center shrink-0">
+                      {session.userPicture ? (
+                        <img src={session.userPicture} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <UserIcon size={20} className="text-red-500" />
+                      )}
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-black rounded-full" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start">
@@ -165,10 +342,12 @@ const AdminChat: React.FC = () => {
                         {session.lastTime ? new Date(session.lastTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-500 truncate mt-1">{session.lastMessage}</p>
+                    <p className={`text-xs truncate mt-1 ${session.isTyping ? 'text-green-500 font-medium' : 'text-gray-500'}`}>
+                      {getLastMessagePreview(session)}
+                    </p>
                   </div>
                   {session.unreadCount > 0 && (
-                    <div className="w-5 h-5 bg-red-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center shrink-0">
+                    <div className="w-5 h-5 bg-red-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center shrink-0 ml-1">
                       {session.unreadCount}
                     </div>
                   )}
@@ -179,66 +358,146 @@ const AdminChat: React.FC = () => {
         </div>
 
         {/* Chat Area */}
-        <div className="flex-1 flex flex-col bg-black/20">
+        <div className="flex-1 flex flex-col bg-black/20 min-w-0">
           {selectedUserId && selectedSession ? (
             <>
               {/* Header */}
-              <div className="p-4 bg-[#18181b]/50 border-b border-[#990000]/20 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-red-600/20 flex items-center justify-center border border-red-600/30">
-                  <UserIcon size={20} className="text-red-500" />
+              <div className="p-4 bg-[#18181b]/80 backdrop-blur-md border-b border-[#990000]/20 flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full border border-[#990000]/30 overflow-hidden bg-red-600/20 flex items-center justify-center">
+                    {selectedSession.userPicture ? (
+                      <img src={selectedSession.userPicture} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <UserIcon size={20} className="text-red-500" />
+                    )}
+                  </div>
+                  <div>
+                    <h4 className="text-white font-bold text-sm flex items-center gap-2">
+                      {selectedSession.userName}
+                      <span className="w-2 h-2 bg-green-500 rounded-full" />
+                    </h4>
+                    <p className="text-[10px] text-gray-500">สถานะ: ออนไลน์ | User ID: #{selectedUserId}</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-white font-bold text-sm">{selectedSession.userName}</h4>
-                  <p className="text-[10px] text-gray-500">User ID: #{selectedUserId}</p>
+                <div className="flex gap-2">
+                  <button className="p-2 text-gray-400 hover:text-white transition"><Info size={18} /></button>
                 </div>
               </div>
 
               {/* Messages */}
               <div 
                 ref={scrollRef}
-                className="flex-1 overflow-y-auto p-6 space-y-4"
+                className="flex-1 overflow-y-auto p-4 md:p-6 md:pr-10 space-y-4 md:space-y-6 flex flex-col scroll-smooth"
               >
-                {selectedSession.messages.map((msg, i) => (
-                  <div key={msg.id || i} className={`flex ${msg.sender === 'admin' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[70%] p-3 rounded-2xl text-sm ${
-                      msg.sender === 'admin' 
-                        ? 'bg-red-600 text-white rounded-tr-none' 
-                        : 'bg-[#18181b] text-white border border-[#990000]/20 rounded-tl-none'
-                    }`}>
-                      {msg.message}
-                      <div className={`text-[10px] mt-1 opacity-60 ${msg.sender === 'admin' ? 'text-right' : 'text-left'}`}>
-                      {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {selectedSession.messages.map((msg, i) => {
+                  const showProduct = msg.metadata?.productId;
+                  const isAdmin = msg.sender === 'admin';
+                  return (
+                    <div key={msg.id || i} className={`w-full flex ${isAdmin ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`flex flex-col ${isAdmin ? 'items-end' : 'items-start'} max-w-[85%] sm:max-w-[75%] md:max-w-[70%] lg:max-w-[65%]`}>
+                        {showProduct && !isAdmin && (
+                          <div className="mb-2 p-2 bg-[#18181b] border border-red-600/30 rounded-xl flex gap-3 max-w-[300px]">
+                            {msg.metadata?.productImage && (
+                              <img src={msg.metadata.productImage} className="w-12 h-12 rounded-lg object-cover" alt="" />
+                            )}
+                            <div className="min-w-0">
+                              <p className="text-[10px] text-red-500 font-bold flex items-center gap-1">
+                                <Package size={10} /> สนใจสินค้า
+                              </p>
+                              <p className="text-xs text-white truncate font-medium">{msg.metadata?.productName}</p>
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div className={`flex items-end gap-2 ${isAdmin ? 'flex-row-reverse' : 'flex-row'}`}>
+                          <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 mb-1 border ${
+                            isAdmin 
+                              ? 'bg-red-600 border-red-400 shadow-[0_0_10px_rgba(220,38,38,0.5)]' 
+                              : 'bg-red-600/20 border-red-600/30'
+                          }`}>
+                            {isAdmin ? (
+                              <span className="text-[10px] font-bold text-white uppercase">AD</span>
+                            ) : (
+                              <UserIcon size={14} className="text-red-500" />
+                            )}
+                          </div>
+                          
+                          <div className={`group relative p-3.5 px-5 rounded-2xl text-[14px] leading-relaxed shadow-xl border ${
+                            isAdmin 
+                              ? 'bg-gradient-to-br from-red-600 via-red-600 to-red-700 text-white rounded-tr-none border-red-400' 
+                              : 'bg-[#1e1e21] text-white border-white/10 rounded-tl-none'
+                          }`}>
+                            <span className="block text-white font-medium whitespace-pre-wrap">{msg.message}</span>
+                            <div className={`text-[10px] mt-2 font-medium opacity-80 flex items-center gap-1.5 ${isAdmin ? 'justify-end text-red-100' : 'justify-start text-gray-400'}`}>
+                              <Clock size={11} />
+                              {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              {isAdmin && <span className="ml-1 text-[11px] font-bold">✓✓</span>}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
+                  );
+                })}
+                
+                {selectedSession.isTyping && (
+                  <div className="flex justify-start">
+                    <div className="bg-[#18181b]/80 text-green-500 text-xs py-2 px-5 rounded-full border border-green-500/30 italic animate-pulse shadow-lg">
+                      {selectedSession.userName} กำลังพิมพ์...
                     </div>
                   </div>
-                ))}
+                )}
+              </div>
+
+              {/* Quick Responses */}
+              <div className="px-4 py-2.5 border-t border-[#990000]/10 bg-black/40 overflow-x-auto shrink-0">
+                <div className="flex gap-2 whitespace-nowrap">
+                  <span className="text-[11px] text-gray-400 font-medium flex items-center gap-1.5 self-center mr-3">
+                    <Smile size={14} /> ตอบกลับด่วน:
+                  </span>
+                  {QUICK_RESPONSES.map((resp, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleSendMessage(undefined, resp)}
+                      className="px-4 py-2 bg-[#18181b] border border-[#990000]/20 rounded-full text-[12px] text-gray-300 hover:bg-red-600 hover:text-white hover:border-red-600 transition-all active:scale-95"
+                    >
+                      {resp}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Footer */}
-              <form onSubmit={handleSendMessage} className="p-4 border-t border-[#990000]/20 bg-[#18181b]/30 flex gap-3">
+              <form onSubmit={handleSendMessage} className="p-4 border-t border-[#990000]/20 bg-[#18181b]/80 backdrop-blur-md flex gap-3 shrink-0">
                 <input 
                   type="text" 
                   value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
+                  onChange={handleInputChange}
                   placeholder="พิมพ์ข้อความตอบกลับ..."
-                  className="flex-1 bg-black border border-[#990000]/30 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-red-600 transition"
+                  className="flex-1 bg-black border border-[#990000]/30 rounded-xl px-5 py-3.5 text-white text-sm focus:outline-none focus:border-red-600 transition-all shadow-inner placeholder:text-gray-600"
                 />
                 <button 
                   type="submit"
                   disabled={!inputValue.trim()}
-                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold transition flex items-center gap-2 disabled:opacity-50"
+                  className="bg-red-600 hover:bg-red-700 text-white px-8 py-3.5 rounded-xl font-bold transition-all flex items-center gap-2 disabled:opacity-50 shadow-[0_0_20px_rgba(220,38,38,0.4)] hover:shadow-[0_0_25px_rgba(220,38,38,0.6)] active:scale-95"
                 >
                   <Send size={18} /> ส่ง
                 </button>
               </form>
             </>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-gray-500 opacity-50">
-              <MessageSquare size={64} className="mb-4" />
-              <p>เลือกรายการแชทเพื่อเริ่มต้นสนทนา</p>
+            <div className="flex-1 flex flex-col items-center justify-center text-gray-500 opacity-50 space-y-6">
+              <div className="w-32 h-32 rounded-full bg-red-600/5 border-2 border-dashed border-red-600/20 flex items-center justify-center">
+                <MessageSquare size={64} className="text-red-900/40" />
+              </div>
+              <div className="text-center">
+                <p className="text-lg font-bold text-white mb-2">เริ่มการสนทนา</p>
+                <p className="text-sm">โปรดเลือกแชทลูกค้าจากแถบด้านข้างเพื่อตรวจสอบและตอบกลับ</p>
+              </div>
             </div>
           )}
         </div>
+      </div>
       </div>
     </AdminLayout>
   );

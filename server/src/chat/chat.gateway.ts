@@ -38,13 +38,26 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('sendMessage')
   async handleMessage(
-    @MessageBody() data: { userId: number; sender: 'user' | 'admin'; message: string },
+    @MessageBody() data: { userId: number; sender: 'user' | 'admin'; message: string; metadata?: any },
   ) {
-    const savedMessage = await this.chatService.createMessage(data.userId, data.sender, data.message);
+    console.log(`Received message from ${data.sender} for user ${data.userId}: ${data.message}`);
+    const savedMessage = await this.chatService.createMessage(data.userId, data.sender, data.message, data.metadata);
     
     // Broadcast to user room and admin room (if any)
     this.server.to(`user_${data.userId}`).emit('newMessage', savedMessage);
     this.server.emit('adminNewMessage', savedMessage); // For admin dashboard
+  }
+
+  @SubscribeMessage('typing')
+  handleTyping(
+    @MessageBody() data: { userId: number; sender: 'user' | 'admin'; isTyping: boolean },
+  ) {
+    // Broadcast typing status to the relevant room
+    if (data.sender === 'user') {
+      this.server.emit('adminTyping', data);
+    } else {
+      this.server.to(`user_${data.userId}`).emit('typing', data);
+    }
   }
 
   @SubscribeMessage('markAsRead')
@@ -52,6 +65,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await this.chatService.markAsRead(data.userId);
     const unreadCount = await this.chatService.getUnreadCount(data.userId);
     this.server.to(`user_${data.userId}`).emit('unreadUpdated', { count: unreadCount });
+  }
+
+  @SubscribeMessage('adminGetAllSessions')
+  async handleAdminGetAllSessions(@ConnectedSocket() client: Socket) {
+    const sessions = await this.chatService.getAllSessions();
+    client.emit('adminSessionsHistory', sessions);
   }
 
   // Method to be called from other services (e.g. OrdersService)

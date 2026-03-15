@@ -41,11 +41,14 @@ export interface CancelDetailsState {
 }
 
 // ── Left: Refund Timeline + Cancel Reason ─────────────────────
+const QUICK_CANCEL_REASON = "สลิปปลอม / หลักฐานไม่ถูกต้อง";
+
 export const CancelDetailsLeft = ({ order }: { order: Order }) => {
   const isReturnOrder = !!order.cancel_reason?.startsWith("ขอคืนสินค้า:");
   const isRefunded = order.refund_status === "refunded";
-  const isRejected = order.refund_status === "rejected";
   const isFakeSlip = !!order.cancel_reason?.includes("สลิปปลอม");
+  // fallback: order ที่ถูก quick cancel อาจยังไม่มี refund_status = "rejected" ใน DB
+  const isRejected = order.refund_status === "rejected" || isFakeSlip;
 
   return (
     <div className="space-y-4">
@@ -149,8 +152,9 @@ export const CancelDetailsLeft = ({ order }: { order: Order }) => {
                 <Ban size={13} /> ปฏิเสธการคืนเงิน
               </div>
               <p className="text-zinc-400 text-sm">
-                แอดมินตรวจสอบแล้วพบว่าหลักฐานไม่ถูกต้อง
-                จึงปฏิเสธการคืนเงินสำหรับคำสั่งซื้อนี้
+                {isFakeSlip
+                  ? "แอดมินตรวจสอบแล้วพบว่าสลิปการชำระเงินเป็นสลิปปลอม หรือหลักฐานไม่ถูกต้อง จึงปฏิเสธการคืนเงินสำหรับคำสั่งซื้อนี้"
+                  : "แอดมินตรวจสอบแล้วพบว่าหลักฐานไม่ตรงตามเงื่อนไข จึงปฏิเสธการคืนเงินสำหรับคำสั่งซื้อนี้"}
               </p>
             </div>
           )}
@@ -174,8 +178,9 @@ export const CancelDetailsRight = ({
   const [refundLoading, setRefundLoading] = useState(false);
 
   const isRefunded = order.refund_status === "refunded";
-  const isRejected = order.refund_status === "rejected";
   const isFakeSlip = !!order.cancel_reason?.includes("สลิปปลอม");
+  // fallback: order ที่ถูก quick cancel อาจยังไม่มี refund_status = "rejected" ใน DB
+  const isRejected = order.refund_status === "rejected" || isFakeSlip;
   const refundSlipUrl = order.refund_slip
     ? `http://localhost:3000/uploads/slips/${order.refund_slip}`
     : null;

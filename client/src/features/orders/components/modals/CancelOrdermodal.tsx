@@ -9,6 +9,7 @@ interface Order {
   status: string;
   total_price: string;
   items: { product: { name: string; image_url: string }; quantity: number }[];
+  refund_status?: string;
 }
 
 interface Props {
@@ -99,6 +100,9 @@ const CancelOrderModal = ({
     setBankAccount("");
   };
 
+  // ✨ NEW: แสดง warning เมื่อ refund_status = rejected (แอดมินปฏิเสธแล้ว)
+  const isRefundRejected = order.refund_status === "rejected";
+
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
       <article className="bg-[#0a0a0a] border border-red-900/50 rounded-2xl w-full max-w-md shadow-[0_0_30px_-5px_rgba(220,38,38,0.2)] overflow-hidden flex flex-col max-h-[90vh]">
@@ -126,6 +130,19 @@ const CancelOrderModal = ({
         </header>
 
         <div className="p-5 overflow-y-auto space-y-4 flex-1 scrollbar-dark">
+          {/* ✨ NEW: แสดง rejection notice */}
+          {isRefundRejected && (
+            <div className="bg-red-500/10 border border-red-500/40 rounded-xl p-4 space-y-2">
+              <p className="text-red-400 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                ⛔ ปฏิเสธการคืนเงิน
+              </p>
+              <p className="text-red-300 text-sm leading-relaxed">
+                แอดมินได้ตรวจสอบและปฏิเสธการคืนเงินแล้ว
+                เนื่องจากหลักฐานไม่ถูกต้องหรือไม่ครบถ้วน
+              </p>
+            </div>
+          )}
+
           {/* รายการสินค้า */}
           <div className="bg-zinc-900/50 rounded-xl p-4 border border-zinc-800">
             <p className="text-zinc-400 text-xs font-bold mb-3 flex items-center gap-2 uppercase tracking-widest">
@@ -162,99 +179,106 @@ const CancelOrderModal = ({
             </div>
           </div>
 
-          {/* เหตุผลยกเลิก */}
-          <div>
-            <p className="text-zinc-400 text-xs font-bold mb-2 uppercase tracking-widest">
-              เหตุผลที่ยกเลิก *
-            </p>
-            <div className="space-y-2">
-              {CANCEL_REASONS.map((r) => (
-                <label
-                  key={r}
-                  className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                    reason === r
-                      ? "border-red-500/50 bg-red-500/5 text-white"
-                      : "border-zinc-800 bg-zinc-900/30 text-zinc-400 hover:border-zinc-600"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="cancelReason"
-                    value={r}
-                    checked={reason === r}
-                    onChange={() => setReason(r)}
-                    className="accent-red-500"
+          {/* ✨ NEW: ไม่แสดงฟอร์มถ้าแอดมินปฏิเสธแล้ว */}
+          {!isRefundRejected && (
+            <>
+              {/* เหตุผลยกเลิก */}
+              <div>
+                <p className="text-zinc-400 text-xs font-bold mb-2 uppercase tracking-widest">
+                  เหตุผลที่ยกเลิก *
+                </p>
+                <div className="space-y-2">
+                  {CANCEL_REASONS.map((r) => (
+                    <label
+                      key={r}
+                      className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                        reason === r
+                          ? "border-red-500/50 bg-red-500/5 text-white"
+                          : "border-zinc-800 bg-zinc-900/30 text-zinc-400 hover:border-zinc-600"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="cancelReason"
+                        value={r}
+                        checked={reason === r}
+                        onChange={() => setReason(r)}
+                        className="accent-red-500"
+                      />
+                      <span className="text-sm">{r}</span>
+                    </label>
+                  ))}
+                </div>
+                {reason === "อื่นๆ" && (
+                  <textarea
+                    rows={3}
+                    placeholder="ระบุเหตุผล..."
+                    value={customReason}
+                    onChange={(e) => setCustom(e.target.value)}
+                    className="mt-2 w-full bg-zinc-900 border border-zinc-700 focus:border-red-500/50 text-zinc-200 text-sm rounded-xl px-4 py-3 resize-none outline-none placeholder-zinc-600 transition-colors"
                   />
-                  <span className="text-sm">{r}</span>
-                </label>
-              ))}
-            </div>
-            {reason === "อื่นๆ" && (
-              <textarea
-                rows={3}
-                placeholder="ระบุเหตุผล..."
-                value={customReason}
-                onChange={(e) => setCustom(e.target.value)}
-                className="mt-2 w-full bg-zinc-900 border border-zinc-700 focus:border-red-500/50 text-zinc-200 text-sm rounded-xl px-4 py-3 resize-none outline-none placeholder-zinc-600 transition-colors"
-              />
-            )}
-          </div>
+                )}
+              </div>
 
-          {/* ข้อมูลบัญชีสำหรับคืนเงิน */}
-          <div className="bg-zinc-900/50 rounded-xl p-4 border border-zinc-800 space-y-3">
-            <p className="text-orange-400 text-xs font-bold flex items-center gap-1.5">
-              💳 ข้อมูลบัญชีสำหรับคืนเงิน
-            </p>
-            <div>
-              <label className="text-zinc-500 text-xs mb-1 block">
-                ชื่อธนาคาร *
-              </label>
-              <select
-                value={bankName}
-                onChange={(e) => setBankName(e.target.value)}
-                className="w-full bg-zinc-900 border border-zinc-700 focus:border-orange-500/50 text-zinc-200 text-sm rounded-lg px-3 py-2.5 outline-none transition-colors"
-              >
-                <option value="">-- เลือกธนาคาร --</option>
-                <option value="กสิกรไทย (KBANK)">กสิกรไทย (KBANK)</option>
-                <option value="กรุงเทพ (BBL)">กรุงเทพ (BBL)</option>
-                <option value="กรุงไทย (KTB)">กรุงไทย (KTB)</option>
-                <option value="ไทยพาณิชย์ (SCB)">ไทยพาณิชย์ (SCB)</option>
-                <option value="กรุงศรี (BAY)">กรุงศรี (BAY)</option>
-                <option value="ทหารไทยธนชาต (TTB)">ทหารไทยธนชาต (TTB)</option>
-                <option value="ออมสิน (GSB)">ออมสิน (GSB)</option>
-                <option value="เกียรตินาคินภัทร (KKP)">
-                  เกียรตินาคินภัทร (KKP)
-                </option>
-                <option value="ซีไอเอ็มบี (CIMB)">ซีไอเอ็มบี (CIMB)</option>
-                <option value="ยูโอบี (UOB)">ยูโอบี (UOB)</option>
-                <option value="แลนด์แอนด์เฮ้าส์ (LHBANK)">
-                  แลนด์แอนด์เฮ้าส์ (LHBANK)
-                </option>
-                <option value="พร้อมเพย์ (PromptPay)">
-                  พร้อมเพย์ (PromptPay)
-                </option>
-              </select>
-            </div>
-            <div>
-              <label className="text-zinc-500 text-xs mb-1 block">
-                เลขบัญชี *
-              </label>
-              <input
-                value={bankAccount}
-                onChange={(e) => setBankAccount(e.target.value)}
-                placeholder="เลขบัญชีธนาคาร"
-                className="w-full bg-zinc-900 border border-zinc-700 focus:border-orange-500/50 text-zinc-200 text-sm rounded-lg px-3 py-2.5 outline-none placeholder-zinc-600 transition-colors"
-              />
-            </div>
-          </div>
+              {/* ข้อมูลบัญชีสำหรับคืนเงิน */}
+              <div className="bg-zinc-900/50 rounded-xl p-4 border border-zinc-800 space-y-3">
+                <p className="text-orange-400 text-xs font-bold flex items-center gap-1.5">
+                  💳 ข้อมูลบัญชีสำหรับคืนเงิน
+                </p>
+                <div>
+                  <label className="text-zinc-500 text-xs mb-1 block">
+                    ชื่อธนาคาร *
+                  </label>
+                  <select
+                    value={bankName}
+                    onChange={(e) => setBankName(e.target.value)}
+                    className="w-full bg-zinc-900 border border-zinc-700 focus:border-orange-500/50 text-zinc-200 text-sm rounded-lg px-3 py-2.5 outline-none transition-colors"
+                  >
+                    <option value="">-- เลือกธนาคาร --</option>
+                    <option value="กสิกรไทย (KBANK)">กสิกรไทย (KBANK)</option>
+                    <option value="กรุงเทพ (BBL)">กรุงเทพ (BBL)</option>
+                    <option value="กรุงไทย (KTB)">กรุงไทย (KTB)</option>
+                    <option value="ไทยพาณิชย์ (SCB)">ไทยพาณิชย์ (SCB)</option>
+                    <option value="กรุงศรี (BAY)">กรุงศรี (BAY)</option>
+                    <option value="ทหารไทยธนชาต (TTB)">
+                      ทหารไทยธนชาต (TTB)
+                    </option>
+                    <option value="ออมสิน (GSB)">ออมสิน (GSB)</option>
+                    <option value="เกียรตินาคินภัทร (KKP)">
+                      เกียรตินาคินภัทร (KKP)
+                    </option>
+                    <option value="ซีไอเอ็มบี (CIMB)">ซีไอเอ็มบี (CIMB)</option>
+                    <option value="ยูโอบี (UOB)">ยูโอบี (UOB)</option>
+                    <option value="แลนด์แอนด์เฮ้าส์ (LHBANK)">
+                      แลนด์แอนด์เฮ้าส์ (LHBANK)
+                    </option>
+                    <option value="พร้อมเพย์ (PromptPay)">
+                      พร้อมเพย์ (PromptPay)
+                    </option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-zinc-500 text-xs mb-1 block">
+                    เลขบัญชี *
+                  </label>
+                  <input
+                    value={bankAccount}
+                    onChange={(e) => setBankAccount(e.target.value)}
+                    placeholder="เลขบัญชีธนาคาร"
+                    className="w-full bg-zinc-900 border border-zinc-700 focus:border-orange-500/50 text-zinc-200 text-sm rounded-lg px-3 py-2.5 outline-none placeholder-zinc-600 transition-colors"
+                  />
+                </div>
+              </div>
 
-          <div className="bg-yellow-500/10 border border-yellow-500/40 rounded-xl p-3 flex items-center justify-center gap-2">
-            <span className="text-yellow-400 text-xs font-bold text-center leading-relaxed">
-              ⚠️ สามารถยกเลิกได้เฉพาะคำสั่งซื้อที่ยังไม่ได้รับการจัดส่ง
-              <br />
-              (สถานะ: รอตรวจสอบ)
-            </span>
-          </div>
+              <div className="bg-yellow-500/10 border border-yellow-500/40 rounded-xl p-3 flex items-center justify-center gap-2">
+                <span className="text-yellow-400 text-xs font-bold text-center leading-relaxed">
+                  ⚠️ สามารถยกเลิกได้เฉพาะคำสั่งซื้อที่ยังไม่ได้รับการจัดส่ง
+                  <br />
+                  (สถานะ: รอตรวจสอบ)
+                </span>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Footer */}
@@ -263,15 +287,17 @@ const CancelOrderModal = ({
             onClick={onClose}
             className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors"
           >
-            ไม่ยกเลิก
+            {isRefundRejected ? "ปิด" : "ไม่ยกเลิก"}
           </button>
-          <button
-            onClick={handleSubmit}
-            disabled={!canSubmit || loading}
-            className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-red-600 hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-all"
-          >
-            {loading ? "กำลังยกเลิก..." : "ยืนยันยกเลิก"}
-          </button>
+          {!isRefundRejected && (
+            <button
+              onClick={handleSubmit}
+              disabled={!canSubmit || loading}
+              className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-red-600 hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-all"
+            >
+              {loading ? "กำลังยกเลิก..." : "ยืนยันยกเลิก"}
+            </button>
+          )}
         </footer>
       </article>
     </div>,

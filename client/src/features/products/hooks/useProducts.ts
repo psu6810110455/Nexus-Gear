@@ -32,20 +32,36 @@ export const useProducts = (initialFilters?: ProductFilterParams): UseProductsRe
       const productList = Array.isArray(data) ? data : [];
       setProducts(productList);
 
-      const counts = extractCategoriesFromProducts(productList);
+      // ✅ Fix: To get accurate category counts that reflect other filters (like search or price)
+      // but NOT the category filter itself, we fetch the base list without the category filter.
+      let baseListForCounts = productList;
+      if (filters?.category && filters.category !== 'All') {
+        try {
+          // Fetch products matching all current filters EXCEPT 'category'
+          const baseData = await fetchProducts({ ...filters, category: 'All' });
+          baseListForCounts = Array.isArray(baseData) ? baseData : [];
+        } catch (err) {
+          console.error("Failed to fetch base products for category counts", err);
+        }
+      }
 
-      // ✅ Fix category disappearing UI Bug: Using functional state update carefully avoids stale closure issues from the empty dependency array []
+      const counts = extractCategoriesFromProducts(baseListForCounts);
+
       setCategories((prevCategories) => {
-        if (!filters?.category || filters.category === 'All' || prevCategories.length <= 1) {
-          return Object.keys(counts);
+        const newCats = Object.keys(counts).sort((a, b) => {
+          if (a === 'All') return -1;
+          if (b === 'All') return 1;
+          return a.localeCompare(b);
+        });
+        // Avoid unnecessary re-renders if the categories haven't meaningfully changed length
+        if (!filters?.category || filters.category === 'All' || prevCategories.length <= 1 || newCats.length !== prevCategories.length) {
+          return newCats;
         }
         return prevCategories;
       });
-      setCategoryCounts((prevCounts) => {
-        if (!filters?.category || filters.category === 'All' || Object.keys(prevCounts).length <= 1) {
-          return counts;
-        }
-        return prevCounts;
+
+      setCategoryCounts(() => {
+        return counts; // Always update category counts to reflect the current real max
       });
     } catch (err: any) {
       // ✅ แก้: แยก error message ออกให้ชัดเจน ช่วย debug ได้ง่ายขึ้น

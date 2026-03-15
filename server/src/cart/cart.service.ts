@@ -17,7 +17,7 @@ export class CartService {
     if (Array.isArray(existingItems) && existingItems.length > 0) {
       // 🟢 กรณี A: มีของอยู่แล้ว -> ให้บวกจำนวนเพิ่ม
       const item = existingItems[0] as any;
-      const newQuantity = item.quantity + quantity;
+      const newQuantity = Number(item.quantity) + Number(quantity);
       
       await this.db.query(
         'UPDATE cart_items SET quantity = ? WHERE id = ?',
@@ -28,7 +28,7 @@ export class CartService {
       // 🔵 กรณี B: ยังไม่มีของ -> เพิ่มแถวใหม่ (Insert)
       const result: any = await this.db.query(
         'INSERT INTO cart_items (user_id, product_id, quantity) VALUES (?, ?, ?)',
-        [userId, productId, quantity],
+        [userId, productId, Number(quantity)],
       );
       return { message: 'เพิ่มสินค้าลงตะกร้าสำเร็จ', cartItemId: result.insertId };
     }

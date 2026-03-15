@@ -17,6 +17,7 @@ export interface Product {
   image_url?: string;
   isHidden?: boolean;
   category?: Category | string;
+  images?: { id: number; imageUrl: string; sortOrder: number }[];
 }
 
 export interface OrderItem {

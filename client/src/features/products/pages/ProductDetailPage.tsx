@@ -21,6 +21,7 @@ const ProductDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [addingToCart, setAddingToCart] = useState(false);
+  const [activeImage, setActiveImage] = useState<string | null>(null);
 
   const handleQuantityChange = (type: "increase" | "decrease") => {
     if (type === "decrease" && quantity > 1) setQuantity(quantity - 1);
@@ -84,6 +85,13 @@ const ProductDetailPage: React.FC = () => {
           .slice(0, 4);
         setRelatedProducts(related);
         setQuantity(1);
+        
+        // กำหนดรูปหลัก เริ่มต้นจาก imageUrl หรือรูปแรกใน images array
+        const firstImg = currentProduct.images && currentProduct.images.length > 0 
+          ? `http://localhost:3000${currentProduct.images[0].imageUrl}` 
+          : (currentProduct.imageUrl || currentProduct.image_url);
+        setActiveImage(firstImg || null);
+
       } catch (err) {
         console.error(err);
       } finally {
@@ -125,8 +133,7 @@ const ProductDetailPage: React.FC = () => {
             <div className="relative w-full flex items-center justify-center mb-6 h-[300px]">
               <img
                 src={
-                  product.imageUrl ||
-                  product.image_url ||
+                  activeImage ||
                   "https://dummyimage.com/600x400/000/fff?text=No+Image"
                 }
                 alt={product.name}
@@ -139,25 +146,40 @@ const ProductDetailPage: React.FC = () => {
             </div>
 
             {/* Thumbnail Slider */}
-            <div className="flex gap-4 overflow-x-auto pb-2 w-full justify-center">
-              {[
-                product.imageUrl || product.image_url,
-                "https://dummyimage.com/100x100/111/dc2626?text=Side",
-                "https://dummyimage.com/100x100/111/dc2626?text=Back",
-                "https://dummyimage.com/100x100/111/dc2626?text=Box",
-              ].map((img, idx) => (
-                <button
-                  key={idx}
-                  className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition ${idx === 0 ? "border-red-600" : "border-white/10 hover:border-white/30"} flex-shrink-0 bg-white`}
-                >
+            {product.images && product.images.length > 0 ? (
+              <div className="flex gap-4 overflow-x-auto pb-2 w-full justify-center">
+                {product.images.map((img) => {
+                  const fullUrl = `http://localhost:3000${img.imageUrl}`;
+                  const isSelected = activeImage === fullUrl;
+                  return (
+                    <button
+                      key={img.id}
+                      onClick={() => setActiveImage(fullUrl)}
+                      className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition ${isSelected ? "border-red-600" : "border-white/10 hover:border-white/30"} flex-shrink-0 bg-white`}
+                    >
+                      <img
+                        src={fullUrl}
+                        alt="Thumbnail"
+                        className={`w-full h-full object-contain mix-blend-multiply ${isSelected ? "opacity-100" : "opacity-80 hover:opacity-100"}`}
+                        onError={(e) => {
+                          e.currentTarget.src = "https://dummyimage.com/100x100/000/fff";
+                        }}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex gap-4 overflow-x-auto pb-2 w-full justify-center">
+                <button className="w-16 h-16 rounded-lg overflow-hidden border-2 border-red-600 flex-shrink-0 bg-white">
                   <img
-                    src={img || "https://dummyimage.com/100x100/000/fff"}
+                    src={product.imageUrl || product.image_url || "https://dummyimage.com/100x100/000/fff"}
                     alt="Thumbnail"
-                    className="w-full h-full object-contain mix-blend-multiply opacity-80 hover:opacity-100"
+                    className="w-full h-full object-contain mix-blend-multiply opacity-100"
                   />
                 </button>
-              ))}
-            </div>
+              </div>
+            )}
 
             <span className="absolute top-4 left-4 bg-red-600 text-white text-[10px] font-bold px-3 py-1 rounded uppercase tracking-wider shadow-lg">
               New Arrival

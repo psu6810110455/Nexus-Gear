@@ -38,7 +38,8 @@ export class ProductsService {
 
   findAll(search?: string, category?: string, includeHidden: boolean = false, minPrice?: number, maxPrice?: number) {
     const query = this.productsRepository.createQueryBuilder('product')
-      .leftJoinAndSelect('product.category', 'category');
+      .leftJoinAndSelect('product.category', 'category')
+      .leftJoinAndSelect('product.images', 'images');
 
     if (!includeHidden) {
       query.andWhere('product.isHidden = :isHidden', { isHidden: false });
@@ -61,6 +62,7 @@ export class ProductsService {
     }
 
     query.addOrderBy('product.id', 'ASC');
+    query.addOrderBy('images.sortOrder', 'ASC');
 
     return query.getMany();
   }

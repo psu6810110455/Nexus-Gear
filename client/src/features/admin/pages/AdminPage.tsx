@@ -9,7 +9,7 @@ import {
   uploadProductImages, deleteProductImage,
 } from '../../../shared/services/api';
 import type { Category, Product } from '../../../shared/types';
-import { Plus, Edit, Trash2, X, Save, CheckCircle, AlertTriangle, EyeOff, Eye, ImagePlus } from 'lucide-react';
+import { Plus, Edit, Trash2, X, Save, CheckCircle, AlertTriangle, EyeOff, Eye, ImagePlus, Star } from 'lucide-react';
 import AdminLayout from '../../navigation/components/AdminLayout';
 
 // ── Types ─────────────────────────────────────────────────────
@@ -90,8 +90,9 @@ interface ProductFormModalProps {
   onFormChange: (f: FormData) => void; onSubmit: () => void; onClose: () => void;
   onAddFiles: (files: File[]) => void; onRemovePendingFile: (idx: number) => void;
   onDeleteExistingImage: (img: ExistingImage) => void;
+  onSetMainImage: (imageUrl: string) => void;
 }
-const ProductFormModal = ({ form, categories, isEditing, submitting, pendingFiles, existingImages, onFormChange, onSubmit, onClose, onAddFiles, onRemovePendingFile, onDeleteExistingImage }: ProductFormModalProps) => {
+const ProductFormModal = ({ form, categories, isEditing, submitting, pendingFiles, existingImages, onFormChange, onSubmit, onClose, onAddFiles, onRemovePendingFile, onDeleteExistingImage, onSetMainImage }: ProductFormModalProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const totalImages = existingImages.length + pendingFiles.length;
   const canAdd = totalImages < MAX_IMAGES;
@@ -124,14 +125,26 @@ const ProductFormModal = ({ form, categories, isEditing, submitting, pendingFile
             </label>
             <div className="grid grid-cols-4 gap-3">
               {/* Existing images */}
-              {existingImages.map((img) => (
-                <div key={`ex-${img.id}`} className="relative w-full aspect-square bg-black border border-[#990000]/30 rounded-xl overflow-hidden group">
-                  <img src={`http://localhost:3000${img.imageUrl}`} alt="" className="w-full h-full object-contain p-1" />
-                  <button type="button" onClick={() => onDeleteExistingImage(img)} className="absolute top-1 right-1 w-5 h-5 bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                    <X size={12} className="text-white" />
-                  </button>
-                </div>
-              ))}
+              {existingImages.map((img) => {
+                const isMain = form.imageUrl === img.imageUrl;
+                return (
+                  <div key={`ex-${img.id}`} className={`relative w-full aspect-square bg-black border ${isMain ? 'border-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.3)]' : 'border-[#990000]/30'} rounded-xl overflow-hidden group`}>
+                    <img src={`http://localhost:3000${img.imageUrl}`} alt="" className="w-full h-full object-contain p-1" />
+                    
+                    {/* Delete button */}
+                    <button type="button" onClick={() => onDeleteExistingImage(img)} className="absolute top-1 right-1 w-5 h-5 bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-lg z-10">
+                      <X size={12} className="text-white" />
+                    </button>
+                    
+                    {/* Set Main button */}
+                    <button type="button" onClick={() => onSetMainImage(img.imageUrl)} title="ตั้งเป็นรูปหลัก" className={`absolute top-1 left-1 w-5 h-5 rounded-full flex items-center justify-center transition shadow-lg z-10 ${isMain ? 'bg-yellow-500 opacity-100' : 'bg-black/50 opacity-0 group-hover:opacity-100 hover:bg-yellow-500/50'}`}>
+                      <Star size={10} className={`${isMain ? 'text-black fill-black' : 'text-white'}`} />
+                    </button>
+                    
+                    {isMain && <span className="absolute bottom-1 right-1 bg-yellow-500 text-black text-[8px] font-bold px-1.5 py-0.5 rounded shadow">MAIN</span>}
+                  </div>
+                );
+              })}
               {/* Pending files preview */}
               {pendingFiles.map((f, idx) => (
                 <div key={`pf-${idx}`} className="relative w-full aspect-square bg-black border border-green-500/30 rounded-xl overflow-hidden group">
@@ -350,7 +363,8 @@ function AdminPage() {
           onFormChange={setForm} onSubmit={handleSubmit} onClose={() => { setShowForm(false); setPendingFiles([]); setExistingImages([]); }}
           onAddFiles={(files) => setPendingFiles(prev => [...prev, ...files])}
           onRemovePendingFile={(idx) => setPendingFiles(prev => prev.filter((_, i) => i !== idx))}
-          onDeleteExistingImage={handleDeleteExistingImage} />
+          onDeleteExistingImage={handleDeleteExistingImage}
+          onSetMainImage={(url) => setForm({ ...form, imageUrl: url })} />
       )}
 
       {/* ── Page Header ── */}

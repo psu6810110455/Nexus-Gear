@@ -11,6 +11,7 @@ import {
 } from "../../../shared/services/api";
 import type { Product } from "../../../shared/types";
 import { toast } from "sonner";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import ReviewList from "../components/ReviewList";
 
 const ProductDetailPage: React.FC = () => {
@@ -54,7 +55,6 @@ const ProductDetailPage: React.FC = () => {
     }
   };
 
-  // ✅ ฟังก์ชันซื้อเลย — ใส่ตะกร้าแล้วพาไปหน้า /cart
   const handleBuyNow = async () => {
     if (!product) return;
     setAddingToCart(true);
@@ -66,6 +66,24 @@ const ProductDetailPage: React.FC = () => {
       toast.error("❌ เกิดข้อผิดพลาด กรุณาลองใหม่");
       setAddingToCart(false);
     }
+  };
+
+  const imagesList = product?.images && product.images.length > 0 
+    ? product.images.map(img => `http://localhost:3000${img.imageUrl}`)
+    : [(product?.imageUrl || product?.image_url || "https://dummyimage.com/600x400/000/fff?text=No+Image")];
+
+  const handleNextImage = () => {
+    if (!activeImage || imagesList.length <= 1) return;
+    const currentIndex = imagesList.indexOf(activeImage);
+    const nextIndex = (currentIndex + 1) % imagesList.length;
+    setActiveImage(imagesList[nextIndex]);
+  };
+
+  const handlePrevImage = () => {
+    if (!activeImage || imagesList.length <= 1) return;
+    const currentIndex = imagesList.indexOf(activeImage);
+    const prevIndex = currentIndex === 0 ? imagesList.length - 1 : currentIndex - 1;
+    setActiveImage(imagesList[prevIndex]);
   };
 
   useEffect(() => {
@@ -129,7 +147,7 @@ const ProductDetailPage: React.FC = () => {
         </div>
 
         <div className="flex flex-col md:flex-row gap-12 mb-16">
-          <div className="w-full md:w-3/5 bg-[#18181b] rounded-xl overflow-hidden p-8 flex flex-col items-center justify-center relative shadow-[0_0_30px_rgba(255,255,255,0.05)] min-h-[400px] border border-white/5">
+          <div className="w-full md:w-3/5 bg-[#18181b] rounded-xl overflow-hidden p-8 flex flex-col items-center justify-center relative shadow-[0_0_30px_rgba(255,255,255,0.05)] min-h-[400px] border border-white/5 group/mainimg">
             <div className="relative w-full flex items-center justify-center mb-6 h-[300px]">
               <img
                 src={
@@ -143,6 +161,23 @@ const ProductDetailPage: React.FC = () => {
                     "https://dummyimage.com/600x400/000/fff?text=Nexus+Gear";
                 }}
               />
+              
+              {imagesList.length > 1 && (
+                <>
+                  <button 
+                    onClick={handlePrevImage}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover/mainimg:opacity-100 transition z-20 hover:scale-110 shadow-lg"
+                  >
+                    <ChevronLeft size={24} />
+                  </button>
+                  <button 
+                    onClick={handleNextImage}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover/mainimg:opacity-100 transition z-20 hover:scale-110 shadow-lg"
+                  >
+                    <ChevronRight size={24} />
+                  </button>
+                </>
+              )}
             </div>
 
             {/* Thumbnail Slider */}

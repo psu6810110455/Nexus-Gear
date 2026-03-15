@@ -26,9 +26,13 @@ interface Props {
   onLightbox: (src: string) => void;
 }
 
+const QUICK_CANCEL_REASON = "สลิปปลอม / หลักฐานไม่ถูกต้อง";
+
 const RefundStatusSection = ({ order, onLightbox }: Props) => {
   const isRefunded = order.refund_status === "refunded";
-  const isRejected = order.refund_status === "rejected";
+  const isFakeSlip = order.cancel_reason === QUICK_CANCEL_REASON;
+  // fallback: รองรับ order เก่าที่ยังไม่มี refund_status = "rejected" ใน DB
+  const isRejected = order.refund_status === "rejected" || isFakeSlip;
   const refundSlipUrl = order.refund_slip
     ? `http://localhost:3000/uploads/slips/${order.refund_slip}`
     : null;
@@ -104,20 +108,28 @@ const RefundStatusSection = ({ order, onLightbox }: Props) => {
         </div>
       )}
 
-      {/* Rejected Notice */}
       {isRejected && (
-        <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-4">
-          <p className="text-red-500 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 mb-2">
-            <Ban size={12} /> ปฏิเสธการคืนเงิน
+        <div className="bg-red-500/10 border border-red-500/40 rounded-xl p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-red-500/20 rounded-lg">
+              <Ban size={16} className="text-red-400" />
+            </div>
+            <p className="text-red-400 text-sm font-bold">ปฏิเสธการคืนเงิน</p>
+          </div>
+          <p className="text-red-300/90 text-sm leading-relaxed">
+            {isFakeSlip
+              ? "แอดมินตรวจสอบแล้วพบว่าสลิปการชำระเงินเป็นสลิปปลอม หรือหลักฐานไม่ถูกต้อง จึงปฏิเสธการคืนเงินสำหรับคำสั่งซื้อนี้"
+              : "แอดมินได้ตรวจสอบหลักฐานและพบว่าไม่ตรงตามเงื่อนไข จึงปฏิเสธการคืนเงินสำหรับคำสั่งซื้อนี้"}
           </p>
-          <p className="text-zinc-300 text-sm">
-            แอดมินตรวจสอบแล้วพบว่าหลักฐานไม่ถูกต้อง
-            จึงปฏิเสธการคืนเงินสำหรับคำสั่งซื้อนี้
-          </p>
+          <div className="bg-red-900/20 rounded-lg p-2 border border-red-500/30">
+            <p className="text-red-300 text-xs">
+              ⚠️ หากคุณเห็นว่าการปฏิเสธไม่ถูกต้อง โปรดติดต่อแอดมินเพื่อสอบถาม
+            </p>
+          </div>
         </div>
       )}
 
-      {/* Refund Details */}
+      {/* Refund Details - only show if refunded */}
       {isRefunded && (
         <div className="bg-green-500/5 border border-green-500/20 rounded-xl p-4 space-y-2">
           <p className="text-green-500 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 mb-2">

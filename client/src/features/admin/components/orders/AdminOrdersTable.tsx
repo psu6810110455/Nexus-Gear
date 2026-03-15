@@ -14,9 +14,6 @@ import {
   CreditCard,
   ImageIcon,
   ArrowRight,
-  DollarSign,
-  ShieldX,
-  Clock3,
 } from "lucide-react";
 import type { Order } from "../../../../shared/types";
 
@@ -233,41 +230,43 @@ const AdminOrdersTable = ({
                           {order.status}
                         </span>
                       )}
-                      {/* Refund status badge */}
+                      {/* Refund status badge — แยก 3 กลุ่ม */}
                       {order.status === "cancelled" &&
-                        (order.refund_status &&
-                        order.refund_status !== "none" ? (
-                          <span
-                            className={`inline-flex items-center justify-center gap-1 min-w-[120px] px-2 py-0.5 rounded-full border text-[9px] font-bold ${
-                              order.refund_status === "refunded"
-                                ? "text-green-400 border-green-500/30 bg-green-500/10"
-                                : order.refund_status === "rejected"
-                                  ? "text-red-400 border-red-500/30 bg-red-500/10"
-                                  : "text-yellow-400 border-yellow-500/30 bg-yellow-500/10"
-                            }`}
-                          >
-                            {order.refund_status === "refunded" && (
-                              <>
-                                <DollarSign size={9} /> คืนเงินแล้ว
-                              </>
-                            )}
-                            {order.refund_status === "rejected" && (
-                              <>
-                                <ShieldX size={9} /> ปฏิเสธการคืนเงิน
-                              </>
-                            )}
-                            {order.refund_status === "pending" && (
-                              <>
-                                <Clock3 size={9} /> รอคืนเงิน
-                              </>
-                            )}
-                          </span>
-                        ) : order.cancel_reason ===
-                          "สลิปปลอม / หลักฐานไม่ถูกต้อง" ? (
-                          <span className="inline-flex items-center justify-center gap-1 min-w-[120px] px-2 py-0.5 rounded-full border text-[9px] font-bold text-red-400 border-red-500/30 bg-red-500/10">
-                            <ShieldX size={9} /> ปฏิเสธการคืนเงิน
-                          </span>
-                        ) : null)}
+                        (() => {
+                          const QUICK_CANCEL = "สลิปปลอม / หลักฐานไม่ถูกต้อง";
+                          const isRejected =
+                            order.refund_status === "rejected" ||
+                            order.cancel_reason === QUICK_CANCEL;
+                          const isRefunded = order.refund_status === "refunded";
+
+                          if (isRefunded)
+                            return (
+                              <span className="inline-flex items-center justify-center gap-1.5 min-w-[120px] px-2 py-1 rounded-full border text-[9px] font-bold text-green-400 border-green-500/30 bg-green-500/10">
+                                <span className="w-1.5 h-1.5 rounded-full bg-green-400 shrink-0" />
+                                คืนเงินสำเร็จ
+                              </span>
+                            );
+                          if (isRejected)
+                            return (
+                              <span className="inline-flex items-center justify-center gap-1.5 min-w-[120px] px-2 py-1 rounded-full border text-[9px] font-bold text-red-400 border-red-500/30 bg-red-500/10">
+                                <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
+                                ปฏิเสธการคืนเงิน
+                              </span>
+                            );
+                          // pending หรือมีข้อมูล refund
+                          if (
+                            order.refund_status === "pending" ||
+                            order.refund_bank_name ||
+                            order.refund_bank_account
+                          )
+                            return (
+                              <span className="inline-flex items-center justify-center gap-1.5 min-w-[120px] px-2 py-1 rounded-full border text-[9px] font-bold text-yellow-400 border-yellow-500/30 bg-yellow-500/10">
+                                <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse shrink-0" />
+                                แจ้งการคืนเงิน
+                              </span>
+                            );
+                          return null;
+                        })()}
                     </div>
                   </td>
 

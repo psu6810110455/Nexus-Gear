@@ -143,29 +143,32 @@ const OrderCard = ({ order, onSelect, onCancel, onReturn }: OrderCardProps) => {
     return daysSince <= 3;
   })();
 
-  // สถานะการคืนเงินสำหรับ cancelled
-  const refundLabel =
-    order.status === "cancelled"
-      ? order.refund_status === "refunded"
+  // ── สถานะการคืนเงิน — แยก 3 กลุ่มชัดเจน ──────────────────
+  const QUICK_CANCEL = "สลิปปลอม / หลักฐานไม่ถูกต้อง";
+  const isRejected =
+    order.refund_status === "rejected" || order.cancel_reason === QUICK_CANCEL;
+  const isRefunded = order.refund_status === "refunded";
+
+  const refundBadge =
+    order.status !== "cancelled"
+      ? null
+      : isRefunded
         ? {
             text: "คืนเงินสำเร็จ",
-            cls: "text-green-400 border-green-400/40 bg-green-400/10",
+            cls: "text-green-400 border-green-500/40 bg-green-500/10",
+            dot: "bg-green-400",
           }
-        : order.refund_status === "rejected"
+        : isRejected
           ? {
               text: "ปฏิเสธการคืนเงิน",
-              cls: "text-red-400 border-red-400/40 bg-red-400/10",
+              cls: "text-red-400 border-red-500/40 bg-red-500/10",
+              dot: "bg-red-400",
             }
-          : order.cancel_reason === "สลิปปลอม / หลักฐานไม่ถูกต้อง"
-            ? {
-                text: "ปฏิเสธการคืนเงิน",
-                cls: "text-red-400 border-red-400/40 bg-red-400/10",
-              }
-            : {
-                text: "แจ้งการคืนเงิน",
-                cls: "text-yellow-400 border-yellow-400/40 bg-yellow-400/10",
-              }
-      : null;
+          : {
+              text: "แจ้งการคืนเงิน",
+              cls: "text-yellow-400 border-yellow-500/40 bg-yellow-500/10",
+              dot: "bg-yellow-400 animate-pulse",
+            };
 
   return (
     <article
@@ -238,11 +241,14 @@ const OrderCard = ({ order, onSelect, onCancel, onReturn }: OrderCardProps) => {
           >
             {s.icon} {s.text}
           </span>
-          {refundLabel && (
+          {refundBadge && (
             <span
-              className={`inline-flex items-center gap-1 w-full justify-center px-2 py-0.5 rounded-full border text-[9px] font-bold whitespace-nowrap ${refundLabel.cls}`}
+              className={`inline-flex items-center gap-1.5 w-full justify-center px-2 py-1 rounded-full border text-[9px] font-bold whitespace-nowrap ${refundBadge.cls}`}
             >
-              {refundLabel.text}
+              <span
+                className={`w-1.5 h-1.5 rounded-full shrink-0 ${refundBadge.dot}`}
+              />
+              {refundBadge.text}
             </span>
           )}
         </div>
@@ -256,11 +262,14 @@ const OrderCard = ({ order, onSelect, onCancel, onReturn }: OrderCardProps) => {
             >
               {s.icon} {s.text}
             </span>
-            {refundLabel && (
+            {refundBadge && (
               <span
-                className={`inline-flex items-center gap-1 w-full justify-center px-2 py-0.5 rounded-full border text-[8px] font-bold ${refundLabel.cls}`}
+                className={`inline-flex items-center gap-1.5 w-full justify-center px-2 py-0.5 rounded-full border text-[8px] font-bold ${refundBadge.cls}`}
               >
-                {refundLabel.text}
+                <span
+                  className={`w-1.5 h-1.5 rounded-full shrink-0 ${refundBadge.dot}`}
+                />
+                {refundBadge.text}
               </span>
             )}
           </div>

@@ -97,9 +97,67 @@ export class OrdersController {
   @UseGuards(JwtAuthGuard)
   cancelOrder(
     @Param('id') id: string,
-    @Body() body: { reason: string; restock?: boolean }
+    @Body() body: { reason: string; restock?: boolean; bankName?: string; bankAccount?: string }
   ) {
     // ค่า default restock = true (คืนสต็อกเสมอ)
-    return this.ordersService.cancelOrder(+id, body.reason, body.restock !== false);
+    return this.ordersService.cancelOrder(+id, body.reason, body.restock !== false, body.bankName, body.bankAccount);
+  }
+
+  // ── Admin: คืนเงินลูกค้า ──────────────────────────────────────────────────
+  @Patch(':id/refund')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @UseInterceptors(FileInterceptor('refundSlip', {
+    storage: diskStorage({
+      destination: './uploads/slips',
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        cb(null, 'refund-' + uniqueSuffix + extname(file.originalname));
+      },
+    }),
+  }))
+  async processRefund(
+    @Param('id') id: string,
+    @Body() body: { refundAmount: string; refundChannel: string },
+    @UploadedFile() file: any,
+  ) {
+    const refundSlip = file ? file.filename : null;
+    return this.ordersService.processRefund(
+      +id,
+      parseFloat(body.refundAmount),
+      body.refundChannel,
+      refundSlip,
+    );
+  }
+
+  // ── Customer: ขอคืนสินค้า (ภายใน 3 วันหลัง completed) ─────────────────
+  @Patch(':id/return')
+  @UseGuards(JwtAuthGuard)
+  requestReturn(
+    @Param('id') id: string,
+    @Body() body: { reason: string; bankName?: string; bankAccount?: string },
+  ) {
+    return this.ordersService.requestReturn(+id, body.reason, body.bankName, body.bankAccount);
+  }
+
+  // ── Customer: ส่งข้อมูลการคืนเงิน (สำหรับ cancelled) ────────────
+  @Patch(':id/refund-info')
+  @UseGuards(JwtAuthGuard)
+  submitRefundInfo(
+    @Param('id') id: string,
+    @Body() body: { bankName: string; bankAccount: string },
+  ) {
+    return this.ordersService.submitRefundInfo(+id, body.bankName, body.bankAccount);
+  }
+
+  // ── Admin: ปฏิเสธการคืนเงิน (สลิปปลอม) ──────────────────────────────────
+  @Patch(':id/reject-refund')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  rejectRefund(
+    @Param('id') id: string,
+    @Body() body: { reason?: string },
+  ) {
+    return this.ordersService.rejectRefund(+id, body.reason);
   }
 }

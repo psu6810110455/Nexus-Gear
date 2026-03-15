@@ -39,6 +39,15 @@ export interface Order {
   user?: { name: string; email?: string };
   slip_image?: string | null;
   payment_method?: string | null;
+  cancel_reason?: string | null;
+  refund_amount?: number | null;
+  refund_channel?: string | null;
+  refund_slip?: string | null;
+  refund_status?: string;  // none | pending | refunded
+  refunded_at?: string | null;
+  completed_at?: string | null;
+  refund_bank_name?: string | null;
+  refund_bank_account?: string | null;
 }
 
 export interface CartItem {

@@ -586,7 +586,7 @@ const OrderDetailModal = ({
                 </div>
               </div>
 
-              {/* ── Cancel Details (เมื่อถูกยกเลิก) ── */}
+              {/* ── Cancel Details + ปฏิเสธการคืนเงิน (รวม section เดียว) ── */}
               {isCancelled && order.cancel_reason && (
                 <div
                   className={`p-4 rounded-xl space-y-3 ${
@@ -621,6 +621,19 @@ const OrderDetailModal = ({
                       </p>
                     </div>
                   </div>
+
+                  {/* ── แสดง ปฏิเสธการคืนเงิน ในกล่องเดียวกัน ── */}
+                  {(isRejected || isFakeSlip) && (
+                    <div className="pt-3 border-t border-red-500/20 space-y-1">
+                      <div className="flex items-center gap-2 text-red-400 font-bold text-xs uppercase">
+                        <Ban size={13} /> ปฏิเสธการคืนเงิน
+                      </div>
+                      <p className="text-zinc-400 text-sm">
+                        แอดมินตรวจสอบแล้วพบว่าหลักฐานไม่ถูกต้อง
+                        จึงปฏิเสธการคืนเงินสำหรับคำสั่งซื้อนี้
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -703,19 +716,6 @@ const OrderDetailModal = ({
                       </div>
                     </div>
                   )}
-                </div>
-              )}
-
-              {/* ── Rejected Status (ปฏิเสธการคืนเงิน) ── */}
-              {isCancelled && (isRejected || isFakeSlip) && (
-                <div className="bg-red-500/5 p-4 rounded-xl border border-red-500/20 space-y-3">
-                  <div className="flex items-center gap-2 text-red-500 font-bold text-sm uppercase">
-                    <Ban size={16} /> ปฏิเสธการคืนเงิน
-                  </div>
-                  <p className="text-zinc-300 text-sm">
-                    แอดมินตรวจสอบแล้วพบว่าหลักฐานไม่ถูกต้อง
-                    จึงปฏิเสธการคืนเงินสำหรับคำสั่งซื้อนี้
-                  </p>
                 </div>
               )}
 

@@ -11,6 +11,7 @@ import {
 } from "../../../shared/services/api";
 import type { Order } from "../../../shared/types";
 import { getSocket } from "../../../shared/services/socket";
+import { fetchProfile } from "../../profile/services/profile.service";
 
 import OrderTabs from "../components/OrderTabs";
 import OrderCard from "../components/OrderCard";
@@ -51,6 +52,10 @@ const NexusGearOrderStatus = () => {
   const [returnBankAccount, setReturnBankAccount] = useState("");
   const [returnLoading, setReturnLoading] = useState(false);
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+  const [profileBank, setProfileBank] = useState<{
+    bank_name: string;
+    bank_account: string;
+  }>({ bank_name: "", bank_account: "" });
 
   const replaceOrder = useCallback((updated: Order) => {
     setOrders((prev) =>
@@ -69,6 +74,14 @@ const NexusGearOrderStatus = () => {
 
   useEffect(() => {
     setTimeout(fetchMyOrders, 800);
+    fetchProfile()
+      .then((p) =>
+        setProfileBank({
+          bank_name: p.bank_name || "",
+          bank_account: p.bank_account || "",
+        }),
+      )
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -86,6 +99,11 @@ const NexusGearOrderStatus = () => {
   // Lock body scroll when return modal is open
   useEffect(() => {
     if (returnTarget) {
+      // Pre-fill bank info from profile
+      if (profileBank.bank_name) setReturnBankName(profileBank.bank_name);
+      if (profileBank.bank_account)
+        setReturnBankAccount(profileBank.bank_account);
+
       const scrollY = window.scrollY;
       document.body.style.overflow = "hidden";
       document.body.style.position = "fixed";
@@ -101,7 +119,7 @@ const NexusGearOrderStatus = () => {
         window.scrollTo(0, scrollY);
       };
     }
-  }, [returnTarget]);
+  }, [returnTarget, profileBank]);
 
   const fetchMyOrders = async () => {
     try {
@@ -303,6 +321,8 @@ const NexusGearOrderStatus = () => {
         onClose={() => setCancelTarget(null)}
         order={cancelTarget}
         onConfirm={handleCancelOrder}
+        defaultBankName={profileBank.bank_name}
+        defaultBankAccount={profileBank.bank_account}
       />
 
       {/* ── Return Request Modal ── */}

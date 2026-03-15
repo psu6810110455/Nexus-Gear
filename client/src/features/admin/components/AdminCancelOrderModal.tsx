@@ -224,6 +224,34 @@ const AdminCancelOrderModal = ({
             />
           </div>
 
+          {/* ── ข้อมูลธนาคารลูกค้า (จากโปรไฟล์) ── */}
+          {(order.user?.bank_name ||
+            order.user?.bank_account ||
+            order.refund_bank_name ||
+            order.refund_bank_account) && (
+            <div className="bg-emerald-950/30 rounded-xl p-4 border border-emerald-800/40">
+              <p className="text-emerald-400 text-xs font-bold uppercase tracking-widest flex items-center gap-2 mb-3">
+                <CreditCard size={12} /> ข้อมูลธนาคารลูกค้า
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-zinc-500 text-[10px] mb-0.5">ชื่อธนาคาร</p>
+                  <p className="text-zinc-200 text-sm font-bold">
+                    {order.refund_bank_name || order.user?.bank_name || "—"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-zinc-500 text-[10px] mb-0.5">เลขบัญชี</p>
+                  <p className="text-zinc-200 text-sm font-bold">
+                    {order.refund_bank_account ||
+                      order.user?.bank_account ||
+                      "—"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* ── คืนสต็อกสินค้า ── */}
           <div className="bg-zinc-900/50 rounded-xl p-4 border border-zinc-800">
             <p className="text-zinc-300 text-sm font-bold mb-3">

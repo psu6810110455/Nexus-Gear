@@ -227,15 +227,15 @@ const OrderCard = ({ order, onSelect, onCancel, onReturn }: OrderCardProps) => {
         </div>
 
         {/* Col 4: Status badge */}
-        <div className="hidden md:flex flex-col items-center justify-center gap-1 shrink-0 w-[150px] border-l border-zinc-800/50 pl-4">
+        <div className="hidden md:flex flex-col items-center justify-center gap-1 shrink-0 w-[160px] border-l border-zinc-800/50 pl-4">
           <span
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[11px] font-bold whitespace-nowrap ${s.badge}`}
+            className={`inline-flex items-center gap-1.5 w-full justify-center px-3 py-1.5 rounded-full border text-[11px] font-bold whitespace-nowrap ${s.badge}`}
           >
             {s.icon} {s.text}
           </span>
           {refundLabel && (
             <span
-              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[9px] font-bold whitespace-nowrap ${refundLabel.cls}`}
+              className={`inline-flex items-center gap-1 w-full justify-center px-2 py-0.5 rounded-full border text-[9px] font-bold whitespace-nowrap ${refundLabel.cls}`}
             >
               {refundLabel.text}
             </span>
@@ -245,15 +245,15 @@ const OrderCard = ({ order, onSelect, onCancel, onReturn }: OrderCardProps) => {
         {/* Col 5: Actions */}
         <div className="flex flex-col gap-1.5 shrink-0 border-l border-zinc-800/50 pl-4 w-[136px]">
           {/* mobile: status pill */}
-          <div className="md:hidden flex flex-col items-end gap-0.5 mb-0.5">
+          <div className="md:hidden flex flex-col items-end gap-0.5 mb-0.5 w-full">
             <span
-              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[9px] font-bold ${s.badge}`}
+              className={`inline-flex items-center gap-1 w-full justify-center px-2 py-0.5 rounded-full border text-[9px] font-bold ${s.badge}`}
             >
               {s.icon} {s.text}
             </span>
             {refundLabel && (
               <span
-                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[8px] font-bold ${refundLabel.cls}`}
+                className={`inline-flex items-center gap-1 w-full justify-center px-2 py-0.5 rounded-full border text-[8px] font-bold ${refundLabel.cls}`}
               >
                 {refundLabel.text}
               </span>

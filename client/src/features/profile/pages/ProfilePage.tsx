@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { LogOut, Trash2 } from "lucide-react";
 import NexusGearOrderStatus from "../../orders/pages/NexusGearOrderStatus";
 
@@ -29,12 +30,19 @@ export const ProfilePage = () => {
   // ✅ 2. ดึงข้อมูล user จากระบบ
   const { user, logout } = useAuth();
 
-  const [activeTab, setActiveTab] = useState("orders");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab") || "orders";
+  const setActiveTab = useCallback(
+    (tab: string) => setSearchParams({ tab }, { replace: true }),
+    [setSearchParams],
+  );
   const [userData, setUserData] = useState({
     name: "",
     email: "",
     phone: "",
     address: "",
+    bank_name: "",
+    bank_account: "",
   });
   const [addresses, setAddresses] = useState<any[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -53,6 +61,8 @@ export const ProfilePage = () => {
           name: user?.name || profile.name || "",
           email: user?.email || profile.email || "",
           phone: profile.phone || "",
+          bank_name: profile.bank_name || "",
+          bank_account: profile.bank_account || "",
         }));
 
         // 2. โหลดข้อมูลที่อยู่
@@ -122,6 +132,8 @@ export const ProfilePage = () => {
       await profileApi.updateProfile({
         name: userData.name,
         phone: userData.phone,
+        bank_name: userData.bank_name,
+        bank_account: userData.bank_account,
       });
       triggerSuccess("SAVED!", "อัปเดตข้อมูลส่วนตัวลงฐานข้อมูลเรียบร้อยแล้ว");
     } catch (error) {

@@ -36,7 +36,7 @@ export interface Order {
   shipping_address: string;
   items: OrderItem[];
   is_rated?: boolean;
-  user?: { name: string; email?: string };
+  user?: { name: string; email?: string; bank_name?: string; bank_account?: string };
   slip_image?: string | null;
   payment_method?: string | null;
   cancel_reason?: string | null;

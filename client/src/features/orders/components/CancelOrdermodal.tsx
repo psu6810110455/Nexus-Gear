@@ -21,6 +21,8 @@ interface Props {
     bankName?: string,
     bankAccount?: string,
   ) => void;
+  defaultBankName?: string;
+  defaultBankAccount?: string;
 }
 
 const CANCEL_REASONS = [
@@ -31,12 +33,27 @@ const CANCEL_REASONS = [
   "อื่นๆ",
 ];
 
-const CancelOrderModal = ({ isOpen, onClose, order, onConfirm }: Props) => {
+const CancelOrderModal = ({
+  isOpen,
+  onClose,
+  order,
+  onConfirm,
+  defaultBankName,
+  defaultBankAccount,
+}: Props) => {
   const [reason, setReason] = useState("");
   const [customReason, setCustom] = useState("");
   const [bankName, setBankName] = useState("");
   const [bankAccount, setBankAccount] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Pre-fill bank info from profile when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setBankName(defaultBankName || "");
+      setBankAccount(defaultBankAccount || "");
+    }
+  }, [isOpen, defaultBankName, defaultBankAccount]);
 
   // Lock body scroll when modal is open
   useEffect(() => {

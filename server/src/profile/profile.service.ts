@@ -21,7 +21,7 @@ export class ProfileService {
   async getProfile(userId: number) {
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      select: ['id', 'name', 'email', 'phone'], 
+      select: ['id', 'name', 'email', 'phone', 'bank_name', 'bank_account'], 
     });
     if (!user) throw new NotFoundException('ไม่พบข้อมูลผู้ใช้');
     return user;

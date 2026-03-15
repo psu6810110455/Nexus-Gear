@@ -315,7 +315,7 @@ export class OrdersService {
   ) {
     const order = await this.ordersRepository.findOne({
       where: { id: orderId },
-      relations: ['items'],
+      relations: ['items', 'items.product'],
     });
     if (!order) throw new NotFoundException('Order not found');
     if (order.status !== OrderStatus.COMPLETED) {
@@ -332,6 +332,29 @@ export class OrdersService {
 
     order.is_rated = true;
     await this.ordersRepository.save(order);
+
+    // อัปเดต rating_average ของแต่ละสินค้าที่ถูกรีวิว
+    const ratedProductIds = [
+      ...new Set(
+        order.items
+          .filter((item) => ratings[item.id] !== undefined)
+          .map((item) => item.product.id),
+      ),
+    ];
+    for (const productId of ratedProductIds) {
+      const result = await this.orderItemsRepository
+        .createQueryBuilder('oi')
+        .select('AVG(oi.rating)', 'avg')
+        .innerJoin('oi.product', 'p')
+        .where('p.id = :productId AND oi.rating IS NOT NULL', { productId })
+        .getRawOne();
+      if (result?.avg != null) {
+        await this.productsRepository.update(productId, {
+          rating_average: parseFloat(parseFloat(result.avg).toFixed(1)),
+        });
+      }
+    }
+
     return { success: true, message: 'บันทึกรีวิวสำเร็จ' };
   }
 }

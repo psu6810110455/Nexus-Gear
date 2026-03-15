@@ -624,7 +624,10 @@ const OrderDetailModal = ({
 
               {/* ── Customer Bank Info (ข้อมูลบัญชีลูกค้า) ── */}
               {isCancelled &&
-                (order.refund_bank_name || order.refund_bank_account) && (
+                (order.refund_bank_name ||
+                  order.refund_bank_account ||
+                  order.user?.bank_name ||
+                  order.user?.bank_account) && (
                   <div className="bg-orange-500/5 p-4 rounded-xl border border-orange-500/20 space-y-3">
                     <div className="flex items-center gap-2 text-orange-400 font-bold text-sm uppercase">
                       <CreditCard size={16} /> ข้อมูลบัญชีลูกค้า (สำหรับคืนเงิน)
@@ -633,13 +636,17 @@ const OrderDetailModal = ({
                       <div>
                         <p className="text-zinc-500 text-xs">ธนาคาร</p>
                         <p className="text-zinc-200 font-bold">
-                          {order.refund_bank_name || "—"}
+                          {order.refund_bank_name ||
+                            order.user?.bank_name ||
+                            "—"}
                         </p>
                       </div>
                       <div>
                         <p className="text-zinc-500 text-xs">เลขบัญชี</p>
                         <p className="text-zinc-200 font-bold">
-                          {order.refund_bank_account || "—"}
+                          {order.refund_bank_account ||
+                            order.user?.bank_account ||
+                            "—"}
                         </p>
                       </div>
                     </div>

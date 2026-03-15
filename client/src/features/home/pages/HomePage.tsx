@@ -162,7 +162,6 @@ function HomePage() {
         </div>
       </section>
 
-      <button className="globe-btn" onClick={() => setShowLangModal(true)} title="Language"><Globe size={20} /></button>
     </div>
   );
 }

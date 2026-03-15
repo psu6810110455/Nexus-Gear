@@ -18,6 +18,7 @@ import { CartModule }       from './cart/cart.module';
 import { ProfileModule }    from './profile/profile.module';
 import { MailModule }       from './mail/mail.module';
 import { PaymentModule }    from './payment/payment.module';
+import { ChatModule }       from './chat/chat.module';
 
 @Global()
 @Module({
@@ -46,7 +47,8 @@ import { PaymentModule }    from './payment/payment.module';
     CartModule,
     ProfileModule,
     MailModule,
-    PaymentModule, // ✨ เพิ่มบรรทัดนี้
+    PaymentModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [

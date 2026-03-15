@@ -7,7 +7,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import {
   LayoutDashboard, Package, ShoppingBag, Layers, BarChart3,
-  LogOut, Home,
+  LogOut, Home, MessageSquare,
 } from 'lucide-react';
 
 const menuItems = [
@@ -16,6 +16,7 @@ const menuItems = [
   { label: 'จัดการสินค้า',     icon: Package,         path: '/admin' },
   { label: 'จัดการหมวดหมู่',   icon: Layers,          path: '' }, // ✅ Use empty path to denote it as an action button
   { label: 'จัดการสต็อก',      icon: BarChart3,       path: '/admin/stock' },
+  { label: 'แชทกับลูกค้า',   icon: MessageSquare,   path: '/admin/chat' },
 ];
 
 interface AdminLayoutProps {

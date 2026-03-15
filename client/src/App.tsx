@@ -8,7 +8,9 @@ import Footer from './features/navigation/components/Footer';
 import HomePage from './features/home/pages/HomePage';
 import Login from './features/auth/pages/Login';
 import Register from './features/auth/pages/Register';
+import ChatWidget from './features/chat/components/ChatWidget';
 import AdminPage from './features/admin/pages/AdminPage';
+import AdminChat from './features/admin/pages/AdminChat';
 import NexusGearAdminOrders from './features/admin/pages/NexusGearAdminOrders';
 import AdminStockPage from './features/admin/pages/AdminStockPage';
 import NexusGearOrderStatus from './features/orders/pages/NexusGearOrderStatus';
@@ -83,6 +85,9 @@ function AppContent() {
         <Route path="/admin/stock" element={
           <AdminRoute><AdminStockPage /></AdminRoute>
         } />
+        <Route path="/admin/chat" element={
+          <AdminRoute><AdminChat /></AdminRoute>
+        } />
         <Route path="/dashboard" element={
           <AdminRoute>
             <DashboardPage onNavigate={(page) => {
@@ -96,6 +101,7 @@ function AppContent() {
       </Routes>
 
       {!hideNavbar && <Footer />}
+      {!hideNavbar && <ChatWidget />}
     </div>
   );
 }

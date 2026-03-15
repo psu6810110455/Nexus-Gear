@@ -7,6 +7,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { Product } from '../products/entities/product.entity';
 import { User } from '../users/entities/user.entity';
 import { Cart } from '../cart/entities/cart.entity';
+import { ChatGateway } from '../chat/chat.gateway';
 
 @Injectable()
 export class OrdersService {
@@ -21,6 +22,7 @@ export class OrdersService {
     private usersRepository: Repository<User>,
     @InjectRepository(Cart)
     private cartRepository: Repository<Cart>,
+    private chatGateway: ChatGateway,
   ) {}
 
   // ── Checkout จากตะกร้า ────────────────────────────────────────────────────
@@ -165,7 +167,23 @@ export class OrdersService {
     if (!order) throw new NotFoundException('Order not found');
 
     order.status = status;
-    return this.ordersRepository.save(order);
+    const savedOrder = await this.ordersRepository.save(order);
+
+    // Send real-time notification via Chat
+    let statusText = '';
+    switch (status) {
+      case OrderStatus.PAID: statusText = 'ชำระเงินสำเร็จแล้ว'; break;
+      case OrderStatus.TO_SHIP: statusText = 'กำลังเตรียมจัดส่ง'; break;
+      case OrderStatus.SHIPPED: statusText = 'กำลังนำส่งสินค้า'; break;
+      case OrderStatus.COMPLETED: statusText = 'สินค้าถึงมือท่านแล้ว! อย่าลืมมารีวิวสินค้าให้เราด้วยนะครับ'; break;
+      case OrderStatus.CANCELLED: statusText = 'ออเดอร์ของท่านถูกยกเลิกแล้ว'; break;
+    }
+
+    if (statusText) {
+      this.chatGateway.sendSystemMessage(order.user.id, `🔔 แจ้งเตือนออเดอร์ ${order.order_number}: ${statusText}`);
+    }
+
+    return savedOrder;
   }
 
   // ── Cancel Order (รองรับทั้งลูกค้าและ Admin) ──────────────────────────────

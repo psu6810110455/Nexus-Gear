@@ -378,11 +378,11 @@ const NexusGearOrderStatus = () => {
                 {/* ── ข้อมูลบัญชีคืนเงิน ── */}
                 <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 space-y-3">
                   <p className="text-orange-400 text-xs font-bold flex items-center gap-1.5">
-                    💳 ข้อมูลสำหรับคืนเงิน (ไม่บังคับ)
+                    💳 ข้อมูลสำหรับคืนเงิน
                   </p>
                   <div>
                     <label className="text-zinc-500 text-xs mb-1 block">
-                      ชื่อธนาคาร
+                      ชื่อธนาคาร *
                     </label>
                     <select
                       value={returnBankName}
@@ -416,7 +416,7 @@ const NexusGearOrderStatus = () => {
                   </div>
                   <div>
                     <label className="text-zinc-500 text-xs mb-1 block">
-                      เลขบัญชี
+                      เลขบัญชี *
                     </label>
                     <input
                       value={returnBankAccount}
@@ -446,6 +446,8 @@ const NexusGearOrderStatus = () => {
                       !returnReason ||
                       (returnReason === "อื่นๆ" &&
                         !returnCustomReason.trim()) ||
+                      !returnBankName.trim() ||
+                      !returnBankAccount.trim() ||
                       returnLoading
                     }
                     className="flex-1 py-3 bg-orange-600 hover:bg-orange-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl transition-all font-bold text-sm"

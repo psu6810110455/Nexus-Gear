@@ -24,6 +24,7 @@ interface Props {
   onClose: () => void;
   order: Order | null;
   onConfirm: (orderId: number, payload: CancelPayload) => Promise<void>;
+  mode?: "cancel" | "quick_cancel"; // quick_cancel = ปฏิเสธคืนเงิน แทนที่ section คืนเงิน
 }
 
 const REFUND_CHANNELS = ["โอนผ่านธนาคาร", "คืนเงินผ่าน QR"];
@@ -33,6 +34,7 @@ const AdminCancelOrderModal = ({
   onClose,
   order,
   onConfirm,
+  mode = "cancel",
 }: Props) => {
   const [reason, setReason] = useState("");
   const [refundAmount, setRefundAmount] = useState("");
@@ -40,11 +42,16 @@ const AdminCancelOrderModal = ({
   const [refundEvidence, setRefundEvidence] = useState("");
   const [evidencePreview, setEvidencePreview] = useState<string | null>(null);
   const [restock, setRestock] = useState<boolean | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
   const [loading, setLoading] = useState(false);
 
   if (!isOpen || !order) return null;
 
-  const canSubmit = reason.trim() && refundChannel && restock !== null;
+  const isQuickCancel = mode === "quick_cancel";
+  // quick_cancel: ต้องการแค่ rejectReason / cancel ปกติ: reason + refundChannel + restock
+  const canSubmit = isQuickCancel
+    ? rejectReason.trim().length > 0
+    : reason.trim() && refundChannel && restock !== null;
 
   const handleEvidenceUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -62,11 +69,11 @@ const AdminCancelOrderModal = ({
     if (!canSubmit) return;
     setLoading(true);
     await onConfirm(order.id, {
-      reason,
-      refundAmount,
-      refundChannel,
-      refundEvidence,
-      restock: restock!,
+      reason: isQuickCancel ? rejectReason : reason,
+      refundAmount: isQuickCancel ? "0" : refundAmount,
+      refundChannel: isQuickCancel ? "ปฏิเสธ" : refundChannel,
+      refundEvidence: isQuickCancel ? "" : refundEvidence,
+      restock: isQuickCancel ? true : restock!,
     });
     setLoading(false);
     // reset
@@ -76,6 +83,7 @@ const AdminCancelOrderModal = ({
     setRefundEvidence("");
     setEvidencePreview(null);
     setRestock(null);
+    setRejectReason("");
   };
 
   const slipUrl = order.slip_image
@@ -293,90 +301,113 @@ const AdminCancelOrderModal = ({
             </div>
           </div>
 
-          {/* ── ข้อมูลการคืนเงิน ── */}
-          <div className="space-y-3">
-            <p className="text-zinc-400 text-xs font-bold uppercase tracking-widest">
-              ข้อมูลการคืนเงิน
-            </p>
-
-            <div className="grid grid-cols-2 gap-3">
+          {/* ── Section: คืนเงิน (cancel ปกติ) หรือ ปฏิเสธคืนเงิน (quick_cancel) ── */}
+          {isQuickCancel ? (
+            /* ── quick_cancel: แสดง section ปฏิเสธการคืนเงิน ── */
+            <div className="bg-red-950/30 rounded-xl p-4 border border-red-800/40 space-y-3">
+              <p className="text-red-400 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                <AlertTriangle size={12} /> ปฏิเสธการคืนเงิน
+              </p>
+              <p className="text-zinc-400 text-xs leading-relaxed">
+                แอดมินตรวจสอบแล้วพบว่าหลักฐานไม่ถูกต้อง
+                จึงปฏิเสธการคืนเงินสำหรับคำสั่งซื้อนี้
+              </p>
               <div>
-                <label className="text-zinc-500 text-xs mb-1 block">
-                  ยอดเงินที่คืน (฿)
+                <label className="text-zinc-500 text-xs mb-1.5 block">
+                  เหตุผลที่ปฏิเสธ *
                 </label>
-                <input
-                  type="number"
-                  placeholder={order.total_price}
-                  value={refundAmount}
-                  onChange={(e) => setRefundAmount(e.target.value)}
-                  className="w-full bg-zinc-900 border border-zinc-700 focus:border-[#FF0000]/50 text-zinc-200 text-sm rounded-xl px-4 py-2.5 outline-none placeholder-zinc-600 transition-colors"
+                <textarea
+                  rows={3}
+                  placeholder="เช่น สลิปปลอม / หลักฐานไม่ตรงกับยอด / ไม่สามารถตรวจสอบได้..."
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  className="w-full bg-zinc-900 border border-red-800/40 focus:border-red-500/60 text-zinc-200 text-sm rounded-xl px-4 py-3 resize-none outline-none placeholder-zinc-600 transition-colors"
                 />
               </div>
+            </div>
+          ) : (
+            /* ── cancel ปกติ: แสดง section ข้อมูลการคืนเงิน ── */
+            <div className="space-y-3">
+              <p className="text-zinc-400 text-xs font-bold uppercase tracking-widest">
+                ข้อมูลการคืนเงิน
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-zinc-500 text-xs mb-1 block">
+                    ยอดเงินที่คืน (฿)
+                  </label>
+                  <input
+                    type="number"
+                    placeholder={order.total_price}
+                    value={refundAmount}
+                    onChange={(e) => setRefundAmount(e.target.value)}
+                    className="w-full bg-zinc-900 border border-zinc-700 focus:border-[#FF0000]/50 text-zinc-200 text-sm rounded-xl px-4 py-2.5 outline-none placeholder-zinc-600 transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="text-zinc-500 text-xs mb-1 block">
+                    ช่องทางการคืนเงิน *
+                  </label>
+                  <select
+                    value={refundChannel}
+                    onChange={(e) => setRefundChannel(e.target.value)}
+                    className="w-full bg-zinc-900 border border-zinc-700 focus:border-[#FF0000]/50 text-zinc-200 text-sm rounded-xl px-4 py-2.5 outline-none transition-colors"
+                  >
+                    <option value="">-- เลือก --</option>
+                    {REFUND_CHANNELS.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
               <div>
-                <label className="text-zinc-500 text-xs mb-1 block">
-                  ช่องทางการคืนเงิน *
+                <label className="text-zinc-500 text-xs mb-1 block flex items-center gap-1">
+                  <Upload size={11} /> หลักฐานการคืนเงิน (รูปภาพ)
                 </label>
-                <select
-                  value={refundChannel}
-                  onChange={(e) => setRefundChannel(e.target.value)}
-                  className="w-full bg-zinc-900 border border-zinc-700 focus:border-[#FF0000]/50 text-zinc-200 text-sm rounded-xl px-4 py-2.5 outline-none transition-colors"
-                >
-                  <option value="">-- เลือก --</option>
-                  {REFUND_CHANNELS.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
+                {evidencePreview ? (
+                  <div className="flex items-center gap-3 bg-zinc-900/60 border border-zinc-700 rounded-xl p-3">
+                    <img
+                      src={evidencePreview}
+                      alt="evidence"
+                      className="w-14 h-16 object-cover rounded-lg border border-zinc-700"
+                    />
+                    <div className="flex-1">
+                      <p className="text-green-400 text-xs font-bold">
+                        อัปโหลดสำเร็จ ✓
+                      </p>
+                      <button
+                        onClick={() => {
+                          setEvidencePreview(null);
+                          setRefundEvidence("");
+                        }}
+                        className="text-zinc-500 hover:text-red-400 text-xs mt-1 transition-colors"
+                      >
+                        ลบ / เปลี่ยนรูป
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed border-zinc-700 hover:border-[#FF0000]/50 rounded-xl cursor-pointer transition-colors group">
+                    <Upload
+                      size={16}
+                      className="text-zinc-600 group-hover:text-red-400 transition-colors"
+                    />
+                    <span className="text-zinc-500 text-sm group-hover:text-zinc-300 transition-colors">
+                      คลิกเพื่ออัปโหลดหลักฐาน
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleEvidenceUpload}
+                      className="hidden"
+                    />
+                  </label>
+                )}
               </div>
             </div>
-
-            {/* อัปโหลดหลักฐานคืนเงิน */}
-            <div>
-              <label className="text-zinc-500 text-xs mb-1 block flex items-center gap-1">
-                <Upload size={11} /> หลักฐานการคืนเงิน (รูปภาพ)
-              </label>
-              {evidencePreview ? (
-                <div className="flex items-center gap-3 bg-zinc-900/60 border border-zinc-700 rounded-xl p-3">
-                  <img
-                    src={evidencePreview}
-                    alt="evidence"
-                    className="w-14 h-16 object-cover rounded-lg border border-zinc-700"
-                  />
-                  <div className="flex-1">
-                    <p className="text-green-400 text-xs font-bold">
-                      อัปโหลดสำเร็จ ✓
-                    </p>
-                    <button
-                      onClick={() => {
-                        setEvidencePreview(null);
-                        setRefundEvidence("");
-                      }}
-                      className="text-zinc-500 hover:text-red-400 text-xs mt-1 transition-colors"
-                    >
-                      ลบ / เปลี่ยนรูป
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed border-zinc-700 hover:border-[#FF0000]/50 rounded-xl cursor-pointer transition-colors group">
-                  <Upload
-                    size={16}
-                    className="text-zinc-600 group-hover:text-red-400 transition-colors"
-                  />
-                  <span className="text-zinc-500 text-sm group-hover:text-zinc-300 transition-colors">
-                    คลิกเพื่ออัปโหลดหลักฐาน
-                  </span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleEvidenceUpload}
-                    className="hidden"
-                  />
-                </label>
-              )}
-            </div>
-          </div>
+          )}
         </div>
 
         {/* ── Footer ── */}
@@ -392,7 +423,11 @@ const AdminCancelOrderModal = ({
             disabled={!canSubmit || loading}
             className="flex-[2] py-3 rounded-xl font-bold text-sm bg-[#FF0000] hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-all font-['Kanit'] flex items-center justify-center gap-2"
           >
-            {loading ? "กำลังดำเนินการ..." : "⚠️ ยืนยันยกเลิกคำสั่งซื้อ"}
+            {loading
+              ? "กำลังดำเนินการ..."
+              : isQuickCancel
+                ? "🚫 ยืนยันปฏิเสธการคืนเงิน"
+                : "⚠️ ยืนยันยกเลิกคำสั่งซื้อ"}
           </button>
         </footer>
       </article>

@@ -1,7 +1,7 @@
-import { Check, Loader } from 'lucide-react';
+import { Check, Loader, RefreshCw, Clock } from 'lucide-react'; // ✨ เพิ่มไอคอน RefreshCw และ Clock
 import { useEffect, useRef, useState } from 'react'; 
 import api from '../../../shared/services/api';        
-import QRCode from 'qrcode';                             
+import QRCode from 'qrcode';                               
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface PaymentMethodProps {
@@ -11,18 +11,20 @@ interface PaymentMethodProps {
   onQrPaymentSuccess?: (paymentIntentId: string) => void; 
 }
 
-type QrStatus = 'idle' | 'loading' | 'waiting' | 'processing' | 'succeeded' | 'failed'; 
+// ✨ เพิ่มสถานะ 'expired' สำหรับตอนหมดเวลา
+type QrStatus = 'idle' | 'loading' | 'waiting' | 'processing' | 'succeeded' | 'failed' | 'expired'; 
 
 const fmt     = (n: number) => n.toLocaleString('th-TH');
 const POLL_MS = 3000; 
+const QR_EXPIRY_SECONDS = 300; // ✨ 300 วินาที = 5 นาที
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function PaymentMethod({ payMethod, onSelectMethod, grandTotal, onQrPaymentSuccess }: PaymentMethodProps) {
 
   const [qrStatus,         setQrStatus]         = useState<QrStatus>('idle');
   const [qrDataUrl,        setQrDataUrl]        = useState<string | null>(null);
+  const [timeLeft,         setTimeLeft]         = useState<number>(QR_EXPIRY_SECONDS); // ✨ State นับเวลา
   
-  // ✨ ลบ paymentIntentId ออกไปแล้ว เพราะเราไม่ต้องใช้มันโชว์ปุ่มจำลองแล้ว
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const methods = [
@@ -30,6 +32,7 @@ export default function PaymentMethod({ payMethod, onSelectMethod, grandTotal, o
     { id: 'transfer', title: 'โอนเงินผ่านธนาคาร', sub: 'แนบสลิปเพื่อยืนยัน',  emoji: '🏦' },
   ];
 
+  // ─── ควบคุมการเปิด/ปิด QR ───
   useEffect(() => {
     if (payMethod === 'qr') {
       initStripeQR();
@@ -42,8 +45,33 @@ export default function PaymentMethod({ payMethod, onSelectMethod, grandTotal, o
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [payMethod]);
 
+  // ─── ✨ ระบบนับถอยหลัง 5 นาที ───
+  useEffect(() => {
+    let timer: ReturnType<typeof setInterval>;
+    
+    // นับเวลาเฉพาะตอนที่กำลังรอสแกน หรือ กำลังประมวลผล
+    if (payMethod === 'qr' && (qrStatus === 'waiting' || qrStatus === 'processing')) {
+      timer = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            setQrStatus('expired'); // พอเหลือ 0 เปลี่ยนสถานะเป็นหมดอายุ
+            stopPolling();          // หยุดถามเซิร์ฟเวอร์
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => clearInterval(timer);
+  }, [payMethod, qrStatus]);
+
+  // ─── สร้าง QR Code ───
   const initStripeQR = async () => {
     setQrStatus('loading');
+    setTimeLeft(QR_EXPIRY_SECONDS); // ✨ รีเซ็ตเวลาใหม่ทุกครั้งที่สร้าง QR
+
     try {
       const stripeAmount = Math.round(grandTotal * 100);
 
@@ -63,11 +91,10 @@ export default function PaymentMethod({ payMethod, onSelectMethod, grandTotal, o
       }
 
       setQrStatus('waiting');
-      // ส่ง ID เข้าฟังก์ชันไปตรงๆ เลย ไม่ต้องเก็บลง State ให้รกเครื่อง
       startPolling(data.paymentIntentId);
     } catch (error) {
       console.error("Stripe QR Error:", error);
-      setQrStatus('waiting');
+      setQrStatus('failed');
     }
   };
 
@@ -94,13 +121,21 @@ export default function PaymentMethod({ payMethod, onSelectMethod, grandTotal, o
     if (pollingRef.current) { clearInterval(pollingRef.current); pollingRef.current = null; }
   };
 
+  // ✨ ฟังก์ชันแปลงวินาทีเป็น นาที:วินาที (05:00)
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
+
   const statusMap: Record<QrStatus, { text: string; color: string } | null> = {
     idle:       null,
     loading:    null,
     waiting:    { text: 'รอการสแกน QR Code...',  color: 'text-yellow-400' },
     processing: { text: 'กำลังประมวลผล...',        color: 'text-blue-400'   },
     succeeded:  { text: '✅ ชำระเงินสำเร็จ!',      color: 'text-green-400'  },
-    failed:     { text: '❌ ถูกยกเลิก / หมดอายุ', color: 'text-red-400'    },
+    failed:     { text: '❌ ทำรายการไม่สำเร็จ',      color: 'text-red-400'    },
+    expired:    { text: '⚠️ QR Code หมดอายุ',     color: 'text-red-500'    }, // ✨ สถานะหมดอายุ
   };
   const statusLabel = statusMap[qrStatus];
 
@@ -144,13 +179,37 @@ export default function PaymentMethod({ payMethod, onSelectMethod, grandTotal, o
 
           {qrStatus !== 'loading' && (
             <>
+              {/* ✨ แสดงเวลานับถอยหลัง */}
+              {(qrStatus === 'waiting' || qrStatus === 'processing' || qrStatus === 'expired') && (
+                <div className={`flex items-center gap-2 mb-4 font-['Orbitron'] text-lg font-bold transition-colors ${timeLeft <= 60 && qrStatus !== 'expired' ? 'text-[#FF0000] animate-pulse drop-shadow-[0_0_8px_rgba(255,0,0,0.8)]' : 'text-[#F2F4F6]'}`}>
+                  <Clock className="w-5 h-5" />
+                  <span>{formatTime(timeLeft)}</span>
+                </div>
+              )}
+
               <figure className="w-56 h-56 bg-white rounded-xl flex items-center justify-center border-4 border-[#990000]/30 relative overflow-hidden shadow-[0_0_20px_rgba(255,255,255,0.1)] m-0">
                 {qrDataUrl ? (
-                  <img
-                    src={qrDataUrl}
-                    alt="PromptPay QR Code สำหรับชำระเงิน"
-                    className="w-full h-full object-contain p-2"
-                  />
+                  <>
+                    <img
+                      src={qrDataUrl}
+                      alt="PromptPay QR Code สำหรับชำระเงิน"
+                      // ✨ ถ้าหมดอายุ ให้เบลอรูป QR Code
+                      className={`w-full h-full object-contain p-2 transition-all duration-500 ${qrStatus === 'expired' ? 'blur-md opacity-30 grayscale' : ''}`}
+                    />
+                    
+                    {/* ✨ Overlay ปุ่มกดสร้าง QR ใหม่ เมื่อหมดเวลา */}
+                    {qrStatus === 'expired' && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 z-10 animate-in fade-in zoom-in duration-300">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); initStripeQR(); }}
+                          className="bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(255,0,0,0.6)] group"
+                        >
+                          <RefreshCw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" /> 
+                          สร้าง QR Code ใหม่
+                        </button>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div className="text-center">
                     <div className="absolute top-0 left-0 w-full h-1 bg-[#FF0000] shadow-[0_0_10px_#FF0000] animate-[scan_2s_ease-in-out_infinite]"></div>
@@ -180,6 +239,7 @@ export default function PaymentMethod({ payMethod, onSelectMethod, grandTotal, o
         </article>
       )}
 
+      {/* โอนผ่านธนาคาร (ซ่อนไว้เพื่อประหยัดพื้นที่โค้ด แต่ยังอยู่เหมือนเดิม) */}
       {payMethod === 'transfer' && (
         <article className="mt-6 bg-[#0a0a0a] border border-[#990000]/20 rounded-xl p-6 space-y-4 animate-in slide-in-from-top-2">
           <header>

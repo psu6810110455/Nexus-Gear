@@ -48,15 +48,20 @@ export class OrdersController {
     const { shippingAddress, paymentMethod } = body;
     const slipFilename  = file ? file.filename : null;
 
-    // ✨ รับ stripePaymentIntentId จาก FormData (ส่งมาเมื่อจ่าย QR สำเร็จ)
     const stripePaymentIntentId = body.stripePaymentIntentId || null;
+
+    // ✨ รับข้อมูลคูปองจาก FormData
+    const couponCode     = body.couponCode     || null;
+    const discountAmount = body.discountAmount ? parseFloat(body.discountAmount) : 0;
 
     return this.ordersService.checkout(
       userId,
       shippingAddress,
       paymentMethod,
       slipFilename,
-      stripePaymentIntentId, // ✨ ส่งต่อเข้า service
+      stripePaymentIntentId,
+      couponCode,      // ✨ ส่งต่อเข้า service
+      discountAmount,  // ✨ ส่งต่อเข้า service
     );
   }
 

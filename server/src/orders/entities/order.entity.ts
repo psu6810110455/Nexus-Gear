@@ -1,5 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
-import { User } from '../../users/entities/user.entity';
+import {
+  Entity, PrimaryGeneratedColumn, Column,
+  CreateDateColumn, ManyToOne, OneToMany, JoinColumn,
+} from 'typeorm';
+import { User }      from '../../users/entities/user.entity';
 import { OrderItem } from './order-item.entity';
 
 export enum OrderStatus {
@@ -26,11 +29,15 @@ export class Order {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   total_price: number;
 
-  @Column({
-    type: 'enum',
-    enum: OrderStatus,
-    default: OrderStatus.PENDING,
-  })
+  // ✨ ส่วนลดคูปอง
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  discount_amount: number;
+
+  // ✨ โค้ดคูปองที่ใช้
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  coupon_code: string | null;
+
+  @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.PENDING })
   status: OrderStatus;
 
   @Column({ type: 'text' })
@@ -39,7 +46,6 @@ export class Order {
   @Column({ type: 'varchar', length: 255, nullable: true })
   slip_image: string | null;
 
-  // ✨ เพิ่ม: เก็บ Stripe PaymentIntent ID สำหรับ QR PromptPay
   @Column({ type: 'varchar', length: 255, nullable: true })
   stripe_payment_intent_id: string | null;
 
@@ -62,7 +68,7 @@ export class Order {
   refund_slip: string | null;
 
   @Column({ type: 'varchar', length: 20, default: 'none' })
-  refund_status: string;  // none | pending | refunded | rejected
+  refund_status: string;
 
   @Column({ type: 'varchar', length: 100, nullable: true })
   refund_bank_name: string | null;
@@ -79,6 +85,6 @@ export class Order {
   @CreateDateColumn()
   created_at: Date;
 
-  @OneToMany(() => OrderItem, (orderItem) => orderItem.order, { cascade: true })
+  @OneToMany(() => OrderItem, (item) => item.order, { cascade: true })
   items: OrderItem[];
 }

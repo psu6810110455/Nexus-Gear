@@ -88,8 +88,6 @@ const AdminChat: React.FC = () => {
       incoming.forEach(msg => {
         const optIndex = newMessages.findIndex(m => !m.id && m.message === msg.message && m.sender === msg.sender);
         if (optIndex > -1) {
-          // Preserve the optimistic time which is correct for the admin
-          msg.createdAt = newMessages[optIndex].createdAt;
           newMessages[optIndex] = msg;
         } else {
           // 2. Check for duplicate by real ID
@@ -247,7 +245,7 @@ const AdminChat: React.FC = () => {
       sender: 'admin',
       message: messageToSend.trim(),
       isRead: true,
-      createdAt: new Date().toISOString(),
+      createdAt: new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Bangkok' }).replace(' ', 'T') + '+07:00',
     };
 
     addMessagesToSession(selectedUserId, optimisticMsg);
@@ -289,40 +287,18 @@ const AdminChat: React.FC = () => {
   const formatTime = (dateStr: any) => {
     if (!dateStr) return '';
     try {
-      let normalized = String(dateStr).trim();
-      // Convert yyyy/mm/dd to yyyy-mm-dd
-      normalized = normalized.replace(/\//g, '-');
-      // Convert "yyyy-mm-dd hh:mm:ss" to ISO "yyyy-mm-ddThh:mm:ss"
-      if (!normalized.includes('T') && normalized.includes(' ')) {
-        normalized = normalized.replace(' ', 'T');
-      }
-      // Force UTC if no timezone is specified
-      if (!normalized.includes('Z') && !normalized.includes('+')) {
-        normalized += 'Z';
-      }
+      let str = String(dateStr).trim().replace(/\//g, '-');
+      if (!str.includes('T') && str.includes(' ')) str = str.replace(' ', 'T');
       
-      const d = new Date(normalized);
+      const d = new Date(str);
       if (isNaN(d.getTime())) return String(dateStr);
 
-      const now = new Date();
-      const dateFormatter = new Intl.DateTimeFormat('en-GB', {
+      return new Intl.DateTimeFormat('en-US', {
         timeZone: 'Asia/Bangkok',
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      });
-      const timeFormatter = new Intl.DateTimeFormat('en-GB', {
-        timeZone: 'Asia/Bangkok',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-      });
-
-      const msgDate = dateFormatter.format(d);
-      const todayDate = dateFormatter.format(now);
-      const timeStr = timeFormatter.format(d);
-
-      return msgDate === todayDate ? timeStr : `${msgDate} ${timeStr}`;
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true,
+      }).format(d);
     } catch {
       return String(dateStr);
     }

@@ -20,36 +20,19 @@ interface ChatMessage {
 
 const formatThaiTime = (dateStr: string): string => {
   try {
-    let normalized = String(dateStr).trim();
-    // Convert yyyy/mm/dd to yyyy-mm-dd
-    normalized = normalized.replace(/\//g, '-');
-    if (!normalized.includes('T') && normalized.includes(' ')) {
-      normalized = normalized.replace(' ', 'T');
-    }
-    if (!normalized.includes('Z') && !normalized.includes('+')) {
-      normalized += 'Z';
-    }
+    // Basic normalization for iOS Safari compatibility if needed
+    let str = String(dateStr).trim().replace(/\//g, '-');
+    if (!str.includes('T') && str.includes(' ')) str = str.replace(' ', 'T');
     
-    const d = new Date(normalized);
+    const d = new Date(str);
     if (isNaN(d.getTime())) return String(dateStr);
 
-    // Force +7 hours for Asia/Bangkok explicitly
-    const shifted = new Date(d.getTime() + (7 * 60 * 60 * 1000));
-    
-    const nowShifted = new Date(new Date().getTime() + (7 * 60 * 60 * 1000));
-    
-    const isToday = shifted.getUTCDate() === nowShifted.getUTCDate() &&
-                    shifted.getUTCMonth() === nowShifted.getUTCMonth() &&
-                    shifted.getUTCFullYear() === nowShifted.getUTCFullYear();
-
-    const pad = (n: number) => n.toString().padStart(2, '0');
-    const timeStr = `${pad(shifted.getUTCHours())}:${pad(shifted.getUTCMinutes())}`;
-
-    if (isToday) {
-      return timeStr;
-    } else {
-      return `${pad(shifted.getUTCDate())}/${pad(shifted.getUTCMonth() + 1)}/${shifted.getUTCFullYear()} ${timeStr}`;
-    }
+    return new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Bangkok',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true,
+    }).format(d);
   } catch {
     return dateStr;
   }
@@ -83,12 +66,10 @@ const ChatWidget: React.FC = () => {
 
       socket.on('newMessage', (msg: ChatMessage) => {
         setMessages(prev => {
-          // Replace optimistic message if exists (check sender and message text, and id=0)
+          // Replace optimistic message if exists
           const optimisticIndex = prev.findIndex(m => m.id === 0 && m.message === msg.message && m.sender === msg.sender);
           if (optimisticIndex > -1) {
             const next = [...prev];
-            // Preserve the optimistic time which is correct for the user
-            msg.createdAt = next[optimisticIndex].createdAt;
             next[optimisticIndex] = msg;
             return next;
           }
@@ -186,7 +167,7 @@ const ChatWidget: React.FC = () => {
       sender: 'user',
       message: inputValue.trim(),
       isRead: true,
-      createdAt: new Date().toISOString(),
+      createdAt: new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Bangkok' }).replace(' ', 'T') + '+07:00',
       metadata
     };
     setMessages(prev => [...prev, optimisticMsg]);

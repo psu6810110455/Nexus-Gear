@@ -8,6 +8,7 @@ import { Product } from '../products/entities/product.entity';
 import { User } from '../users/entities/user.entity';
 import { Cart } from '../cart/entities/cart.entity';
 import { ChatGateway } from '../chat/chat.gateway';
+import { OrdersGateway } from './orders.gateway';
 
 @Injectable()
 export class OrdersService {
@@ -23,6 +24,7 @@ export class OrdersService {
     @InjectRepository(Cart)
     private cartRepository: Repository<Cart>,
     private chatGateway: ChatGateway,
+    private ordersGateway: OrdersGateway,
   ) {}
 
   // ── Checkout จากตะกร้า ────────────────────────────────────────────────────
@@ -167,9 +169,15 @@ export class OrdersService {
     if (!order) throw new NotFoundException('Order not found');
 
     order.status = status;
+    if (status === OrderStatus.COMPLETED) {
+      order.completed_at = new Date();
+    }
     const savedOrder = await this.ordersRepository.save(order);
 
-    // Send real-time notification via Chat
+    // Emit real-time update for order management UI
+    this.ordersGateway.emitOrderUpdate(savedOrder);
+
+    // Send real-time system message notification via Chat for the customer
     let statusText = '';
     switch (status) {
       case OrderStatus.PAID: statusText = 'ชำระเงินสำเร็จแล้ว'; break;
@@ -187,7 +195,7 @@ export class OrdersService {
   }
 
   // ── Cancel Order (รองรับทั้งลูกค้าและ Admin) ──────────────────────────────
-  async cancelOrder(id: number, reason: string, restock: boolean = true) {
+  async cancelOrder(id: number, reason: string, restock: boolean = true, bankName?: string, bankAccount?: string) {
     const order = await this.ordersRepository.findOne({
       where: { id },
       relations: ['items', 'items.product'],
@@ -212,7 +220,115 @@ export class OrdersService {
 
     order.status = OrderStatus.CANCELLED;
     order.cancel_reason = reason;
-    return this.ordersRepository.save(order);
+    if (bankName) order.refund_bank_name = bankName;
+    if (bankAccount) order.refund_bank_account = bankAccount;
+    if (bankName && bankAccount) order.refund_status = 'pending';
+    const saved = await this.ordersRepository.save(order);
+    this.ordersGateway.emitOrderCancelled(saved);
+    return saved;
+  }
+
+  // ── Process Refund (Admin) ────────────────────────────────────────────────
+  async processRefund(
+    id: number,
+    refundAmount: number,
+    refundChannel: string,
+    refundSlip: string | null,
+  ) {
+    const order = await this.ordersRepository.findOne({
+      where: { id },
+      relations: ['items', 'items.product', 'user'],
+    });
+    if (!order) throw new NotFoundException('Order not found');
+    if (order.status !== OrderStatus.CANCELLED)
+      throw new BadRequestException('สามารถคืนเงินได้เฉพาะคำสั่งซื้อที่ยกเลิกแล้วเท่านั้น');
+
+    order.refund_amount = refundAmount;
+    order.refund_channel = refundChannel;
+    order.refund_slip = refundSlip;
+    order.refund_status = 'refunded';
+    order.refunded_at = new Date();
+
+    const saved = await this.ordersRepository.save(order);
+    this.ordersGateway.emitRefundProcessed(saved);
+    return saved;
+  }
+
+  // ── Request Return (ลูกค้าขอคืนสินค้า — ภายใน 3 วันหลัง completed) ────────
+  async requestReturn(id: number, reason: string, bankName?: string, bankAccount?: string) {
+    const order = await this.ordersRepository.findOne({
+      where: { id },
+      relations: ['items', 'items.product'],
+    });
+    if (!order) throw new NotFoundException('Order not found');
+    if (order.status !== OrderStatus.COMPLETED) {
+      throw new BadRequestException('สามารถขอคืนสินค้าได้เฉพาะคำสั่งซื้อที่สำเร็จแล้วเท่านั้น');
+    }
+
+    const completedAt = order.completed_at ? new Date(order.completed_at) : new Date(order.created_at);
+    const daysSince = (Date.now() - completedAt.getTime()) / (1000 * 60 * 60 * 24);
+    if (daysSince > 3) {
+      throw new BadRequestException('เกินระยะเวลา 3 วันที่สามารถขอคืนสินค้าได้');
+    }
+
+    // คืนสต็อก
+    for (const item of order.items) {
+      const product = await this.productsRepository.findOneBy({ id: item.product.id });
+      if (product) {
+        product.stock += item.quantity;
+        await this.productsRepository.save(product);
+      }
+    }
+
+    order.status = OrderStatus.CANCELLED;
+    order.cancel_reason = `ขอคืนสินค้า: ${reason}`;
+    order.refund_status = 'pending';
+    if (bankName) order.refund_bank_name = bankName;
+    if (bankAccount) order.refund_bank_account = bankAccount;
+    const saved = await this.ordersRepository.save(order);
+    this.ordersGateway.emitOrderCancelled(saved);
+    return saved;
+  }
+
+  // ── Submit Refund Info (ลูกค้าส่งข้อมูลการคืนเงิน) ───────────────────────
+  async submitRefundInfo(
+    id: number,
+    bankName: string,
+    bankAccount: string,
+  ) {
+    const order = await this.ordersRepository.findOne({
+      where: { id },
+      relations: ['items', 'items.product', 'user'],
+    });
+    if (!order) throw new NotFoundException('Order not found');
+    if (order.status !== OrderStatus.CANCELLED) {
+      throw new BadRequestException('สามารถส่งข้อมูลคืนเงินได้เฉพาะคำสั่งซื้อที่ยกเลิกแล้วเท่านั้น');
+    }
+
+    order.refund_bank_name = bankName;
+    order.refund_bank_account = bankAccount;
+    order.refund_status = 'pending';
+    const saved = await this.ordersRepository.save(order);
+    this.ordersGateway.emitOrderUpdate(saved);
+    return saved;
+  }
+
+  // ── Reject Refund (Admin — ปฏิเสธการคืนเงิน) ─────────────────────────────
+  async rejectRefund(id: number, reason?: string) {
+    const order = await this.ordersRepository.findOne({
+      where: { id },
+      relations: ['items', 'items.product', 'user'],
+    });
+    if (!order) throw new NotFoundException('Order not found');
+    if (order.status !== OrderStatus.CANCELLED) {
+      throw new BadRequestException('สามารถปฏิเสธการคืนเงินได้เฉพาะคำสั่งซื้อที่ยกเลิกแล้วเท่านั้น');
+    }
+
+    order.refund_status = 'rejected';
+    if (reason) order.cancel_reason = reason;
+    const saved = await this.ordersRepository.save(order);
+    this.ordersGateway.emitRefundProcessed(saved);
+    return saved;
   }
 
   // ── Submit Rating + Review ────────────────────────────────────────────────
@@ -223,7 +339,7 @@ export class OrdersService {
   ) {
     const order = await this.ordersRepository.findOne({
       where: { id: orderId },
-      relations: ['items'],
+      relations: ['items', 'items.product'],
     });
     if (!order) throw new NotFoundException('Order not found');
     if (order.status !== OrderStatus.COMPLETED) {
@@ -240,6 +356,29 @@ export class OrdersService {
 
     order.is_rated = true;
     await this.ordersRepository.save(order);
+
+    // อัปเดต rating_average ของแต่ละสินค้าที่ถูกรีวิว
+    const ratedProductIds = [
+      ...new Set(
+        order.items
+          .filter((item) => ratings[item.id] !== undefined)
+          .map((item) => item.product.id),
+      ),
+    ];
+    for (const productId of ratedProductIds) {
+      const result = await this.orderItemsRepository
+        .createQueryBuilder('oi')
+        .select('AVG(oi.rating)', 'avg')
+        .innerJoin('oi.product', 'p')
+        .where('p.id = :productId AND oi.rating IS NOT NULL', { productId })
+        .getRawOne();
+      if (result?.avg != null) {
+        await this.productsRepository.update(productId, {
+          rating_average: parseFloat(parseFloat(result.avg).toFixed(1)),
+        });
+      }
+    }
+
     return { success: true, message: 'บันทึกรีวิวสำเร็จ' };
   }
 }

@@ -98,8 +98,26 @@ export const submitOrderRating = (
 ) => api.post(`/api/orders/${orderId}/rating`, { ratings, reviews }).then((r) => r.data);
 
 // ยกเลิกคำสั่งซื้อ (ลูกค้า) — ได้เฉพาะสถานะ pending / paid
-export const cancelOrder = (orderId: number, reason: string, restock?: boolean) =>
-  api.patch(`/api/orders/${orderId}/cancel`, { reason, restock }).then((r) => r.data);
+export const cancelOrder = (orderId: number, reason: string, restock?: boolean, bankName?: string, bankAccount?: string) =>
+  api.patch(`/api/orders/${orderId}/cancel`, { reason, restock, bankName, bankAccount }).then((r) => r.data);
+
+// คืนเงินลูกค้า (Admin) — ส่งสลิปการคืนเงิน
+export const processRefund = (orderId: number, formData: FormData) =>
+  api.patch(`/api/orders/${orderId}/refund`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }).then((r) => r.data);
+
+// ขอคืนสินค้า (ลูกค้า) — ภายใน 3 วันหลัง completed
+export const requestReturn = (orderId: number, reason: string, bankName?: string, bankAccount?: string) =>
+  api.patch(`/api/orders/${orderId}/return`, { reason, bankName, bankAccount }).then(r => r.data);
+
+// ส่งข้อมูลการคืนเงิน (ลูกค้า) — สำหรับ cancelled
+export const submitRefundInfo = (orderId: number, bankName: string, bankAccount: string) =>
+  api.patch(`/api/orders/${orderId}/refund-info`, { bankName, bankAccount }).then(r => r.data);
+
+// ปฏิเสธการคืนเงิน (Admin) — สลิปปลอม
+export const rejectRefund = (orderId: number, reason?: string) =>
+  api.patch(`/api/orders/${orderId}/reject-refund`, { reason }).then(r => r.data);
 
 // ── Cart ──────────────────────────────────────────────────────
 export const getCart = () =>

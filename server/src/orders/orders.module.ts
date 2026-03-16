@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { MulterModule } from '@nestjs/platform-express';
 import { OrdersService } from './orders.service';
 import { OrdersController } from './orders.controller';
+import { OrdersGateway } from './orders.gateway';
 import { Order } from './entities/order.entity';
 import { OrderItem } from './entities/order-item.entity';
 import { Product } from '../products/entities/product.entity';
@@ -17,6 +18,7 @@ import { ChatModule } from '../chat/chat.module';
     MulterModule.register({ dest: './uploads/slips' }),
   ],
   controllers: [OrdersController],
-  providers: [OrdersService],
+  providers: [OrdersService, OrdersGateway],
+  exports: [OrdersGateway],
 })
 export class OrdersModule {}

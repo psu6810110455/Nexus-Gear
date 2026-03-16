@@ -14,7 +14,7 @@ export const productListStyles = `
 
   /* ── Hero Header ── */
   .pl-hero {
-    width: 100%; padding: 4rem 5vw 3rem;
+    width: 100%; padding: 2rem 5vw 2rem;
     background: radial-gradient(ellipse at 50% 0%, rgba(127,29,29,0.2) 0%, transparent 65%);
     border-bottom: 1px solid var(--color-border); text-align: center;
   }

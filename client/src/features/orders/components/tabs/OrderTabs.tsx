@@ -1,6 +1,6 @@
 // features/orders/components/OrderTabs.tsx
 
-import { Wallet, Package, Truck, Star, ClipboardList } from "lucide-react";
+import { Wallet, Package, Truck, Star, ClipboardList, Ban } from "lucide-react";
 
 interface Order {
   status: string;
@@ -21,7 +21,7 @@ const TABS = [
   },
   {
     id: "pending",
-    label: "ที่ต้องชำระ",
+    label: "รอตรวจสอบ",
     icon: Wallet,
     count: (o: Order[]) => o.filter((x) => x.status === "pending").length,
   },
@@ -43,6 +43,12 @@ const TABS = [
     label: "สำเร็จ",
     icon: Star,
     count: (o: Order[]) => o.filter((x) => x.status === "completed").length,
+  },
+  {
+    id: "cancelled",
+    label: "ยกเลิก/คืนสินค้า",
+    icon: Ban,
+    count: (o: Order[]) => o.filter((x) => x.status === "cancelled").length,
   },
 ];
 

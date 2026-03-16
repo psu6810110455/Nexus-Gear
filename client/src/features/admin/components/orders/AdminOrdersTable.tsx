@@ -10,10 +10,12 @@ import {
   Package,
   Star,
   Ban,
+  RotateCcw,
   CreditCard,
   ImageIcon,
+  ArrowRight,
 } from "lucide-react";
-import type { Order } from "../../../shared/types";
+import type { Order } from "../../../../shared/types";
 
 // ── Status config ──────────────────────────────────────────────
 const STATUS: Record<
@@ -21,7 +23,7 @@ const STATUS: Record<
   { label: string; cls: string; icon: React.ReactNode }
 > = {
   pending: {
-    label: "รอชำระเงิน",
+    label: "รอตรวจสอบ",
     cls: "text-amber-400  border-amber-400/40  bg-amber-400/10",
     icon: <Clock size={11} />,
   },
@@ -50,13 +52,23 @@ const STATUS: Record<
     cls: "text-zinc-500   border-zinc-600/40   bg-zinc-700/20",
     icon: <Ban size={11} />,
   },
+  returned: {
+    label: "คืนสินค้า",
+    cls: "text-orange-400 border-orange-400/40 bg-orange-400/10",
+    icon: <RotateCcw size={11} />,
+  },
 };
+
+// ตรวจว่าเป็น "คืนสินค้า" หรือ "ยกเลิก"
+const isReturnOrder = (order: Order) =>
+  order.cancel_reason?.startsWith("ขอคืนสินค้า:") ?? false;
 
 interface AdminOrdersTableProps {
   orders: Order[];
   loading: boolean;
   onViewOrder: (order: Order) => void;
   onCancelOrder: (order: Order) => void;
+  onUpdateStatus?: (orderId: number, newStatus: string) => void;
 }
 
 // ── Skeleton ───────────────────────────────────────────────────
@@ -117,6 +129,7 @@ const AdminOrdersTable = ({
   loading,
   onViewOrder,
   onCancelOrder,
+  onUpdateStatus,
 }: AdminOrdersTableProps) => (
   <div className="rounded-2xl border border-zinc-800/70 overflow-hidden shadow-[0_4px_24px_-4px_rgba(0,0,0,0.6)] bg-[#0e0e0e]">
     <div className="overflow-x-auto">
@@ -153,7 +166,11 @@ const AdminOrdersTable = ({
             <EmptyRows />
           ) : (
             orders.map((order, idx) => {
-              const s = STATUS[order.status];
+              const displayKey =
+                order.status === "cancelled" && isReturnOrder(order)
+                  ? "returned"
+                  : order.status;
+              const s = STATUS[displayKey];
               const canCancel =
                 order.status !== "cancelled" && order.status !== "completed";
               const isEven = idx % 2 === 0;
@@ -197,18 +214,60 @@ const AdminOrdersTable = ({
                   </td>
 
                   {/* Col 3: Status */}
-                  <td className="px-5 py-4 text-center">
-                    {s ? (
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[11px] font-bold whitespace-nowrap ${s.cls}`}
-                      >
-                        {s.icon} {s.label}
-                      </span>
-                    ) : (
-                      <span className="text-zinc-600 text-xs">
-                        {order.status}
-                      </span>
-                    )}
+                  <td
+                    className="px-5 py-4 text-center"
+                    style={{ minWidth: 160 }}
+                  >
+                    <div className="flex flex-col items-center gap-1.5">
+                      {s ? (
+                        <span
+                          className={`inline-flex items-center justify-center gap-1.5 min-w-[120px] px-3 py-1.5 rounded-full border text-[11px] font-bold whitespace-nowrap ${s.cls}`}
+                        >
+                          {s.icon} {s.label}
+                        </span>
+                      ) : (
+                        <span className="text-zinc-600 text-xs">
+                          {order.status}
+                        </span>
+                      )}
+                      {/* Refund status badge — แยก 3 กลุ่ม */}
+                      {order.status === "cancelled" &&
+                        (() => {
+                          const QUICK_CANCEL = "สลิปปลอม / หลักฐานไม่ถูกต้อง";
+                          const isRejected =
+                            order.refund_status === "rejected" ||
+                            order.cancel_reason === QUICK_CANCEL;
+                          const isRefunded = order.refund_status === "refunded";
+
+                          if (isRefunded)
+                            return (
+                              <span className="inline-flex items-center justify-center gap-1.5 min-w-[120px] px-2 py-1 rounded-full border text-[9px] font-bold text-green-400 border-green-500/30 bg-green-500/10">
+                                <span className="w-1.5 h-1.5 rounded-full bg-green-400 shrink-0" />
+                                คืนเงินสำเร็จ
+                              </span>
+                            );
+                          if (isRejected)
+                            return (
+                              <span className="inline-flex items-center justify-center gap-1.5 min-w-[120px] px-2 py-1 rounded-full border text-[9px] font-bold text-red-400 border-red-500/30 bg-red-500/10">
+                                <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
+                                ปฏิเสธการคืนเงิน
+                              </span>
+                            );
+                          // pending หรือมีข้อมูล refund
+                          if (
+                            order.refund_status === "pending" ||
+                            order.refund_bank_name ||
+                            order.refund_bank_account
+                          )
+                            return (
+                              <span className="inline-flex items-center justify-center gap-1.5 min-w-[120px] px-2 py-1 rounded-full border text-[9px] font-bold text-yellow-400 border-yellow-500/30 bg-yellow-500/10">
+                                <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse shrink-0" />
+                                แจ้งการคืนเงิน
+                              </span>
+                            );
+                          return null;
+                        })()}
+                    </div>
                   </td>
 
                   {/* Col: Payment */}
@@ -257,24 +316,56 @@ const AdminOrdersTable = ({
 
                   {/* Col 5: Actions */}
                   <td className="px-5 py-4">
-                    <div className="flex items-center justify-center gap-2">
-                      <button
-                        onClick={() => onViewOrder(order)}
-                        title="ดูรายละเอียด"
-                        className="w-8 h-8 flex items-center justify-center rounded-lg bg-zinc-800/80 border border-zinc-700/50 text-zinc-400 hover:bg-[var(--clr-primary)] hover:border-[var(--clr-primary)] hover:text-white transition-all active:scale-95"
-                      >
-                        <Eye size={15} />
-                      </button>
-                      {canCancel ? (
+                    <div className="flex flex-col items-center gap-1.5">
+                      {/* Row 1: View + Cancel */}
+                      <div className="flex items-center justify-center gap-2">
                         <button
-                          onClick={() => onCancelOrder(order)}
-                          title="ยกเลิกคำสั่งซื้อ"
-                          className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-500/10 border border-red-500/40 text-red-400 hover:bg-red-500 hover:border-red-500 hover:text-white transition-all active:scale-95"
+                          onClick={() => onViewOrder(order)}
+                          title="ดูรายละเอียด"
+                          className="w-8 h-8 flex items-center justify-center rounded-lg bg-zinc-800/80 border border-zinc-700/50 text-zinc-400 hover:bg-[var(--clr-primary)] hover:border-[var(--clr-primary)] hover:text-white transition-all active:scale-95"
                         >
-                          <XCircle size={15} />
+                          <Eye size={15} />
                         </button>
-                      ) : (
-                        <div className="w-8 h-8" />
+                        {canCancel ? (
+                          <button
+                            onClick={() => onCancelOrder(order)}
+                            title="ยกเลิกคำสั่งซื้อ"
+                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-500/10 border border-red-500/40 text-red-400 hover:bg-red-500 hover:border-red-500 hover:text-white transition-all active:scale-95"
+                          >
+                            <XCircle size={15} />
+                          </button>
+                        ) : (
+                          <div className="w-8 h-8" />
+                        )}
+                      </div>
+                      {/* Row 2: Quick status buttons */}
+                      {order.status === "paid" && onUpdateStatus && (
+                        <button
+                          onClick={() => onUpdateStatus(order.id, "to_ship")}
+                          title="เตรียมจัดส่ง"
+                          className="h-7 px-2.5 flex items-center justify-center gap-1 rounded-lg bg-blue-500/15 border border-blue-500/40 text-blue-400 hover:bg-blue-500 hover:border-blue-500 hover:text-white transition-all active:scale-95 text-[10px] font-bold whitespace-nowrap"
+                        >
+                          <PackageOpen size={12} /> เตรียมส่ง{" "}
+                          <ArrowRight size={10} />
+                        </button>
+                      )}
+                      {order.status === "to_ship" && onUpdateStatus && (
+                        <button
+                          onClick={() => onUpdateStatus(order.id, "shipped")}
+                          title="ยืนยันการส่งของ"
+                          className="h-7 px-2.5 flex items-center justify-center gap-1 rounded-lg bg-indigo-500/15 border border-indigo-500/40 text-indigo-400 hover:bg-indigo-500 hover:border-indigo-500 hover:text-white transition-all active:scale-95 text-[10px] font-bold whitespace-nowrap"
+                        >
+                          <Truck size={12} /> ส่งแล้ว <ArrowRight size={10} />
+                        </button>
+                      )}
+                      {order.status === "shipped" && onUpdateStatus && (
+                        <button
+                          onClick={() => onUpdateStatus(order.id, "completed")}
+                          title="ยืนยันสำเร็จ"
+                          className="h-7 px-2.5 flex items-center justify-center gap-1 rounded-lg bg-green-500/15 border border-green-500/40 text-green-400 hover:bg-green-500 hover:border-green-500 hover:text-white transition-all active:scale-95 text-[10px] font-bold whitespace-nowrap"
+                        >
+                          <Star size={12} /> สำเร็จ <ArrowRight size={10} />
+                        </button>
                       )}
                     </div>
                   </td>

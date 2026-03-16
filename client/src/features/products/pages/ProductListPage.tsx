@@ -64,11 +64,8 @@ const ProductListPage = () => {
       <style>{productListStyles}</style>
 
       <div className="pl-hero">
-        <h1 className="pl-hero-title">NEXUS GEAR</h1>
-        <p className="pl-hero-sub">Explore Our Premium Arsenal</p>
         <div className="pl-search-wrap" role="search">
           <div className="pl-search-icon"><Search size={20} /></div>
-          <label htmlFor="product-search" className="sr-only">ค้นหาสินค้า</label>
           <input
             id="product-search"
             type="text"

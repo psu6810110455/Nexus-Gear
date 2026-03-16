@@ -13,4 +13,12 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   phone?: string;
+
+  @IsOptional()
+  @IsString()
+  bank_name?: string;
+
+  @IsOptional()
+  @IsString()
+  bank_account?: string;
 }

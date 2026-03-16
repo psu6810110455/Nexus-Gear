@@ -23,7 +23,7 @@ export const fetchProfile = async () => {
 };
 
 // 2. อัปเดตโปรไฟล์
-export const updateProfile = async (data: { name?: string; phone?: string }) => {
+export const updateProfile = async (data: { name?: string; phone?: string; bank_name?: string; bank_account?: string }) => {
   const res = await fetch(API_URL, {
     method: 'PATCH',
     headers: getAuthHeaders(), // ✅ แนบ Token

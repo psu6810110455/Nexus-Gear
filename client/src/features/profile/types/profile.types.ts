@@ -3,6 +3,8 @@ export interface UserData {
   email: string;
   phone: string;
   address: string;
+  bank_name: string;
+  bank_account: string;
 }
 
 export interface Address {

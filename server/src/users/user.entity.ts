@@ -24,6 +24,12 @@ export class User {
   @Column({ nullable: true })
   picture: string;
 
+  @Column({ nullable: true })
+  bank_name: string;
+
+  @Column({ nullable: true })
+  bank_account: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

@@ -52,6 +52,30 @@ export class Order {
   @Column({ type: 'text', nullable: true })
   cancel_reason: string | null;
 
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  refund_amount: number | null;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  refund_channel: string | null;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  refund_slip: string | null;
+
+  @Column({ type: 'varchar', length: 20, default: 'none' })
+  refund_status: string;  // none | pending | refunded | rejected
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  refund_bank_name: string | null;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  refund_bank_account: string | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  refunded_at: Date | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  completed_at: Date | null;
+
   @CreateDateColumn()
   created_at: Date;
 

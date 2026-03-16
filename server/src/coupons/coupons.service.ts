@@ -12,24 +12,23 @@ export class CouponsService {
 
   // ── ตรวจสอบคูปอง ────────────────────────────────────────────────────────
   async validateCoupon(code: string, orderAmount: number = 0) {
-    // หาคูปองจาก DB
+    // ✨ แก้: เช็ค undefined ก่อน trim
+    if (!code) throw new BadRequestException('กรุณากรอกรหัสคูปอง');
+
     const coupon = await this.couponsRepository.findOne({
       where: { code: code.trim().toUpperCase(), is_active: true },
     });
 
-    // ไม่พบคูปองหรือ inactive
     if (!coupon) {
       throw new BadRequestException('รหัสคูปองไม่ถูกต้องหรือหมดอายุ');
     }
 
-    // เช็คยอดขั้นต่ำ
     if (orderAmount > 0 && orderAmount < Number(coupon.min_order_amount)) {
       throw new BadRequestException(
         `ต้องซื้อขั้นต่ำ ฿${coupon.min_order_amount} ถึงจะใช้คูปองนี้ได้`,
       );
     }
 
-    // คำนวณส่วนลด
     let discountAmount = 0;
     if (coupon.type === CouponType.FIXED) {
       discountAmount = Number(coupon.value);
@@ -58,9 +57,7 @@ export class CouponsService {
     const existing = await this.couponsRepository.findOne({
       where: { code: data.code.trim().toUpperCase() },
     });
-    if (existing) {
-      throw new BadRequestException('รหัสคูปองนี้มีอยู่แล้ว');
-    }
+    if (existing) throw new BadRequestException('รหัสคูปองนี้มีอยู่แล้ว');
 
     const coupon = this.couponsRepository.create({
       ...data,
@@ -71,9 +68,7 @@ export class CouponsService {
 
   // ── ดูคูปองทั้งหมด (Admin) ───────────────────────────────────────────────
   findAll() {
-    return this.couponsRepository.find({
-      order: { created_at: 'DESC' },
-    });
+    return this.couponsRepository.find({ order: { created_at: 'DESC' } });
   }
 
   // ── ปิด/เปิดคูปอง (Admin) ────────────────────────────────────────────────

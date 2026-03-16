@@ -1,6 +1,7 @@
 // features/admin/components/CancelOrderSummary.tsx
 
 import { MapPin, Package, CreditCard } from "lucide-react";
+import { getServerUrl } from "../../../../../shared/services/api";
 import type { Order } from "../../../../../shared/types";
 
 interface Props {
@@ -9,7 +10,7 @@ interface Props {
 
 const CancelOrderSummary = ({ order }: Props) => {
   const slipUrl = order.slip_image
-    ? `http://localhost:3000/uploads/slips/${order.slip_image}`
+    ? getServerUrl(`/uploads/slips/${order.slip_image}`)
     : null;
 
   return (

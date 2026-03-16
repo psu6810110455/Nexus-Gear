@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import {
   getProducts, createProduct, updateProduct, deleteProduct,
   getCategories, createCategory, updateCategory, deleteCategory,
-  uploadProductImages, deleteProductImage,
+  uploadProductImages, deleteProductImage, getServerUrl,
 } from '../../../shared/services/api';
 import type { Category, Product } from '../../../shared/types';
 import { Plus, Edit, Trash2, X, Save, CheckCircle, AlertTriangle, EyeOff, Eye, ImagePlus, Star } from 'lucide-react';
@@ -129,7 +129,7 @@ const ProductFormModal = ({ form, categories, isEditing, submitting, pendingFile
                 const isMain = form.imageUrl === img.imageUrl;
                 return (
                   <div key={`ex-${img.id}`} className={`relative w-full aspect-square bg-black border ${isMain ? 'border-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.3)]' : 'border-[#990000]/30'} rounded-xl overflow-hidden group`}>
-                    <img src={`http://localhost:3000${img.imageUrl}`} alt="" className="w-full h-full object-contain p-1" />
+                    <img src={getServerUrl(img.imageUrl)} alt="" className="w-full h-full object-contain p-1" />
                     
                     {/* Delete button */}
                     <button type="button" onClick={() => onDeleteExistingImage(img)} className="absolute top-1 right-1 w-5 h-5 bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-lg z-10">

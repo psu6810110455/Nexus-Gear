@@ -8,6 +8,7 @@ import {
   getProductById,
   getProducts,
   addToCart,
+  getServerUrl,
 } from "../../../shared/services/api";
 import type { Product } from "../../../shared/types";
 import { toast } from "sonner";
@@ -69,7 +70,7 @@ const ProductDetailPage: React.FC = () => {
   };
 
   const imagesList = product?.images && product.images.length > 0 
-    ? product.images.map(img => `http://localhost:3000${img.imageUrl}`)
+    ? product.images.map(img => getServerUrl(img.imageUrl))
     : [(product?.imageUrl || product?.image_url || "https://dummyimage.com/600x400/000/fff?text=No+Image")];
 
   const handleNextImage = () => {
@@ -106,7 +107,7 @@ const ProductDetailPage: React.FC = () => {
         
         // กำหนดรูปหลัก เริ่มต้นจาก imageUrl หรือรูปแรกใน images array
         const firstImg = currentProduct.images && currentProduct.images.length > 0 
-          ? `http://localhost:3000${currentProduct.images[0].imageUrl}` 
+          ? getServerUrl(currentProduct.images[0].imageUrl)
           : (currentProduct.imageUrl || currentProduct.image_url);
         setActiveImage(firstImg || null);
 
@@ -184,7 +185,7 @@ const ProductDetailPage: React.FC = () => {
             {product.images && product.images.length > 0 ? (
               <div className="flex gap-4 overflow-x-auto pb-2 w-full justify-center">
                 {product.images.map((img) => {
-                  const fullUrl = `http://localhost:3000${img.imageUrl}`;
+                  const fullUrl = getServerUrl(img.imageUrl);
                   const isSelected = activeImage === fullUrl;
                   return (
                     <button

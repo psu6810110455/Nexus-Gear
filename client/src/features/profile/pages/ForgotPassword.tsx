@@ -15,7 +15,8 @@ const ForgotPassword = () => {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:3000/auth/forgot-password', { email });
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const response = await axios.post(`${API_BASE}/auth/forgot-password`, { email });
       setMessage(response.data.message || 'ระบบได้ส่งลิงก์สำหรับตั้งรหัสผ่านใหม่ไปที่อีเมลของคุณแล้วครับ');
       setEmail('');
     } catch (err: any) {

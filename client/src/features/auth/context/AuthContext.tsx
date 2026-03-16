@@ -29,7 +29,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // ✅ 3. ฟังก์ชันลับสำหรับเอา Token ไปแลกข้อมูล User จาก Backend
   const fetchUserProfile = async (token: string) => {
     try {
-      const response = await axios.get("http://localhost:3000/auth/me", {
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const response = await axios.get(`${API_BASE}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }, // แนบ Token ไปเป็นบัตรผ่านประตู
       });
       setUser(response.data); // เก็บข้อมูล User (ชื่อ, อีเมล) ไว้ในระบบ

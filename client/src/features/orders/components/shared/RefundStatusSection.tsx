@@ -10,6 +10,8 @@ import {
   ZoomIn,
 } from "lucide-react";
 
+import { getServerUrl } from "../../../../shared/services/api";
+
 interface Order {
   cancel_reason?: string | null;
   refund_status?: string;
@@ -34,7 +36,7 @@ const RefundStatusSection = ({ order, onLightbox }: Props) => {
   // fallback: รองรับ order เก่าที่ยังไม่มี refund_status = "rejected" ใน DB
   const isRejected = order.refund_status === "rejected" || isFakeSlip;
   const refundSlipUrl = order.refund_slip
-    ? `http://localhost:3000/uploads/slips/${order.refund_slip}`
+    ? getServerUrl(`/uploads/slips/${order.refund_slip}`)
     : null;
 
   return (

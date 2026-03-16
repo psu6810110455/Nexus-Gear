@@ -49,8 +49,9 @@ const ProductDetail: React.FC = () => {
         const token = localStorage.getItem("token");
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
+        const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
         const productRes = await axios.get(
-          `http://localhost:3000/products/${id}`,
+          `${API_BASE}/products/${id}`,
           { headers },
         );
         const currentProduct = productRes.data;
@@ -59,8 +60,9 @@ const ProductDetail: React.FC = () => {
 
         // ดึงรีวิวสินค้า
         try {
+          const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
           const reviewRes = await axios.get(
-            `http://localhost:3000/products/${id}/reviews`,
+            `${API_BASE}/products/${id}/reviews`,
             { headers },
           );
           const reviews: { rating: number | null }[] = reviewRes.data;
@@ -75,7 +77,7 @@ const ProductDetail: React.FC = () => {
         }
 
         const allProductsRes = await axios.get(
-          "http://localhost:3000/products",
+          `${API_BASE}/products`,
           { headers },
         );
         allProductsRes.data
@@ -103,7 +105,8 @@ const ProductDetail: React.FC = () => {
 
   // ✨ แยกฟังก์ชันยิง API ออกมา เพื่อให้ใช้ร่วมกันได้โดยที่ Alert ไม่ตีกัน
   const addToCartAPI = async () => {
-    await axios.post("http://localhost:3000/api/cart/add", {
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    await axios.post(`${API_BASE}/api/cart/add`, {
       userId: 1,
       productId: product!.id,
       quantity: quantity,

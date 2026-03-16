@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { productDetailStyles } from '../../../styles/productDetail.styles';
+import api, { getServerUrl } from '../../../shared/services/api';
 
 interface Product {
   id: number; name: string; description: string; price: string | number;
@@ -40,11 +40,10 @@ const ProductDetail = () => {
     const load = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem('token');
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const { data: current } = await axios.get(`http://localhost:3000/products/${id}`, { headers });
+        const { data: current } = await api.get(`/products/${id}`);
         setProduct(current);
-        const { data: all } = await axios.get('http://localhost:3000/products', { headers });
+        const { data: all } = await api.get('/products');
+        setRelatedProducts(all.filter((p: Product) => p.category?.name === current.category?.name && p.id !== current.id).slice(0, 4));
         setRelatedProducts(all.filter((p: Product) => p.category?.name === current.category?.name && p.id !== current.id).slice(0, 4));
         setQuantity(1);
         setSelectedImageIndex(0);
@@ -73,7 +72,7 @@ const ProductDetail = () => {
   const allImages: string[] = [];
   if ((product as any).images && (product as any).images.length > 0) {
     (product as any).images.forEach((img: any) => {
-      allImages.push(`http://localhost:3000${img.imageUrl}`);
+      allImages.push(getServerUrl(img.imageUrl));
     });
   }
   // ถ้าไม่มี images ให้ใช้ imageUrl เดิม
@@ -234,7 +233,7 @@ const ProductDetail = () => {
                   <div key={rel.id} className="pd-rel-card" onClick={() => navigate(`/products/${rel.id}`)}>
                     <div style={{ height: '11rem', background: '#fff', padding: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
                       <span style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'var(--color-primary)', color: '#fff', fontSize: '0.58rem', fontWeight: 700, padding: '2px 7px', borderRadius: '3px', fontFamily: 'Orbitron, sans-serif' }}>-15%</span>
-                      <img src={rel.imageUrl ?? rel.image_url ?? 'https://dummyimage.com/400x400/000/fff'} alt={rel.name}
+                      <img src={getServerUrl(rel.imageUrl ?? rel.image_url ?? '') || 'https://dummyimage.com/400x400/000/fff'} alt={rel.name}
                         style={{ maxHeight: '100%', objectFit: 'contain', transition: 'transform 0.5s', mixBlendMode: 'multiply' }}
                         onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.1)')}
                         onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}

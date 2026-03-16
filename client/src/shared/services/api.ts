@@ -1,7 +1,13 @@
 // src/shared/services/api.ts
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+export const getServerUrl = (path: string): string => {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  return `${BASE_URL}${path.startsWith('/') ? '' : '/'}${path}`;
+};
 
 const api = axios.create({ baseURL: BASE_URL });
 

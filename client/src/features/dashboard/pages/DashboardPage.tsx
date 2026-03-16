@@ -34,7 +34,8 @@ export default function DashboardPage({ onNavigate }: DashboardProps) {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/dashboard/summary');
+        const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        const response = await axios.get(`${API_BASE}/api/dashboard/summary`);
         if (response.data.success) {
           setDashboardData(response.data.data);
         }

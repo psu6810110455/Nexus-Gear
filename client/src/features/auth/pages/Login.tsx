@@ -65,7 +65,8 @@ const Login = () => {
   // ✅ เพิ่มฟังก์ชันสำหรับพาผู้ใช้ไปหน้าล็อกอินของ Google
   const handleGoogleLogin = () => {
     localStorage.setItem('oauth_action', 'login');
-    window.location.href = 'http://localhost:3000/auth/google';
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    window.location.href = `${API_BASE}/auth/google`;
   };
 
   return (

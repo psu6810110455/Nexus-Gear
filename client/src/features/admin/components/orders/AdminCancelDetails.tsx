@@ -12,6 +12,7 @@ import {
   RefreshCw,
   AlertTriangle,
 } from "lucide-react";
+import { getServerUrl } from "../../../../shared/services/api";
 import type { Order } from "../../../../shared/types";
 
 const REFUND_CHANNELS = ["โอนผ่านธนาคาร", "คืนเงินผ่าน QR"];
@@ -180,7 +181,7 @@ export const CancelDetailsRight = ({
   // fallback: order ที่ถูก quick cancel อาจยังไม่มี refund_status = "rejected" ใน DB
   const isRejected = order.refund_status === "rejected" || isFakeSlip;
   const refundSlipUrl = order.refund_slip
-    ? `http://localhost:3000/uploads/slips/${order.refund_slip}`
+    ? getServerUrl(`/uploads/slips/${order.refund_slip}`)
     : null;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

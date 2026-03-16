@@ -168,7 +168,8 @@ const Register = () => {
     if (!acceptedTerms) return toast.error('กรุณายอมรับข้อกำหนดและเงื่อนไขก่อนครับ');
 
     try {
-      const { data } = await axios.post('http://localhost:3000/users/register', {
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const { data } = await axios.post(`${API_BASE}/users/register`, {
         name: username, email, password,
       });
       toast.success(data?.message || 'สมัครสมาชิกสำเร็จ!');
@@ -183,7 +184,8 @@ const Register = () => {
 
   const handleGoogleRegister = () => {
     localStorage.setItem('oauth_action', 'register');
-    window.location.href = 'http://localhost:3000/auth/google';
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    window.location.href = `${API_BASE}/auth/google`;
   };
 
   return (

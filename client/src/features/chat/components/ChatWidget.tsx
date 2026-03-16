@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { Socket } from 'socket.io-client';
+import { getSocket } from '../../../shared/services/socket';
 import { MessageSquare, Send, X, Cloud, MessageCircle, Clock } from 'lucide-react';
 import { useAuth } from '../../auth/context/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -53,7 +54,7 @@ const ChatWidget: React.FC = () => {
 
   useEffect(() => {
     if (isLoggedIn && user) {
-      const socket = io('http://localhost:3000');
+      const socket = getSocket();
       socketRef.current = socket;
 
       socket.emit('join', { userId: user.id });

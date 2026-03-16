@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Globe, ChevronLeft, ChevronRight, ShoppingCart } from 'lucide-react';
+import { getServerUrl } from '../../../shared/services/api';
 import axios from 'axios';
 import { homeStyles } from '../../../styles/home.styles';
 
@@ -19,7 +20,7 @@ const MOCK_PRODUCTS: Product[] = [
   { id: 7, name: 'Finger Sleeve',  price: 190,   tagline: 'Swipe Faster. Win More.',     imageUrl: 'https://m.media-amazon.com/images/I/61+y+w+pXIL._AC_SL1500_.jpg' },
   { id: 8, name: 'Cooler Fan',     price: 990,   tagline: 'Stay Cool. Stay Sharp.',      imageUrl: 'https://m.media-amazon.com/images/I/61t-XhJ-xRL.jpg' },
 ];
-const API_URL = 'http://localhost:3000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 const formatImageUrl = (url?: string) => {
   if (!url) return 'https://dummyimage.com/400x400/111/dc2626?text=NEXUS';
   if (url.startsWith('http')) return url;

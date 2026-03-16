@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { X, MapPin, Truck, CreditCard, QrCode, ZoomIn } from "lucide-react";
+import { getServerUrl } from "../../../shared/services/api";
 
 import DeliveryTimeline, { getCarrier } from "../shared/DeliveryTimeline";
 import OrderItemList from "../shared/OrderItemList";
@@ -89,7 +90,7 @@ const CustomerOrderModal = ({
   const isCancelled = order.status === "cancelled";
   const carrier = getCarrier(order.status);
   const slip = order.slip_image
-    ? `http://localhost:3000/uploads/slips/${order.slip_image}`
+    ? getServerUrl(`/uploads/slips/${order.slip_image}`)
     : null;
   const method = order.payment_method;
 

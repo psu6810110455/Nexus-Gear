@@ -2,6 +2,7 @@
 
 import { FileText, CreditCard, Ban, ZoomIn, CheckCircle } from "lucide-react";
 import type { Order } from "../../../../shared/types";
+import { getServerUrl } from "../../../../shared/services/api";
 
 interface Props {
   order: Order;
@@ -49,7 +50,7 @@ const AdminSlipViewer = ({
   setQuickCancelLoading,
 }: Props) => {
   const slipUrl = order.slip_image
-    ? `http://localhost:3000/uploads/slips/${order.slip_image}`
+    ? getServerUrl(`/uploads/slips/${order.slip_image}`)
     : null;
   const action = ACTION_BUTTONS[order.status];
 

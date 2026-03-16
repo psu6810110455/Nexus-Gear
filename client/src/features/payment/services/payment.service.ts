@@ -6,15 +6,8 @@ import type { Address } from '../types/payment.types';
 // ─── Functions: ดึงข้อมูลที่อยู่จริงจาก Backend ──────────────────────────────
 export const fetchAddresses = async (): Promise<Address[]> => {
   try {
-    const token = localStorage.getItem('token');
-    const res = await fetch('http://localhost:3000/profile/addresses', {
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    });
-    if (!res.ok) throw new Error('Failed to fetch addresses');
-    const rawAddresses = await res.json();
+    const res = await api.get('/profile/addresses');
+    const rawAddresses = res.data;
 
     // แปลงข้อมูลจาก Profile API ให้ตรงกับ Payment Address type
     return rawAddresses.map((addr: any) => ({

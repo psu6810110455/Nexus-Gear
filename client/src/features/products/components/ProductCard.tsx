@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Product } from '../../../shared/types/index';
 import { getCategoryName } from '../services/product.service';
+import { getServerUrl } from '../../../shared/services/api';
 
 interface ProductCardProps {
   product: Product;
@@ -23,7 +24,7 @@ function ProductCard({ product, onClick, variant = 'shop' }: ProductCardProps) {
   const categoryName = getCategoryName(product);
 
   const imagesList = product.images && product.images.length > 0 
-    ? product.images.map(img => `http://localhost:3000${img.imageUrl}`)
+    ? product.images.map(img => getServerUrl(img.imageUrl))
     : [product.imageUrl ?? product.image_url ?? 'https://dummyimage.com/400x400/000/fff'];
 
   useEffect(() => {

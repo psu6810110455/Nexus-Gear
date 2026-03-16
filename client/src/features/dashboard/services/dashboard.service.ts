@@ -2,7 +2,7 @@
 import axios from 'axios';
 import type { DashboardStats, ActivityItem } from '../types/dashboard.types';
 
-const BASE_URL = 'http://localhost:3000/api/admin/dashboard';
+const BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/admin/dashboard`;
 
 export const fetchStats = async (): Promise<DashboardStats> => {
   try {

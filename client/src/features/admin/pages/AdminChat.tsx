@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { Socket } from 'socket.io-client';
+import { getSocket } from '../../../shared/services/socket';
 import { Send, User as UserIcon, MessageSquare, Search, Info, Package, Smile, Clock } from 'lucide-react';
 import AdminLayout from '../../navigation/components/AdminLayout';
 import { useAuth } from '../../auth/context/AuthContext';
@@ -119,7 +120,7 @@ const AdminChat: React.FC = () => {
 
   useEffect(() => {
     // Initialize socket once
-    const socket = io('http://localhost:3000');
+    const socket = getSocket();
     socketRef.current = socket;
 
     socket.on('adminNewMessage', (msg: ChatMessage) => {

@@ -37,7 +37,8 @@ function ProductList() {
       console.log("🔑 Token ที่ส่งไป:", token ? "มี Token" : "ไม่มี Token");
 
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const response = await axios.get('http://localhost:3000/products', { headers });
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const response = await axios.get(`${API_BASE}/products`, { headers });
       
       const data = response.data;
       console.log("📦 ข้อมูลสินค้าที่ได้จาก API:", data); // ดูหน้าตาข้อมูลที่ Backend ส่งมา

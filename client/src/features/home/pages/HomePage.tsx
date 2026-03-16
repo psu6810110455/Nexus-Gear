@@ -19,6 +19,12 @@ const MOCK_PRODUCTS: Product[] = [
   { id: 7, name: 'Finger Sleeve',  price: 190,   tagline: 'Swipe Faster. Win More.',     imageUrl: 'https://m.media-amazon.com/images/I/61+y+w+pXIL._AC_SL1500_.jpg' },
   { id: 8, name: 'Cooler Fan',     price: 990,   tagline: 'Stay Cool. Stay Sharp.',      imageUrl: 'https://m.media-amazon.com/images/I/61t-XhJ-xRL.jpg' },
 ];
+const API_URL = 'http://localhost:3000';
+const formatImageUrl = (url?: string) => {
+  if (!url) return 'https://dummyimage.com/400x400/111/dc2626?text=NEXUS';
+  if (url.startsWith('http')) return url;
+  return `${API_URL}${url}`;
+};
 
 function HomePage() {
   const navigate = useNavigate();
@@ -32,7 +38,7 @@ function HomePage() {
 
   useEffect(() => {
     if (!sessionStorage.getItem('visitedNexusGear')) setShowWelcome(true);
-    axios.get('http://localhost:3000/products')
+    axios.get(`${API_URL}/products`)
       .then(res => { if (res.data?.length > 0) { const s = [...res.data].sort(() => 0.5 - Math.random()); setProducts(s.slice(0, 8)); } })
       .catch(() => setProducts(MOCK_PRODUCTS.slice(0, 8)));
   }, []);
@@ -75,7 +81,10 @@ function HomePage() {
       {showWelcome && (
         <div className="modal-backdrop">
           <div className="welcome-box">
-            <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>⚡</div>
+            <div style={{ marginBottom: '1.25rem' }}>
+              <img src="/logo.png" alt="Logo" style={{ width: '80px', height: '80px', objectFit: 'contain' }} 
+                onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+            </div>
             <div className="welcome-logo">NEXUS<span>GEAR</span></div>
             <div className="welcome-sub">ยินดีต้อนรับ · Welcome</div>
             <button className="btn-enter" onClick={handleEnterSite}>เข้าสู่เว็บไซต์ · ENTER</button>
@@ -105,7 +114,7 @@ function HomePage() {
         </div>
         <div className="hero-content" style={{ paddingTop: '2rem' }}>
           <div>
-            <div className="hero-tag">NEXUS GEAR — FEATURED PRODUCT</div>
+            <div className="hero-tag">NEXUS GEAR — RECOMMENDED PRODUCT</div>
             <h1 className={`hero-product-name ${isAnimating ? 'slide-exit' : 'slide-enter'}`}>{current.name}</h1>
             <p className={`hero-tagline ${isAnimating ? 'slide-exit' : 'slide-enter'}`}>{current.tagline}</p>
             <div className="hero-price">฿{Number(current.price).toLocaleString()}</div>
@@ -116,7 +125,7 @@ function HomePage() {
           </div>
           <div className="hero-image-side">
             <div className="hero-image-glow" />
-            <img key={activeSlide} src={current.imageUrl ?? current.image_url} alt={current.name}
+            <img key={activeSlide} src={formatImageUrl(current.imageUrl ?? current.image_url)} alt={current.name}
               className={`hero-img ${isAnimating ? 'slide-exit' : 'slide-enter'}`}
               onError={e => { e.currentTarget.src = 'https://dummyimage.com/400x400/111/dc2626?text=NEXUS'; }} />
           </div>
@@ -140,7 +149,7 @@ function HomePage() {
         <div className="product-grid">
           {products.map(product => (
             <div key={product.id} className="product-tile" onClick={() => navigate(`/products/${product.id}`)}>
-              <img src={product.imageUrl ?? product.image_url} alt={product.name} className="product-tile-img"
+              <img src={formatImageUrl(product.imageUrl ?? product.image_url)} alt={product.name} className="product-tile-img"
                 onError={e => { e.currentTarget.src = 'https://dummyimage.com/400x400/111/dc2626?text=NO+IMG'; }} />
               <div className="product-tile-info">
                 <div className="tile-name">{product.name}</div>

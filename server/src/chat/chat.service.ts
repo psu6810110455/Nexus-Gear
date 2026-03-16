@@ -11,6 +11,7 @@ export class ChatService {
   ) {}
 
   async createMessage(userId: number, sender: 'user' | 'admin', message: string, metadata?: any): Promise<ChatMessage> {
+    // If admin is sending message to themselves, we might want to flag it or handle it
     const newMessage = this.chatRepository.create({
       userId,
       sender,
@@ -43,6 +44,8 @@ export class ChatService {
     const userIds = await this.chatRepository
       .createQueryBuilder('chat')
       .select('DISTINCT chat.userId', 'userId')
+      .innerJoin('chat.user', 'user')
+      .where('user.role = :role', { role: 'customer' }) // Only get customer sessions
       .getRawMany();
 
     const sessions: ChatMessage[] = [];

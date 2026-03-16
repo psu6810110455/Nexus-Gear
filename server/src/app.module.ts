@@ -37,6 +37,7 @@ import { ChatModule }       from './chat/chat.module';
       database:         'ecommerce_db',
       autoLoadEntities: true,
       synchronize:      true,
+      timezone:         '+07:00',
     }),
     ProductsModule,
     AuthModule,

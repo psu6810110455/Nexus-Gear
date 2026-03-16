@@ -44,7 +44,7 @@ const QUICK_RESPONSES = [
 ];
 
 const AdminChat: React.FC = () => {
-  const { } = useAuth();
+  const { user } = useAuth();
   const [sessions, setSessions] = useState<Record<number, ChatSession>>({});
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [inputValue, setInputValue] = useState('');
@@ -274,6 +274,9 @@ const AdminChat: React.FC = () => {
       
       // If unreadCount > 0, always show (wake up)
       if (s.unreadCount > 0) return true;
+      
+      // Filter out self-chat
+      if (user && s.userId === user.id) return false;
       
       return (nowMs - lastTimeMs) < sevenDaysMs;
     });

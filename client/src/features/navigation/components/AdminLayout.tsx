@@ -152,7 +152,7 @@ const AdminLayout = ({ children, breadcrumb = 'ศูนย์บริหาร
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-hidden">
+        <main className="flex-1 overflow-y-auto p-8 scrollbar-dark">
             {children}
         </main>
       </div>

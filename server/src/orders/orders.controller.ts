@@ -2,6 +2,7 @@
 import {
   Controller, Get, Post, Body, Patch, Param,
   UseInterceptors, UploadedFile, UseGuards, Request,
+  BadRequestException // ✨ 1. เพิ่ม BadRequestException สำหรับเตะไฟล์อันตรายทิ้ง
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -20,6 +21,20 @@ export class OrdersController {
   @Post('checkout')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('slipImage', {
+    // 🛡️ ระบบป้องกันที่ 1: จำกัดขนาดไฟล์ (Max File Size) ป้องกันโจมตีแบบยัดไฟล์ขยะจนดิสก์เต็ม
+    limits: {
+      fileSize: 5 * 1024 * 1024, // จำกัดสูงสุด 5MB
+    },
+    // 🛡️ ระบบป้องกันที่ 2: คัดกรองประเภทไฟล์ (File Filter) ดักจับ Malware (.exe, .php, ฯลฯ)
+    fileFilter: (req, file, cb) => {
+      // เช็ค MIME Type ว่าเป็นรูปภาพเท่านั้น
+      if (!file.mimetype.match(/\/(jpg|jpeg|png|webp)$/)) {
+        // ถ้าแฮกเกอร์ยิงไฟล์แปลกๆ มา ให้เด้ง Error กลับไปทันที
+        return cb(new BadRequestException('ตรวจพบความเสี่ยง: ระบบอนุญาตให้อัปโหลดเฉพาะไฟล์รูปภาพ (JPG, PNG) เท่านั้น!'), false);
+      }
+      cb(null, true); // ปลอดภัย ให้ผ่านได้
+    },
+    // 🛡️ ระบบป้องกันที่ 3: สุ่มชื่อไฟล์ใหม่ (Rename) ป้องกันแฮกเกอร์รันสคริปต์ผ่านชื่อไฟล์
     storage: diskStorage({
       destination: './uploads/slips',
       filename: (req, file, cb) => {

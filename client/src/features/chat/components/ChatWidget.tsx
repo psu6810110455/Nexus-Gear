@@ -23,11 +23,9 @@ const formatThaiTime = (dateStr: string): string => {
     let normalized = String(dateStr).trim();
     // Convert yyyy/mm/dd to yyyy-mm-dd
     normalized = normalized.replace(/\//g, '-');
-    // Convert "yyyy-mm-dd hh:mm:ss" to ISO "yyyy-mm-ddThh:mm:ss"
     if (!normalized.includes('T') && normalized.includes(' ')) {
       normalized = normalized.replace(' ', 'T');
     }
-    // Force UTC if no timezone is specified
     if (!normalized.includes('Z') && !normalized.includes('+')) {
       normalized += 'Z';
     }
@@ -35,25 +33,23 @@ const formatThaiTime = (dateStr: string): string => {
     const d = new Date(normalized);
     if (isNaN(d.getTime())) return String(dateStr);
 
-    const now = new Date();
-    const dateFormatter = new Intl.DateTimeFormat('en-GB', {
-      timeZone: 'Asia/Bangkok',
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
-    const timeFormatter = new Intl.DateTimeFormat('en-GB', {
-      timeZone: 'Asia/Bangkok',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    });
+    // Force +7 hours for Asia/Bangkok explicitly
+    const shifted = new Date(d.getTime() + (7 * 60 * 60 * 1000));
+    
+    const nowShifted = new Date(new Date().getTime() + (7 * 60 * 60 * 1000));
+    
+    const isToday = shifted.getUTCDate() === nowShifted.getUTCDate() &&
+                    shifted.getUTCMonth() === nowShifted.getUTCMonth() &&
+                    shifted.getUTCFullYear() === nowShifted.getUTCFullYear();
 
-    const msgDate = dateFormatter.format(d);
-    const todayDate = dateFormatter.format(now);
-    const timeStr = timeFormatter.format(d);
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const timeStr = `${pad(shifted.getUTCHours())}:${pad(shifted.getUTCMinutes())}`;
 
-    return msgDate === todayDate ? timeStr : `${msgDate} ${timeStr}`;
+    if (isToday) {
+      return timeStr;
+    } else {
+      return `${pad(shifted.getUTCDate())}/${pad(shifted.getUTCMonth() + 1)}/${shifted.getUTCFullYear()} ${timeStr}`;
+    }
   } catch {
     return dateStr;
   }
@@ -87,8 +83,8 @@ const ChatWidget: React.FC = () => {
 
       socket.on('newMessage', (msg: ChatMessage) => {
         setMessages(prev => {
-          // Replace optimistic message if exists
-          const optimisticIndex = prev.findIndex(m => !m.id && m.message === msg.message && m.sender === msg.sender);
+          // Replace optimistic message if exists (check sender and message text, and id=0)
+          const optimisticIndex = prev.findIndex(m => m.id === 0 && m.message === msg.message && m.sender === msg.sender);
           if (optimisticIndex > -1) {
             const next = [...prev];
             // Preserve the optimistic time which is correct for the user

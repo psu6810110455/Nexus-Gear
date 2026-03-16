@@ -165,7 +165,10 @@ export class OrdersService {
   }
 
   async updateStatus(id: number, status: OrderStatus) {
-    const order = await this.ordersRepository.findOneBy({ id });
+    const order = await this.ordersRepository.findOne({
+      where: { id },
+      relations: ['user'],
+    });
     if (!order) throw new NotFoundException('Order not found');
 
     order.status = status;
@@ -198,7 +201,7 @@ export class OrdersService {
   async cancelOrder(id: number, reason: string, restock: boolean = true, bankName?: string, bankAccount?: string) {
     const order = await this.ordersRepository.findOne({
       where: { id },
-      relations: ['items', 'items.product'],
+      relations: ['items', 'items.product', 'user'],
     });
     if (!order) throw new NotFoundException('Order not found');
 
@@ -225,6 +228,12 @@ export class OrdersService {
     if (bankName && bankAccount) order.refund_status = 'pending';
     const saved = await this.ordersRepository.save(order);
     this.ordersGateway.emitOrderCancelled(saved);
+
+    // Send chat notification to user
+    if (order.user) {
+      this.chatGateway.sendSystemMessage(order.user.id, `🔔 ออเดอร์ ${order.order_number} ถูกยกเลิกแล้ว: ${reason}`);
+    }
+
     return saved;
   }
 
@@ -251,6 +260,12 @@ export class OrdersService {
 
     const saved = await this.ordersRepository.save(order);
     this.ordersGateway.emitRefundProcessed(saved);
+
+    // Send chat notification to user
+    if (order.user) {
+      this.chatGateway.sendSystemMessage(order.user.id, `💰 คืนเงินสำเร็จสำหรับออเดอร์ ${order.order_number} จำนวน ฿${refundAmount.toLocaleString()}`);
+    }
+
     return saved;
   }
 

@@ -81,7 +81,7 @@ function HomePage() {
       {showWelcome && (
         <div className="modal-backdrop">
           <div className="welcome-box">
-            <div style={{ marginBottom: '1.25rem' }}>
+            <div style={{ marginBottom: '1.25rem', display: 'flex', justifyContent: 'center' }}>
               <img src="/logo.png" alt="Logo" style={{ width: '80px', height: '80px', objectFit: 'contain' }} 
                 onError={(e) => { e.currentTarget.style.display = 'none'; }} />
             </div>

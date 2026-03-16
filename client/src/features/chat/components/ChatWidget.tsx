@@ -18,6 +18,47 @@ interface ChatMessage {
   createdAt: string;
 }
 
+const formatThaiTime = (dateStr: string): string => {
+  try {
+    let normalized = String(dateStr).trim();
+    // Convert yyyy/mm/dd to yyyy-mm-dd
+    normalized = normalized.replace(/\//g, '-');
+    // Convert "yyyy-mm-dd hh:mm:ss" to ISO "yyyy-mm-ddThh:mm:ss"
+    if (!normalized.includes('T') && normalized.includes(' ')) {
+      normalized = normalized.replace(' ', 'T');
+    }
+    // Force UTC if no timezone is specified
+    if (!normalized.includes('Z') && !normalized.includes('+')) {
+      normalized += 'Z';
+    }
+    
+    const d = new Date(normalized);
+    if (isNaN(d.getTime())) return String(dateStr);
+
+    const now = new Date();
+    const dateFormatter = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Bangkok',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+    const timeFormatter = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Bangkok',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+
+    const msgDate = dateFormatter.format(d);
+    const todayDate = dateFormatter.format(now);
+    const timeStr = timeFormatter.format(d);
+
+    return msgDate === todayDate ? timeStr : `${msgDate} ${timeStr}`;
+  } catch {
+    return dateStr;
+  }
+};
+
 const ChatWidget: React.FC = () => {
   const { user, isLoggedIn } = useAuth();
   const location = useLocation();
@@ -50,6 +91,8 @@ const ChatWidget: React.FC = () => {
           const optimisticIndex = prev.findIndex(m => !m.id && m.message === msg.message && m.sender === msg.sender);
           if (optimisticIndex > -1) {
             const next = [...prev];
+            // Preserve the optimistic time which is correct for the user
+            msg.createdAt = next[optimisticIndex].createdAt;
             next[optimisticIndex] = msg;
             return next;
           }
@@ -135,7 +178,9 @@ const ChatWidget: React.FC = () => {
     let metadata = undefined;
     if (location.pathname.startsWith('/products/')) {
       const productId = parseInt(location.pathname.split('/').pop() || '0');
-      metadata = { productId };
+      if (!isNaN(productId) && productId > 0) {
+        metadata = { productId };
+      }
     }
 
     // Optimistic Update
@@ -208,7 +253,7 @@ const ChatWidget: React.FC = () => {
                     {msg.message}
                     <div className={`text-[9px] mt-1.5 opacity-60 flex items-center gap-1 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                       <Clock size={10} />
-                      {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {formatThaiTime(msg.createdAt)}
                     </div>
                   </div>
                 </div>

@@ -86,9 +86,10 @@ const AdminChat: React.FC = () => {
       let newMessages = [...current.messages];
 
       incoming.forEach(msg => {
-        // 1. Try to find/replace optimistic match (no ID)
         const optIndex = newMessages.findIndex(m => !m.id && m.message === msg.message && m.sender === msg.sender);
         if (optIndex > -1) {
+          // Preserve the optimistic time which is correct for the admin
+          msg.createdAt = newMessages[optIndex].createdAt;
           newMessages[optIndex] = msg;
         } else {
           // 2. Check for duplicate by real ID
@@ -264,7 +265,11 @@ const AdminChat: React.FC = () => {
   const activeSessions = Object.values(sessions)
     .sort((a, b) => new Date(b.lastTime).getTime() - new Date(a.lastTime).getTime())
     .filter(s => {
-      const isSearchMatched = s.userName.toLowerCase().includes(searchTerm.toLowerCase());
+      const lowerSearch = searchTerm.toLowerCase().trim();
+      const isSearchMatched = 
+        s.userName.toLowerCase().includes(lowerSearch) || 
+        s.userId.toString() === lowerSearch;
+        
       if (!isSearchMatched) return false;
 
       // Filter by 7 days (7 * 24 * 60 * 60 * 1000 ms)
@@ -280,6 +285,48 @@ const AdminChat: React.FC = () => {
       
       return (nowMs - lastTimeMs) < sevenDaysMs;
     });
+
+  const formatTime = (dateStr: any) => {
+    if (!dateStr) return '';
+    try {
+      let normalized = String(dateStr).trim();
+      // Convert yyyy/mm/dd to yyyy-mm-dd
+      normalized = normalized.replace(/\//g, '-');
+      // Convert "yyyy-mm-dd hh:mm:ss" to ISO "yyyy-mm-ddThh:mm:ss"
+      if (!normalized.includes('T') && normalized.includes(' ')) {
+        normalized = normalized.replace(' ', 'T');
+      }
+      // Force UTC if no timezone is specified
+      if (!normalized.includes('Z') && !normalized.includes('+')) {
+        normalized += 'Z';
+      }
+      
+      const d = new Date(normalized);
+      if (isNaN(d.getTime())) return String(dateStr);
+
+      const now = new Date();
+      const dateFormatter = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Asia/Bangkok',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      });
+      const timeFormatter = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Asia/Bangkok',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      });
+
+      const msgDate = dateFormatter.format(d);
+      const todayDate = dateFormatter.format(now);
+      const timeStr = timeFormatter.format(d);
+
+      return msgDate === todayDate ? timeStr : `${msgDate} ${timeStr}`;
+    } catch {
+      return String(dateStr);
+    }
+  };
 
   const selectedSession = selectedUserId ? sessions[selectedUserId] : null;
 
@@ -342,7 +389,7 @@ const AdminChat: React.FC = () => {
                     <div className="flex justify-between items-start">
                       <h5 className="text-white font-bold text-sm truncate">{session.userName}</h5>
                       <span className="text-[10px] text-gray-500 shrink-0">
-                        {session.lastTime ? new Date(session.lastTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                        {session.lastTime ? formatTime(session.lastTime) : ''}
                       </span>
                     </div>
                     <p className={`text-xs truncate mt-1 ${session.isTyping ? 'text-green-500 font-medium' : 'text-gray-500'}`}>
@@ -433,7 +480,7 @@ const AdminChat: React.FC = () => {
                             <span className="block text-white font-medium whitespace-pre-wrap">{msg.message}</span>
                             <div className={`text-[10px] mt-2 font-medium opacity-80 flex items-center gap-1.5 ${isAdmin ? 'justify-end text-red-100' : 'justify-start text-gray-400'}`}>
                               <Clock size={11} />
-                              {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              {formatTime(msg.createdAt)}
                               {isAdmin && <span className="ml-1 text-[11px] font-bold">✓✓</span>}
                             </div>
                           </div>

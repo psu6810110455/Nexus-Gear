@@ -2,22 +2,20 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Globe, ShoppingCart, X, Menu } from 'lucide-react';
 import { useAuth } from '../../auth/context/AuthContext';
+import { useLanguage } from '../../../shared/context/LanguageContext';
 import logoImg from '../../../assets/logo.png';
 
 /* ── Public navigation links ── */
-const PUBLIC_LINKS = [
-  { label: 'หน้าแรก', to: '/' },
-  { label: 'สินค้าทั้งหมด', to: '/shop' }
-];
+// These will be translated in the component
 
 const Navbar = () => {
   const navigate = useNavigate();
   const { isLoggedIn, logout, user } = useAuth();
+  const { language, setLanguage, t } = useLanguage();
   const [showPromoBanner, setShowPromoBanner] = useState(true);
   const [showLangModal, setShowLangModal]     = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showMobileMenu, setShowMobileMenu]   = useState(false);
-  const [language, setLanguage]               = useState<'TH' | 'EN'>('TH');
 
   const handleLogout = () => {
     setShowLogoutModal(false);
@@ -256,7 +254,7 @@ const Navbar = () => {
       {/* ── Promo Banner ── */}
       {showPromoBanner && (
         <div className="nb-promo">
-          ⚡&nbsp; FREE SHIPPING FOR ORDERS OVER ฿999 &nbsp;·&nbsp; ส่งฟรีเมื่อซื้อครบ ฿999 &nbsp;⚡
+          ⚡&nbsp; {t('promoShipping')} &nbsp;⚡
           <button className="nb-promo-close" onClick={() => setShowPromoBanner(false)} aria-label="ปิด">
             <X size={14} />
           </button>
@@ -275,14 +273,11 @@ const Navbar = () => {
 
           {/* Desktop Nav Links */}
           <ul className="nb-nav">
-            {PUBLIC_LINKS.map(({ label, to }) => (
-              <li key={to}>
-                <Link to={to} className="nb-nav-link">{label}</Link>
-              </li>
-            ))}
+            <li><Link to="/" className="nb-nav-link">{t('home')}</Link></li>
+            <li><Link to="/shop" className="nb-nav-link">{t('shop')}</Link></li>
             {isLoggedIn && user?.role === 'admin' && (
               <li>
-                <Link to="/admin" className="nb-nav-link admin">ศูนย์บริหารสินค้า</Link>
+                <Link to="/admin" className="nb-nav-link admin">{t('adminCenter')}</Link>
               </li>
             )}
           </ul>
@@ -320,16 +315,16 @@ const Navbar = () => {
                     )}
                   </div>
                   <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.8rem', fontWeight: 500, fontFamily: "'Kanit', sans-serif" }}>
-                    {user?.name || 'ผู้ใช้งาน'}
+                    {user?.name || t('user')}
                   </span>
                 </Link>
-                <button type="button" onClick={() => setShowLogoutModal(true)} className="nb-btn-outline">ออกจากระบบ</button>
+                <button type="button" onClick={() => setShowLogoutModal(true)} className="nb-btn-outline">{t('logout')}</button>
               </div>
             ) : (
               <>
-                <Link to="/login" className="nb-text-link">เข้าสู่ระบบ</Link>
+                <Link to="/login" className="nb-text-link">{t('login')}</Link>
                 <Link to="/register" style={{ textDecoration: 'none' }}>
-                  <button className="nb-btn-primary">สมัครสมาชิก</button>
+                  <button className="nb-btn-primary">{t('register')}</button>
                 </Link>
               </>
             )}
@@ -378,31 +373,30 @@ const Navbar = () => {
               )}
             </div>
             <div>
-              <div style={{ color: '#fff', fontWeight: 600, fontSize: '0.9rem', fontFamily: 'Kanit' }}>{user?.name || 'ผู้ใช้งาน'}</div>
+              <div style={{ color: '#fff', fontWeight: 600, fontSize: '0.9rem', fontFamily: 'Kanit' }}>{user?.name || t('user')}</div>
               <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.75rem' }}>{user?.email}</div>
             </div>
           </Link>
         )}
 
         {/* Navigation links */}
-        <div className="nb-mobile-section">เมนู</div>
+        <div className="nb-mobile-section">{language === 'TH' ? 'เมนู' : 'MENU'}</div>
         <ul className="nb-mobile-links">
-          {PUBLIC_LINKS.map(({ label, to }) => (
-            <li key={to}><Link to={to} className="nb-mobile-link" onClick={closeMobile}>{label}</Link></li>
-          ))}
+          <li><Link to="/" className="nb-mobile-link" onClick={closeMobile}>{t('home')}</Link></li>
+          <li><Link to="/shop" className="nb-mobile-link" onClick={closeMobile}>{t('shop')}</Link></li>
           {isLoggedIn && (
             <>
-              <li><Link to="/cart" className="nb-mobile-link" onClick={closeMobile}>🛒 ตะกร้าสินค้า</Link></li>
-              <li><Link to="/profile" className="nb-mobile-link" onClick={closeMobile}>👤 โปรไฟล์</Link></li>
+              <li><Link to="/cart" className="nb-mobile-link" onClick={closeMobile}>🛒 {t('cart')}</Link></li>
+              <li><Link to="/profile" className="nb-mobile-link" onClick={closeMobile}>👤 {t('profile')}</Link></li>
             </>
           )}
           {isLoggedIn && user?.role === 'admin' && (
-            <li><Link to="/admin" className="nb-mobile-link admin" onClick={closeMobile}>⚙️ ศูนย์บริหารสินค้า</Link></li>
+            <li><Link to="/admin" className="nb-mobile-link admin" onClick={closeMobile}>⚙️ {t('adminCenter')}</Link></li>
           )}
         </ul>
 
         {/* Settings */}
-        <div className="nb-mobile-section">ตั้งค่า</div>
+        <div className="nb-mobile-section">{language === 'TH' ? 'ตั้งค่า' : 'SETTINGS'}</div>
         <ul className="nb-mobile-links">
           <li>
             <button className="nb-mobile-link" onClick={() => { closeMobile(); setShowLangModal(true); }} style={{ width: '100%', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', font: 'inherit' }}>
@@ -415,15 +409,15 @@ const Navbar = () => {
         <div style={{ marginTop: 'auto', padding: '1rem 0', borderTop: '1px solid rgba(127,29,29,0.2)' }}>
           {isLoggedIn ? (
             <button className="nb-mobile-btn nb-mobile-btn-outline" onClick={() => { closeMobile(); setShowLogoutModal(true); }}>
-              ออกจากระบบ
+              {t('logout')}
             </button>
           ) : (
             <>
               <Link to="/login" className="nb-mobile-btn nb-mobile-btn-primary" onClick={closeMobile} style={{ marginBottom: '0.5rem' }}>
-                เข้าสู่ระบบ
+                {t('login')}
               </Link>
               <Link to="/register" className="nb-mobile-btn nb-mobile-btn-outline" onClick={closeMobile}>
-                สมัครสมาชิก
+                {t('register')}
               </Link>
             </>
           )}
@@ -466,17 +460,19 @@ const Navbar = () => {
             <div style={{ width: 48, height: 48, borderRadius: '12px', background: 'rgba(220,38,38,0.12)', border: '1px solid rgba(220,38,38,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: '#dc2626' }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
             </div>
-            <div style={{ fontFamily: 'Orbitron', fontWeight: 700, fontSize: '0.85rem', letterSpacing: '0.15em', color: '#fff', marginBottom: '0.5rem' }}>ออกจากระบบ</div>
-            <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.85rem', marginBottom: '1.5rem', fontFamily: 'Kanit' }}>คุณต้องการออกจากระบบหรือไม่?</div>
+            <div style={{ fontFamily: 'Orbitron', fontWeight: 700, fontSize: '0.85rem', letterSpacing: '0.15em', color: '#fff', marginBottom: '0.5rem' }}>{t('logout')}</div>
+            <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.85rem', marginBottom: '1.5rem', fontFamily: 'Kanit' }}>
+              {language === 'TH' ? 'คุณต้องการออกจากระบบหรือไม่?' : 'Are you sure you want to logout?'}
+            </div>
             <div style={{ display: 'flex', gap: '0.6rem' }}>
               <button onClick={() => setShowLogoutModal(false)} style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontFamily: 'Kanit', fontWeight: 500, transition: 'all 0.2s' }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = '#fff'; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; }}
-              >ยกเลิก</button>
+              >{t('cancel')}</button>
               <button onClick={handleLogout} style={{ flex: 1, padding: '10px', borderRadius: '6px', border: 'none', background: '#dc2626', color: '#fff', cursor: 'pointer', fontFamily: 'Orbitron', fontWeight: 700, fontSize: '0.72rem', letterSpacing: '0.1em', boxShadow: '0 0 16px rgba(220,38,38,0.4)', transition: 'all 0.2s' }}
                 onMouseEnter={e => { e.currentTarget.style.background = '#b91c1c'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
                 onMouseLeave={e => { e.currentTarget.style.background = '#dc2626'; e.currentTarget.style.transform = 'none'; }}
-              >ยืนยัน</button>
+              >{t('confirm')}</button>
             </div>
           </div>
         </div>

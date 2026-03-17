@@ -84,6 +84,8 @@ const AdminChat: React.FC = () => {
       };
 
       const incoming = Array.isArray(msgOrHistory) ? msgOrHistory : [msgOrHistory];
+      const firstWithUser = incoming.find(m => m.user);
+      
       let newMessages = [...current.messages];
 
       incoming.forEach(msg => {
@@ -91,13 +93,11 @@ const AdminChat: React.FC = () => {
         if (optIndex > -1) {
           newMessages[optIndex] = msg;
         } else {
-          // 2. Check for duplicate by real ID
           if (msg.id && newMessages.some(m => m.id === msg.id)) return;
           newMessages.push(msg);
         }
       });
 
-      // Sort by time
       newMessages.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
       const lastMsg = newMessages[newMessages.length - 1];
@@ -107,6 +107,8 @@ const AdminChat: React.FC = () => {
         ...prev,
         [userId]: {
           ...current,
+          userName: firstWithUser?.user?.name || current.userName,
+          userPicture: firstWithUser?.user?.picture || current.userPicture,
           lastMessage: lastMsg?.message || current.lastMessage,
           lastTime: lastMsg?.createdAt || current.lastTime,
           messages: newMessages,

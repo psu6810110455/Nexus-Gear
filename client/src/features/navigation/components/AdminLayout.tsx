@@ -3,31 +3,33 @@
 // Shared layout wrapper สำหรับทุกหน้า Admin
 // ============================================================
 
+import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import {
-  LayoutDashboard, Package, ShoppingBag, Layers, BarChart3,
-  LogOut, Home, MessageSquare,
+  LayoutDashboard, Package, ShoppingBag, BarChart3,
+  Home, MessageSquare, ChevronLeft, ChevronRight
 } from 'lucide-react';
+import { useLanguage } from '../../../shared/context/LanguageContext';
 
 const menuItems = [
-  { label: 'แดชบอร์ด',         icon: LayoutDashboard, path: '/dashboard' },
-  { label: 'จัดการคำสั่งซื้อ', icon: ShoppingBag,     path: '/admin/orders' },
-  { label: 'ศูนย์บริหารสินค้า',     icon: Package,         path: '/admin' },
-  { label: 'จัดการหมวดหมู่',   icon: Layers,          path: '#', isCategoryTrigger: true }, // ✅ Use empty path to denote it as an action button
-  { label: 'จัดการสต็อก',      icon: BarChart3,       path: '/admin/stock' },
-  { label: 'แชทกับลูกค้า',   icon: MessageSquare,   path: '/admin/chat' },
+  { labelKey: 'dashboard',         icon: LayoutDashboard, path: '/dashboard' },
+  { labelKey: 'manageOrders',      icon: ShoppingBag,     path: '/admin/orders' },
+  { labelKey: 'inventory',         icon: Package,         path: '/admin' },
+  { labelKey: 'manageStock',       icon: BarChart3,       path: '/admin/stock' },
+  { labelKey: 'customerChat',      icon: MessageSquare,   path: '/admin/chat' },
 ];
 
 interface AdminLayoutProps {
   children: ReactNode;
   breadcrumb?: string;
-  onCategoryClick?: () => void;
 }
 
-const AdminLayout = ({ children, breadcrumb = 'ศูนย์บริหารสินค้า', onCategoryClick }: AdminLayoutProps) => {
+const AdminLayout = ({ children, breadcrumb = 'ศูนย์บริหารสินค้า' }: AdminLayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { language, t } = useLanguage();
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
     <div className="flex h-screen bg-[#000000] text-[#F2F4F6] font-['Kanit'] selection:bg-[#990000] selection:text-white relative overflow-hidden">
@@ -66,10 +68,19 @@ const AdminLayout = ({ children, breadcrumb = 'ศูนย์บริหาร
       </div>
 
       {/* ── Sidebar ── */}
-      <aside className="w-64 bg-[#000000]/95 border-r border-[#990000]/50 flex flex-col z-50 backdrop-blur-xl shrink-0">
+      <aside className={`${isCollapsed ? 'w-20' : 'w-64'} bg-[#000000]/95 border-r border-[#990000]/50 flex flex-col z-50 backdrop-blur-xl shrink-0 transition-all duration-300 relative`}>
+        {/* Toggle Button */}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="absolute -right-3 top-1/2 -translate-y-1/2 bg-[#990000] text-white rounded-full p-1.5 border border-[#FF0000]/50 hover:bg-[#FF0000] transition shadow-[0_0_15px_rgba(255,0,0,0.6)] z-[60]"
+          title={isCollapsed ? (language === 'TH' ? "ขยายแถบเมนู" : "Expand Sidebar") : (language === 'TH' ? "ซ่อนแถบเมนู" : "Collapse Sidebar")}
+        >
+          {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+        </button>
+
         {/* Logo */}
         <div
-          className="p-6 flex items-center gap-3 border-b border-[#990000]/30 cursor-pointer group relative overflow-hidden"
+          className={`p-6 flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} border-b border-[#990000]/30 cursor-pointer group relative overflow-hidden`}
           onClick={() => navigate('/')}
         >
           <div className="absolute inset-0 bg-[#FF0000]/10 blur-xl opacity-0 group-hover:opacity-50 transition duration-500" />
@@ -78,33 +89,35 @@ const AdminLayout = ({ children, breadcrumb = 'ศูนย์บริหาร
             className="w-8 h-8 object-contain relative z-10"
             onError={(e) => { e.currentTarget.src = 'https://dummyimage.com/50x50/000/fff/000000/red?text=NX'; }}
           />
-          <span className="font-['Orbitron'] font-black text-[#F2F4F6] text-lg tracking-wider relative z-10 drop-shadow-[0_0_5px_rgba(255,0,0,0.5)]">
-            ADMIN
-          </span>
+          {!isCollapsed && (
+            <span className="font-['Orbitron'] font-black text-[#F2F4F6] text-lg tracking-wider relative z-10 drop-shadow-[0_0_5px_rgba(255,0,0,0.5)]">
+              ADMIN
+            </span>
+          )}
         </div>
 
         {/* Nav */}
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
+            const label = t(item.labelKey as any);
             return (
               <button
-                key={item.label}
+                key={item.labelKey}
+                title={isCollapsed ? label : ""}
                 onClick={() => {
-                  if (item.label === 'จัดการหมวดหมู่') {
-                    if (onCategoryClick) onCategoryClick();
-                  } else if (item.path) {
+                   if (item.path) {
                     navigate(item.path);
                   }
                 }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 group font-['Kanit'] text-left ${
+                className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-4 py-3 rounded-lg transition-all duration-300 group font-['Kanit'] text-left ${
                   isActive
                     ? 'bg-gradient-to-r from-[#990000]/40 to-transparent border-l-4 border-[#FF0000] text-white pl-5 shadow-[0_0_15px_rgba(153,0,0,0.3)]'
                     : 'text-[#F2F4F6]/60 hover:bg-[#2E0505] hover:text-[#FF0000] hover:pl-5'
                 }`}
               >
-                <item.icon size={20} className={isActive ? 'text-[#FF0000]' : 'text-[#F2F4F6]/50 group-hover:text-[#FF0000]'} />
-                <span className="font-medium">{item.label}</span>
+                <item.icon size={20} className={`shrink-0 ${isActive ? 'text-[#FF0000]' : 'text-[#F2F4F6]/50 group-hover:text-[#FF0000]'}`} />
+                {!isCollapsed && <span className="font-medium whitespace-nowrap">{label}</span>}
               </button>
             );
           })}
@@ -112,21 +125,28 @@ const AdminLayout = ({ children, breadcrumb = 'ศูนย์บริหาร
 
         {/* Bottom actions */}
         <div className="p-4 border-t border-[#990000]/30 space-y-1">
-          {/* ── ปุ่มกลับคลังสินค้าแอดมิน ── */}
+          {/* ── Admin Dashboard Home ── */}
           <button
             onClick={() => navigate('/admin')}
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-[#1a0000] hover:text-white transition text-[#F2F4F6]/40 border border-transparent hover:border-[#990000]/30 group"
+            title={isCollapsed ? t('adminHome') : ""}
+            className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-4 py-3 rounded-xl transition shadow-lg ${
+              location.pathname === '/admin' 
+              ? 'bg-[#990000] text-white border border-[#FF0000]/50' 
+              : 'hover:bg-[#2E0505] text-[#F2F4F6]/60 border border-transparent hover:border-[#990000]/30'
+            } group`}
           >
-            <Home size={18} className="text-[#F2F4F6]/30 group-hover:text-[#FF0000] transition" />
-            <span className="font-['Kanit'] text-sm">กลับหน้าหลัก (Admin)</span>
+            <Home size={18} className={`shrink-0 ${location.pathname === '/admin' ? 'text-white' : 'text-[#F2F4F6]/30 group-hover:text-[#FF0000]'} transition`} />
+            {!isCollapsed && <span className="font-['Kanit'] text-sm font-semibold">{t('adminHome')}</span>}
           </button>
-          {/* ── Logout ── */}
+
+          {/* ── Back to Site Home ── */}
           <button
-            onClick={() => navigate('/login')}
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-[#990000]/20 hover:text-[#FF0000] transition text-[#F2F4F6]/40 border border-transparent hover:border-[#990000]/50 group"
+            onClick={() => navigate('/')}
+            title={isCollapsed ? t('backToHome') : ""}
+            className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-4 py-2.5 rounded-lg hover:bg-white/5 text-[#F2F4F6]/30 hover:text-[#F2F4F6]/70 transition group`}
           >
-            <LogOut size={18} className="text-[#F2F4F6]/30 group-hover:text-[#FF0000] transition" />
-            <span className="font-['Orbitron'] tracking-wide text-sm">Logout</span>
+            <Package size={16} className="shrink-0 group-hover:text-[#FF0000] transition" />
+            {!isCollapsed && <span className="font-['Kanit'] text-xs uppercase tracking-tighter">{t('backToHome')}</span>}
           </button>
         </div>
       </aside>
@@ -140,14 +160,14 @@ const AdminLayout = ({ children, breadcrumb = 'ศูนย์บริหาร
               onClick={() => navigate('/')}
               className="flex items-center gap-1.5 text-xs text-[#F2F4F6]/40 hover:text-[#FF0000] bg-white/5 hover:bg-[#2E0505] border border-white/10 hover:border-[#990000]/50 px-3 py-1.5 rounded-lg transition font-['Kanit']"
             >
-              <Home size={13} /> หน้าหลัก
+              <Home size={13} /> {t('home')}
             </button>
             <span className="text-[#F2F4F6]/20 text-xs">/</span>
             <span className="text-[#FF0000] text-xs font-bold font-['Kanit']">{breadcrumb}</span>
           </div>
           <div className="flex items-center gap-3">
             <div className="w-7 h-7 rounded-full bg-[#2E0505] flex items-center justify-center text-xs font-bold text-[#FF0000] border border-[#990000]">AD</div>
-            <span className="text-xs text-[#F2F4F6]/60 font-['Kanit']">ผู้ดูแลระบบ</span>
+            <span className="text-xs text-[#F2F4F6]/60 font-['Kanit']">{language === 'TH' ? 'ผู้ดูแลระบบ' : 'Administrator'}</span>
           </div>
         </header>
 

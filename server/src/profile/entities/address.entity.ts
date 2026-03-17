@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 // Import User Entity จากโฟลเดอร์ users ของคุณ
-import { User } from '../../users/user.entity'; 
+import { User } from '../../users/entities/user.entity'; 
 
 @Entity('addresses')
 export class Address {

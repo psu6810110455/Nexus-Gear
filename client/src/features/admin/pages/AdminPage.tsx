@@ -331,7 +331,7 @@ function AdminPage() {
   });
 
   return (
-    <AdminLayout breadcrumb="ศูนย์บริหารสินค้า" onCategoryClick={() => setShowCategoryManager(true)}>
+    <AdminLayout breadcrumb="ศูนย์บริหารสินค้า">
 
       {/* ── Toast ── */}
       {toast && (
@@ -400,60 +400,63 @@ function AdminPage() {
         </div>
 
         {/* Table */}
-        <table className="w-full text-left text-[#F2F4F6]/70">
-          <thead>
-            <tr className="border-b border-[#990000]/30 text-xs uppercase bg-[#2E0505]/50 font-['Orbitron']">
-              <th className="py-3 pl-4 rounded-tl-lg text-[#FF0000]">Product</th>
-              <th className="text-[#FF0000]">Category</th>
-              <th className="text-[#FF0000]">Price</th>
-              <th className="text-[#FF0000]">Stock</th>
-              <th className="text-right pr-4 rounded-tr-lg text-[#FF0000]">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr><td colSpan={5} className="text-center py-16 text-[#F2F4F6]/30 font-['Kanit']">กำลังโหลด...</td></tr>
-            ) : filtered.length === 0 ? (
-              <tr><td colSpan={5} className="text-center py-16 text-[#F2F4F6]/30 font-['Kanit']">ไม่พบสินค้า</td></tr>
-            ) : (
-              filtered.map((p) => (
-                <tr key={p.id} className="border-b border-[#990000]/20 hover:bg-[#2E0505]/30 transition group">
-                  <td className="py-4 pl-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-black rounded border border-[#990000]/50 flex items-center justify-center overflow-hidden">
-                        <img src={p.imageUrl || 'https://dummyimage.com/50x50/000/fff'} alt="" className="w-full h-full object-contain p-1"
-                          onError={(e) => { e.currentTarget.src = 'https://dummyimage.com/50x50/000/fff'; }} />
+        {/* Table Container */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-[#F2F4F6]/70 min-w-[900px]">
+            <thead>
+              <tr className="border-b border-[#990000]/30 text-xs uppercase bg-[#2E0505]/50 font-['Orbitron']">
+                <th className="py-3 pl-4 rounded-tl-lg text-[#FF0000]">Product</th>
+                <th className="text-[#FF0000]">Category</th>
+                <th className="text-[#FF0000]">Price</th>
+                <th className="text-[#FF0000]">Stock</th>
+                <th className="text-right pr-4 rounded-tr-lg text-[#FF0000]">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan={5} className="text-center py-16 text-[#F2F4F6]/30 font-['Kanit']">กำลังโหลด...</td></tr>
+              ) : filtered.length === 0 ? (
+                <tr><td colSpan={5} className="text-center py-16 text-[#F2F4F6]/30 font-['Kanit']">ไม่พบสินค้า</td></tr>
+              ) : (
+                filtered.map((p) => (
+                  <tr key={p.id} className="border-b border-[#990000]/20 hover:bg-[#2E0505]/30 transition group">
+                    <td className="py-4 pl-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-black rounded border border-[#990000]/50 flex items-center justify-center overflow-hidden text-center">
+                          <img src={p.imageUrl || 'https://dummyimage.com/50x50/000/fff'} alt="" className="max-w-full max-h-full object-contain p-1"
+                            onError={(e) => { e.currentTarget.src = 'https://dummyimage.com/50x50/000/fff'; }} />
+                        </div>
+                        <span className="font-bold text-[#F2F4F6] font-['Kanit']">{p.name} {p.isHidden && <span className="text-xs bg-red-500/20 text-red-500 px-2 py-0.5 rounded-full ml-2">ซ่อนอยู่</span>}</span>
                       </div>
-                      <span className="font-bold text-[#F2F4F6] font-['Kanit']">{p.name} {p.isHidden && <span className="text-xs bg-red-500/20 text-red-500 px-2 py-0.5 rounded-full ml-2">ซ่อนอยู่</span>}</span>
-                    </div>
-                  </td>
-                  <td><span className="bg-[#000000] px-2 py-1 rounded text-xs border border-[#990000]/30 font-['Kanit']">
-                    {typeof p.category === 'object' ? (p.category as Category)?.name || '—' : p.category || '—'}
-                  </span></td>
-                  <td className="font-['Orbitron'] text-[#FF0000] font-bold">฿{Number(p.price).toLocaleString()}</td>
-                  <td>
-                    <span className={`px-2 py-1 rounded text-xs font-bold font-['Kanit'] ${
-                      (p.stock ?? 0) === 0 ? 'text-red-400 bg-red-500/10 border border-red-500/20'
-                      : (p.stock ?? 0) < 10 ? 'text-yellow-400 bg-yellow-500/10 border border-yellow-500/20'
-                      : 'text-green-400 bg-green-500/10 border border-green-500/20'
-                    }`}>
-                      {(p.stock ?? 0) === 0 ? 'Out of Stock' : p.stock}
-                    </span>
-                  </td>
-                  <td className="text-right pr-4">
-                    <div className="flex justify-end gap-2">
-                      <button onClick={() => handleToggleHide(p)} className="p-2 bg-[#252525] hover:bg-yellow-500/20 text-yellow-400 rounded-lg transition border border-yellow-500/20" title={p.isHidden ? "แสดงสินค้า" : "ซ่อนสินค้า"}>
-                        {p.isHidden ? <Eye size={16} /> : <EyeOff size={16} />}
-                      </button>
-                      <button onClick={() => openEditForm(p)} className="p-2 bg-[#252525] hover:bg-blue-500/20 text-blue-400 rounded-lg transition border border-blue-500/20" title="แก้ไข"><Edit size={16} /></button>
-                      <button onClick={() => setDeleteConfirm(p.id)} className="p-2 bg-[#252525] hover:bg-red-500/20 text-[#FF0000] rounded-lg transition border border-red-500/20" title="ลบ"><Trash2 size={16} /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+                    </td>
+                    <td><span className="bg-[#000000] px-2 py-1 rounded text-xs border border-[#990000]/30 font-['Kanit']">
+                      {typeof p.category === 'object' ? (p.category as Category)?.name || '—' : p.category || '—'}
+                    </span></td>
+                    <td className="font-['Orbitron'] text-[#FF0000] font-bold">฿{Number(p.price).toLocaleString()}</td>
+                    <td>
+                      <span className={`px-2 py-1 rounded text-xs font-bold font-['Kanit'] ${
+                        (p.stock ?? 0) === 0 ? 'text-red-400 bg-red-500/10 border border-red-500/20'
+                        : (p.stock ?? 0) < 10 ? 'text-yellow-400 bg-yellow-500/10 border border-yellow-500/20'
+                        : 'text-green-400 bg-green-500/10 border border-green-500/20'
+                      }`}>
+                        {(p.stock ?? 0) === 0 ? 'Out of Stock' : p.stock}
+                      </span>
+                    </td>
+                    <td className="text-right pr-4">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => handleToggleHide(p)} className="p-2 bg-[#252525] hover:bg-yellow-500/20 text-yellow-400 rounded-lg transition border border-yellow-500/20" title={p.isHidden ? "แสดงสินค้า" : "ซ่อนสินค้า"}>
+                          {p.isHidden ? <Eye size={16} /> : <EyeOff size={16} />}
+                        </button>
+                        <button onClick={() => openEditForm(p)} className="p-2 bg-[#252525] hover:bg-blue-500/20 text-blue-400 rounded-lg transition border border-blue-500/20" title="แก้ไข"><Edit size={16} /></button>
+                        <button onClick={() => setDeleteConfirm(p.id)} className="p-2 bg-[#252525] hover:bg-red-500/20 text-[#FF0000] rounded-lg transition border border-red-500/20" title="ลบ"><Trash2 size={16} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </AdminLayout>
   );

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { X, MapPin, Truck, CreditCard, QrCode, ZoomIn } from "lucide-react";
-import { getServerUrl } from "../../../shared/services/api";
+import { getServerUrl } from "../../../../shared/services/api";
 
 import DeliveryTimeline, { getCarrier } from "../shared/DeliveryTimeline";
 import OrderItemList from "../shared/OrderItemList";

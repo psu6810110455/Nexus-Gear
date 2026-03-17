@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Globe, ChevronLeft, ChevronRight, ShoppingCart } from 'lucide-react';
 import { getServerUrl } from '../../../shared/services/api';
+import { useLanguage } from '../../../shared/context/LanguageContext';
 import axios from 'axios';
 import { homeStyles } from '../../../styles/home.styles';
 
@@ -20,18 +21,17 @@ const MOCK_PRODUCTS: Product[] = [
   { id: 7, name: 'Finger Sleeve',  price: 190,   tagline: 'Swipe Faster. Win More.',     imageUrl: 'https://m.media-amazon.com/images/I/61+y+w+pXIL._AC_SL1500_.jpg' },
   { id: 8, name: 'Cooler Fan',     price: 990,   tagline: 'Stay Cool. Stay Sharp.',      imageUrl: 'https://m.media-amazon.com/images/I/61t-XhJ-xRL.jpg' },
 ];
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 const formatImageUrl = (url?: string) => {
   if (!url) return 'https://dummyimage.com/400x400/111/dc2626?text=NEXUS';
   if (url.startsWith('http')) return url;
-  return `${API_URL}${url}`;
+  return getServerUrl(url);
 };
 
 function HomePage() {
   const navigate = useNavigate();
+  const { language, setLanguage } = useLanguage();
   const [showWelcome, setShowWelcome]     = useState(false);
   const [products, setProducts]           = useState<Product[]>(MOCK_PRODUCTS);
-  const [language, setLanguage]           = useState<'TH' | 'EN'>('TH');
   const [showLangModal, setShowLangModal] = useState(false);
   const [activeSlide, setActiveSlide]     = useState(0);
   const [isAnimating, setIsAnimating]     = useState(false);
@@ -39,7 +39,7 @@ function HomePage() {
 
   useEffect(() => {
     if (!sessionStorage.getItem('visitedNexusGear')) setShowWelcome(true);
-    axios.get(`${API_URL}/products`)
+    axios.get(getServerUrl('/products'))
       .then(res => { if (res.data?.length > 0) { const s = [...res.data].sort(() => 0.5 - Math.random()); setProducts(s.slice(0, 8)); } })
       .catch(() => setProducts(MOCK_PRODUCTS.slice(0, 8)));
   }, []);
@@ -64,7 +64,7 @@ function HomePage() {
   const next = () => goTo(p => (p + 1) % products.length);
   const handleEnterSite = () => { sessionStorage.setItem('visitedNexusGear', 'true'); setShowWelcome(false); };
 
-  const t = {
+  const translations = {
     TH: { promo: 'สินค้าแนะนำ', viewAll: 'ดูสินค้าทั้งหมด', select: 'กรุณาเลือกภาษา', learnMore: 'เรียนรู้เพิ่มเติม', buy: 'ซื้อเลย' },
     EN: { promo: 'FEATURED PRODUCTS', viewAll: 'VIEW ALL PRODUCTS', select: 'SELECT YOUR LANGUAGE', learnMore: 'LEARN MORE', buy: 'BUY NOW' },
   }[language];
@@ -100,7 +100,7 @@ function HomePage() {
             <button className="modal-close" onClick={() => setShowLangModal(false)}>✕</button>
             <Globe style={{ width: 36, height: 36, color: 'var(--color-primary)', margin: '0 auto 1rem', display: 'block' }} />
             <div style={{ fontFamily: 'Orbitron', fontWeight: 700, fontSize: '1rem', letterSpacing: '0.2em', color: '#fff', marginBottom: '0.35rem' }}>LANGUAGE</div>
-            <div style={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.78rem', marginBottom: '1.5rem' }}>{t.select}</div>
+            <div style={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.78rem', marginBottom: '1.5rem' }}>{translations.select}</div>
             <button className={`lang-btn ${language === 'TH' ? 'active' : ''}`} style={{ fontFamily: 'Kanit' }} onClick={() => { setLanguage('TH'); setShowLangModal(false); }}>🇹🇭 ภาษาไทย</button>
             <button className={`lang-btn ${language === 'EN' ? 'active' : ''}`} style={{ fontFamily: 'Orbitron', fontSize: '0.78rem', letterSpacing: '0.15em' }} onClick={() => { setLanguage('EN'); setShowLangModal(false); }}>🇬🇧 ENGLISH</button>
           </div>
@@ -120,8 +120,8 @@ function HomePage() {
             <p className={`hero-tagline ${isAnimating ? 'slide-exit' : 'slide-enter'}`}>{current.tagline}</p>
             <div className="hero-price">฿{Number(current.price).toLocaleString()}</div>
             <div className="hero-btns">
-              <button className="btn-hero-primary" onClick={() => navigate(`/products/${current.id}`)}>{t.buy}</button>
-              <button className="btn-hero-ghost" onClick={() => navigate(`/products/${current.id}`)}>{t.learnMore}</button>
+              <button className="btn-hero-primary" onClick={() => navigate(`/products/${current.id}`)}>{translations.buy}</button>
+              <button className="btn-hero-ghost" onClick={() => navigate(`/products/${current.id}`)}>{translations.learnMore}</button>
             </div>
           </div>
           <div className="hero-image-side">
@@ -146,7 +146,7 @@ function HomePage() {
       {/* Featured */}
       <section style={{ padding: '5rem 5vw' }}>
         <div className="section-label">— {language === 'TH' ? 'คัดสรรมาเพื่อคุณ' : 'HAND PICKED'} —</div>
-        <h2 className="section-title">{t.promo}</h2>
+        <h2 className="section-title">{translations.promo}</h2>
         <div className="product-grid">
           {products.map(product => (
             <div key={product.id} className="product-tile" onClick={() => navigate(`/products/${product.id}`)}>
@@ -168,7 +168,7 @@ function HomePage() {
             style={{ fontFamily: 'Orbitron', fontWeight: 700, fontSize: '0.72rem', letterSpacing: '0.2em', padding: '13px 48px', background: 'transparent', color: 'rgba(255,255,255,0.55)', border: '1px solid var(--color-border)', borderRadius: '4px', cursor: 'pointer', transition: 'all 0.3s' }}
             onMouseEnter={e => { const b = e.currentTarget; b.style.borderColor = 'var(--color-primary)'; b.style.color = '#fff'; b.style.background = 'rgba(220,38,38,0.1)'; }}
             onMouseLeave={e => { const b = e.currentTarget; b.style.borderColor = 'var(--color-border)'; b.style.color = 'rgba(255,255,255,0.55)'; b.style.background = 'transparent'; }}
-          >{t.viewAll} →</button>
+          >{translations.viewAll} →</button>
         </div>
       </section>
 

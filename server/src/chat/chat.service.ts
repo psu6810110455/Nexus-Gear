@@ -65,4 +65,11 @@ export class ChatService {
     // Sort by last message time
     return sessions.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
+
+  async getMessageById(id: number): Promise<ChatMessage | null> {
+    return await this.chatRepository.findOne({
+      where: { id },
+      relations: ['user'],
+    });
+  }
 }

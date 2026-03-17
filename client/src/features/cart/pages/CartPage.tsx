@@ -119,7 +119,7 @@ export default function CartPage({ onNavigate }: CartProps) {
   const selectedCartItems = cartItems.filter(i => selectedItems.includes(i.id));
   const subtotal = selectedCartItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const totalSaved = selectedCartItems.reduce((sum, i) => sum + ((Number(i.originalPrice) || i.price) - i.price) * i.quantity, 0);
-  const shippingFee = selectedCartItems.length > 0 ? (subtotal >= 1500 ? 0 : 150) : 0;
+  const shippingFee = selectedCartItems.length > 0 ? (subtotal >= 999 ? 0 : 150) : 0;
   
   let discountAmount = 0;
   if (appliedCoupon && subtotal > 0) {

@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../../../shared/context/LanguageContext';
 import logoImg from '../../../assets/logo.png';
 
 const Footer = () => {
+  const { t } = useLanguage();
   return (
     <>
       <style>{`
@@ -68,25 +70,25 @@ const Footer = () => {
               <img src={logoImg} alt="" style={{ height:32 }} />
               <span className="ft-brand-name">NEXUS<span>GEAR</span></span>
             </Link>
-            <p className="ft-brand-desc">อุปกรณ์เกมมิ่งพรีเมียมสำหรับนักรบดิจิตอล ยกระดับทุกสมรภูมิด้วยเกียร์ระดับ Pro</p>
+            <p className="ft-brand-desc">{t('footerDesc')}</p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <div className="ft-col-title">Quick Links</div>
-            <Link to="/" className="ft-link">หน้าแรก</Link>
-            <Link to="/shop" className="ft-link">สินค้าทั้งหมด</Link>
-            <Link to="/cart" className="ft-link">ตะกร้าสินค้า</Link>
-            <Link to="/profile" className="ft-link">โปรไฟล์</Link>
+            <div className="ft-col-title">{t('quickLinks')}</div>
+            <Link to="/" className="ft-link">{t('home')}</Link>
+            <Link to="/shop" className="ft-link">{t('shop')}</Link>
+            <Link to="/cart" className="ft-link">{t('cart')}</Link>
+            <Link to="/profile" className="ft-link">{t('profile')}</Link>
           </div>
 
           {/* Support */}
           <div>
-            <div className="ft-col-title">Support</div>
-            <Link to="/forgot-password" className="ft-link">ลืมรหัสผ่าน</Link>
-            <span className="ft-link" style={{ cursor:'default' }}>นโยบายการคืนสินค้า</span>
-            <span className="ft-link" style={{ cursor:'default' }}>ติดต่อเรา</span>
-            <span className="ft-link" style={{ cursor:'default' }}>FAQ</span>
+            <div className="ft-col-title">{t('support')}</div>
+            <Link to="/forgot-password" className="ft-link">{t('forgotPassword')}</Link>
+            <span className="ft-link" style={{ cursor:'default' }}>{t('returnPolicy')}</span>
+            <span className="ft-link" style={{ cursor:'default' }}>{t('contact')}</span>
+            <span className="ft-link" style={{ cursor:'default' }}>{t('faq')}</span>
           </div>
 
           {/* Contact */}
@@ -99,7 +101,7 @@ const Footer = () => {
         </div>
 
         <div className="ft-bottom">
-          <span className="ft-copy">© {new Date().getFullYear()} NEXUS GEAR — ALL RIGHTS RESERVED</span>
+          <span className="ft-copy">© {new Date().getFullYear()} NEXUS GEAR — {t('allRightsReserved')}</span>
           <div className="ft-socials">
             <div className="ft-social-dot" title="Facebook">f</div>
             <div className="ft-social-dot" title="X / Twitter">𝕏</div>

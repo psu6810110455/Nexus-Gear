@@ -1,5 +1,6 @@
 // src/users/entities/user.entity.ts
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { Address } from '../../profile/entities/address.entity';
 
 @Entity('users') // กำหนดชื่อตารางในฐานข้อมูล
 export class User {
@@ -31,6 +32,15 @@ export class User {
 
   @Column({ nullable: true })
   bank_account: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  resetPasswordToken: string | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  resetPasswordExpires: Date | null;
+
+  @OneToMany(() => Address, (address) => address.user, { cascade: true })
+  addresses: Address[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

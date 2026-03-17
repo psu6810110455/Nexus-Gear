@@ -1,19 +1,4 @@
 # --- Dependencies ---
-node_modules/
-npm-debug.log
-yarn-error.log
-venv/
-__pycache__/
-
-# --- Secrets (ห้ามเอาขึ้นเด็ดขาด) ---
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-*.pem
-*.key
-
 # --- Build Outputs ---
 dist/
 build/
@@ -36,6 +21,7 @@ __pycache__/
 # --- Secrets (ห้ามเอาขึ้นเด็ดขาด) ---
 .env
 .env.local
+.env.production
 .env.development.local
 .env.test.local
 .env.production.local

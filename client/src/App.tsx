@@ -107,13 +107,16 @@ function AppContent() {
 }
 
 import { Toaster } from 'sonner';
+import { LanguageProvider } from './shared/context/LanguageContext';
 
 function App() {
   return (
-    <AuthProvider>
-      <Toaster richColors position="top-center" toastOptions={{ duration: 2000 }} visibleToasts={1} />
-      <AppContent />
-    </AuthProvider>
+    <LanguageProvider>
+      <AuthProvider>
+        <Toaster richColors position="top-center" toastOptions={{ duration: 2000 }} visibleToasts={1} />
+        <AppContent />
+      </AuthProvider>
+    </LanguageProvider>
   );
 }
 

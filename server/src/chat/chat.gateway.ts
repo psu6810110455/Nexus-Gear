@@ -71,7 +71,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(`Received message from ${data.sender} for user ${data.userId}: ${data.message}`);
     const savedMessage = await this.chatService.createMessage(data.userId, data.sender, data.message, data.metadata);
     
-    const normalizedMessage = this.normalizeMsg(savedMessage);
+    // Fetch with user relation so admin UI has user details (name, picture)
+    const messageWithUser = await this.chatService.getMessageById(savedMessage.id);
+    const normalizedMessage = this.normalizeMsg(messageWithUser || savedMessage);
+    
     // Broadcast to user room and admin room (if any)
     this.server.to(`user_${data.userId}`).emit('newMessage', normalizedMessage);
     this.server.emit('adminNewMessage', normalizedMessage); // For admin dashboard

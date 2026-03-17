@@ -182,136 +182,138 @@ const AdminStockPage = () => {
 
       {/* ── Table ── */}
       <div className="bg-[#000000]/60 border border-[#990000]/20 rounded-2xl overflow-hidden backdrop-blur-md">
-        <table className="w-full text-left">
-          <thead>
-            <tr className="border-b border-[#990000]/30 bg-[#2E0505]/50 font-['Orbitron'] text-xs uppercase">
-              <th className="py-4 pl-6 text-[#FF0000] rounded-tl-2xl">สินค้า</th>
-              <th className="py-4 px-4 text-[#FF0000]">หมวดหมู่</th>
-              <th className="py-4 px-4 text-[#FF0000] text-center">สถานะ</th>
-              <th className="py-4 px-4 text-[#FF0000] text-center">สต็อกปัจจุบัน</th>
-              <th className="py-4 pr-6 text-[#FF0000] text-right rounded-tr-2xl">อัปเดตสต็อก</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              [...Array(6)].map((_, i) => (
-                <tr key={i} className="border-b border-[#990000]/10 animate-pulse">
-                  <td className="py-4 pl-6">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-[#2E0505]/50 rounded-lg" />
-                      <div className="h-4 w-40 bg-[#2E0505]/50 rounded" />
-                    </div>
-                  </td>
-                  <td className="py-4 px-4"><div className="h-4 w-24 bg-[#2E0505]/50 rounded" /></td>
-                  <td className="py-4 px-4 text-center"><div className="h-6 w-20 bg-[#2E0505]/50 rounded-full mx-auto" /></td>
-                  <td className="py-4 px-4 text-center"><div className="h-6 w-12 bg-[#2E0505]/50 rounded mx-auto" /></td>
-                  <td className="py-4 pr-6 text-right"><div className="h-8 w-32 bg-[#2E0505]/50 rounded ml-auto" /></td>
-                </tr>
-              ))
-            ) : filtered.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="py-20 text-center">
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="w-16 h-16 bg-[#2E0505]/30 rounded-full flex items-center justify-center border border-[#990000]/20">
-                      <BarChart3 size={28} className="text-[#F2F4F6]/20" />
-                    </div>
-                    <span className="text-[#F2F4F6]/30 font-['Kanit']">ไม่พบสินค้า</span>
-                  </div>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left min-w-[900px]">
+            <thead>
+              <tr className="border-b border-[#990000]/30 bg-[#2E0505]/50 font-['Orbitron'] text-xs uppercase">
+                <th className="py-4 pl-6 text-[#FF0000] rounded-tl-2xl">สินค้า</th>
+                <th className="py-4 px-4 text-[#FF0000]">หมวดหมู่</th>
+                <th className="py-4 px-4 text-[#FF0000] text-center">สถานะ</th>
+                <th className="py-4 px-4 text-[#FF0000] text-center">สต็อกปัจจุบัน</th>
+                <th className="py-4 pr-6 text-[#FF0000] text-right rounded-tr-2xl">อัปเดตสต็อก</th>
               </tr>
-            ) : (
-              filtered.map((p) => {
-                const stock   = p.stock ?? 0;
-                const st      = getStockStatus(stock);
-                const isEdit  = editing[p.id] !== undefined;
-
-                const stockBadge =
-                  st === 'out' ? 'text-red-400 bg-red-500/10 border-red-500/20' :
-                  st === 'low' ? 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20' :
-                                 'text-green-400 bg-green-500/10 border-green-500/20';
-
-                const stockLabel =
-                  st === 'out' ? 'หมดสต็อก' :
-                  st === 'low' ? 'สต็อกต่ำ' : 'ปกติ';
-
-                return (
-                  <tr key={p.id} className="border-b border-[#990000]/10 hover:bg-[#2E0505]/20 transition group">
-                    {/* Product */}
+            </thead>
+            <tbody>
+              {loading ? (
+                [...Array(6)].map((_, i) => (
+                  <tr key={i} className="border-b border-[#990000]/10 animate-pulse">
                     <td className="py-4 pl-6">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center overflow-hidden border border-[#990000]/30 shrink-0">
-                          <img
-                            src={p.imageUrl || 'https://dummyimage.com/40x40/000/fff?text=N'}
-                            alt={p.name}
-                            className="max-w-full max-h-full object-contain"
-                            onError={(e) => { e.currentTarget.src = 'https://dummyimage.com/40x40/000/fff?text=N'; }}
-                          />
-                        </div>
-                        <span className="text-sm text-[#F2F4F6] font-bold font-['Kanit'] line-clamp-1 group-hover:text-white transition">
-                          {p.name}
-                        </span>
+                        <div className="w-10 h-10 bg-[#2E0505]/50 rounded-lg" />
+                        <div className="h-4 w-40 bg-[#2E0505]/50 rounded" />
                       </div>
                     </td>
-                    {/* Category */}
-                    <td className="py-4 px-4">
-                      <span className="text-xs bg-[#000000] px-2 py-1 rounded border border-[#990000]/30 font-['Kanit'] text-[#F2F4F6]/60">
-                        {getCategoryName(p)}
-                      </span>
-                    </td>
-                    {/* Status */}
-                    <td className="py-4 px-4 text-center">
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold border font-['Kanit'] ${stockBadge}`}>
-                        {stockLabel}
-                      </span>
-                    </td>
-                    {/* Current stock */}
-                    <td className="py-4 px-4 text-center">
-                      <span className={`text-xl font-['Orbitron'] font-bold ${
-                        st === 'out' ? 'text-red-400' : st === 'low' ? 'text-yellow-400' : 'text-[#F2F4F6]'
-                      }`}>
-                        {stock}
-                      </span>
-                    </td>
-                    {/* Edit */}
-                    <td className="py-4 pr-6 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <input
-                          type="number"
-                          min={0}
-                          placeholder={String(stock)}
-                          value={editing[p.id] ?? ''}
-                          onChange={(e) => setEditing((prev) => ({ ...prev, [p.id]: e.target.value }))}
-                          className="w-20 bg-[#000000] border border-[#990000]/30 rounded-lg px-3 py-1.5 text-[#F2F4F6] text-sm text-center focus:border-[#FF0000] outline-none font-['Orbitron'] transition"
-                        />
-                        <button
-                          onClick={async () => {
-                            try {
-                              await updateProduct(p.id, { isHidden: !p.isHidden });
-                              setProducts(prev => prev.map(prod => prod.id === p.id ? { ...prod, isHidden: !p.isHidden } : prod));
-                              showToast(p.isHidden ? 'แสดงสินค้าสำเร็จ' : 'ซ่อนสินค้าสำเร็จ', true);
-                            } catch {
-                              showToast('เกิดข้อผิดพลาดในการซ่อน/แสดงสินค้า', false);
-                            }
-                          }}
-                          className={`px-3 py-1.5 border rounded-lg transition font-['Kanit'] text-xs font-bold flex items-center gap-1 ${p.isHidden ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/20' : 'bg-[#252525] border-[#990000]/30 text-[#F2F4F6]/50 hover:bg-yellow-500/20 hover:text-yellow-400'}`}
-                        >
-                          {p.isHidden ? 'ซ่อนอยู่' : 'แสดงอยู่'}
-                        </button>
-                        <button
-                          onClick={() => handleSaveStock(p)}
-                          disabled={!isEdit || saving === p.id}
-                          className="px-3 py-1.5 bg-[#990000] hover:bg-[#FF0000] disabled:opacity-30 disabled:cursor-not-allowed text-white text-xs font-bold rounded-lg transition font-['Kanit'] active:scale-95"
-                        >
-                          {saving === p.id ? '...' : 'บันทึก'}
-                        </button>
-                      </div>
-                    </td>
+                    <td className="py-4 px-4"><div className="h-4 w-24 bg-[#2E0505]/50 rounded" /></td>
+                    <td className="py-4 px-4 text-center"><div className="h-6 w-20 bg-[#2E0505]/50 rounded-full mx-auto" /></td>
+                    <td className="py-4 px-4 text-center"><div className="h-6 w-12 bg-[#2E0505]/50 rounded mx-auto" /></td>
+                    <td className="py-4 pr-6 text-right"><div className="h-8 w-32 bg-[#2E0505]/50 rounded ml-auto" /></td>
                   </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                ))
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-20 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-16 h-16 bg-[#2E0505]/30 rounded-full flex items-center justify-center border border-[#990000]/20">
+                        <BarChart3 size={28} className="text-[#F2F4F6]/20" />
+                      </div>
+                      <span className="text-[#F2F4F6]/30 font-['Kanit']">ไม่พบสินค้า</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((p) => {
+                  const stock   = p.stock ?? 0;
+                  const st      = getStockStatus(stock);
+                  const isEdit  = editing[p.id] !== undefined;
+
+                  const stockBadge =
+                    st === 'out' ? 'text-red-400 bg-red-500/10 border-red-500/20' :
+                    st === 'low' ? 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20' :
+                                   'text-green-400 bg-green-500/10 border-green-500/20';
+
+                  const stockLabel =
+                    st === 'out' ? 'หมดสต็อก' :
+                    st === 'low' ? 'สต็อกต่ำ' : 'ปกติ';
+
+                  return (
+                    <tr key={p.id} className="border-b border-[#990000]/10 hover:bg-[#2E0505]/20 transition group">
+                      {/* Product */}
+                      <td className="py-4 pl-6">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center overflow-hidden border border-[#990000]/30 shrink-0 text-center">
+                            <img
+                              src={p.imageUrl || 'https://dummyimage.com/40x40/000/fff?text=N'}
+                              alt={p.name}
+                              className="max-w-full max-h-full object-contain"
+                              onError={(e) => { e.currentTarget.src = 'https://dummyimage.com/40x40/000/fff?text=N'; }}
+                            />
+                          </div>
+                          <span className="text-sm text-[#F2F4F6] font-bold font-['Kanit'] line-clamp-1 group-hover:text-white transition">
+                            {p.name}
+                          </span>
+                        </div>
+                      </td>
+                      {/* Category */}
+                      <td className="py-4 px-4">
+                        <span className="text-xs bg-[#000000] px-2 py-1 rounded border border-[#990000]/30 font-['Kanit'] text-[#F2F4F6]/60">
+                          {getCategoryName(p)}
+                        </span>
+                      </td>
+                      {/* Status */}
+                      <td className="py-4 px-4 text-center">
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold border font-['Kanit'] ${stockBadge}`}>
+                          {stockLabel}
+                        </span>
+                      </td>
+                      {/* Current stock */}
+                      <td className="py-4 px-4 text-center">
+                        <span className={`text-xl font-['Orbitron'] font-bold ${
+                          st === 'out' ? 'text-red-400' : st === 'low' ? 'text-yellow-400' : 'text-[#F2F4F6]'
+                        }`}>
+                          {stock}
+                        </span>
+                      </td>
+                      {/* Edit */}
+                      <td className="py-4 pr-6 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <input
+                            type="number"
+                            min={0}
+                            placeholder={String(stock)}
+                            value={editing[p.id] ?? ''}
+                            onChange={(e) => setEditing((prev) => ({ ...prev, [p.id]: e.target.value }))}
+                            className="w-20 bg-[#000000] border border-[#990000]/30 rounded-lg px-3 py-1.5 text-[#F2F4F6] text-sm text-center focus:border-[#FF0000] outline-none font-['Orbitron'] transition"
+                          />
+                          <button
+                            onClick={async () => {
+                              try {
+                                await updateProduct(p.id, { isHidden: !p.isHidden });
+                                setProducts(prev => prev.map(prod => prod.id === p.id ? { ...prod, isHidden: !p.isHidden } : prod));
+                                showToast(p.isHidden ? 'แสดงสินค้าสำเร็จ' : 'ซ่อนสินค้าสำเร็จ', true);
+                              } catch {
+                                showToast('เกิดข้อผิดพลาดในการซ่อน/แสดงสินค้า', false);
+                              }
+                            }}
+                            className={`px-3 py-1.5 border rounded-lg transition font-['Kanit'] text-xs font-bold flex items-center gap-1 ${p.isHidden ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/20' : 'bg-[#252525] border-[#990000]/30 text-[#F2F4F6]/50 hover:bg-yellow-500/20 hover:text-yellow-400'}`}
+                          >
+                            {p.isHidden ? 'ซ่อนอยู่' : 'แสดงอยู่'}
+                          </button>
+                          <button
+                            onClick={() => handleSaveStock(p)}
+                            disabled={!isEdit || saving === p.id}
+                            className="px-3 py-1.5 bg-[#990000] hover:bg-[#FF0000] disabled:opacity-30 disabled:cursor-not-allowed text-white text-xs font-bold rounded-lg transition font-['Kanit'] active:scale-95"
+                          >
+                            {saving === p.id ? '...' : 'บันทึก'}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </AdminLayout>
   );

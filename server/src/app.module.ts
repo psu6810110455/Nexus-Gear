@@ -19,6 +19,7 @@ import { ProfileModule }    from './profile/profile.module';
 import { MailModule }       from './mail/mail.module';
 import { PaymentModule }    from './payment/payment.module';
 import { ChatModule }       from './chat/chat.module';
+import { CouponsModule }    from './coupons/coupons.module'; // ✨ เพิ่มใหม่
 
 @Global()
 @Module({
@@ -37,7 +38,6 @@ import { ChatModule }       from './chat/chat.module';
       database:         'ecommerce_db',
       autoLoadEntities: true,
       synchronize:      true,
-      timezone:         '+07:00',
     }),
     ProductsModule,
     AuthModule,
@@ -50,6 +50,7 @@ import { ChatModule }       from './chat/chat.module';
     MailModule,
     PaymentModule,
     ChatModule,
+    CouponsModule, // ✨ เพิ่มใหม่
   ],
   controllers: [AppController],
   providers: [

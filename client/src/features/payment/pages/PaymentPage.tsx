@@ -119,6 +119,12 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
       formData.append('shippingAddress', addressDetail);
       formData.append('paymentMethod',   payMethod || '');
 
+      // ✨ แนบข้อมูลคูปองส่วนลดไปกับ FormData
+      if (orderSummary?.coupon && orderSummary.coupon !== 'ไม่มี') {
+        formData.append('couponCode', orderSummary.coupon);
+        formData.append('discountAmount', String(orderSummary.discount));
+      }
+
       // ✨ ถ้า QR จ่ายผ่าน Stripe แล้ว → ส่ง intentId แทนสลิป
       if (isQrPaid && qrPaidIntentId) {
         formData.append('stripePaymentIntentId', qrPaidIntentId);
@@ -133,12 +139,13 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
       if (response.data.success) {
         setFinalOrderNum(response.data.orderNumber);
         localStorage.removeItem('checkoutSession');
-        setLoadingAction(false);
         setConfirmed(true);
         window.scrollTo(0, 0);
       }
     } catch (error: any) {
       toast.error(error.response?.data?.message || '❌ เกิดข้อผิดพลาดในการสั่งซื้อ กรุณาลองใหม่อีกครั้ง');
+    } finally {
+      // ✨ ย้าย setLoadingAction(false) มาไว้ตรงนี้ ทำงานเสมอไม่ว่าจะ Error หรือ Success
       setLoadingAction(false);
     }
   };
@@ -521,10 +528,15 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                         <dt className="text-[#F2F4F6]/50">ราคาสินค้า</dt>
                         <dd className="font-['Orbitron'] m-0">฿{fmt(orderSummary.subtotal)}</dd>
                       </div>
-                      <div className="flex justify-between text-sm text-[#FF0000]">
-                        <dt>ส่วนลดคูปอง ({orderSummary.coupon})</dt>
-                        <dd className="font-['Orbitron'] m-0">-฿{fmt(orderSummary.discount)}</dd>
-                      </div>
+
+                      {/* ✨ แสดงส่วนลดคูปองเฉพาะตอนที่มีส่วนลดมากกว่า 0 เท่านั้น */}
+                      {orderSummary.discount > 0 && (
+                        <div className="flex justify-between text-sm text-[#FF0000]">
+                          <dt>ส่วนลดคูปอง ({orderSummary.coupon})</dt>
+                          <dd className="font-['Orbitron'] m-0">-฿{fmt(orderSummary.discount)}</dd>
+                        </div>
+                      )}
+
                       <div className="flex justify-between text-sm">
                         <dt className="text-[#F2F4F6]/50">ค่าจัดส่ง</dt>
                         <dd className="text-green-400 font-bold m-0">ส่งฟรี</dd>

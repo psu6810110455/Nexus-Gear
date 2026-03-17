@@ -22,7 +22,7 @@ interface DeleteModalState {
 }
 
 export default function CartPage({ onNavigate }: CartProps) {
-  // ─── 1. STATE MANAGEMENT ───
+  // ─── 1. STATE MANAGEMENT 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [cartItems, setCartItems] = useState<CartItemType[]>([]);
   const [selectedItems, setSelectedItems] = useState<number[]>([]); 

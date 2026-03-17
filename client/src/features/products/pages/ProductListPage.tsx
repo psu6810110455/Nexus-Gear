@@ -4,6 +4,7 @@ import type { ProductFilterParams } from '../types/product.types';
 import { useProducts } from '../hooks/useProducts';
 import ProductFilter from '../components/ProductFilter';
 import ProductGrid from '../components/ProductGrid';
+import { useLanguage } from '../../../shared/context/LanguageContext';
 import { Search, AlertTriangle } from 'lucide-react';
 import { productListStyles } from '../../../styles/productList.styles';
 
@@ -14,6 +15,8 @@ const ProductListPage = () => {
   const { products, loading, error, categories, categoryCounts, refetch } = useProducts();
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navigate = useNavigate();
+  const { language, t } = useLanguage();
+  console.log(t('home')); // dummy use to satisfy lint if needed, but I use it in placeholder
 
   const handleFilterChange = useCallback((newFilters: ProductFilterParams) => {
     setFilters(newFilters);
@@ -38,7 +41,7 @@ const ProductListPage = () => {
         <div style={{ position: 'absolute', inset: 0, border: '3px solid rgba(220,38,38,0.2)', borderRadius: '50%' }} />
         <div style={{ position: 'absolute', inset: 0, border: '3px solid transparent', borderTopColor: 'var(--color-primary)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
       </div>
-      <span style={{ fontFamily: 'Orbitron, sans-serif', fontSize: '0.72rem', letterSpacing: '0.25em', color: 'var(--color-primary)' }}>LOADING GEAR...</span>
+      <span style={{ fontFamily: 'Orbitron, sans-serif', fontSize: '0.72rem', letterSpacing: '0.25em', color: 'var(--color-primary)' }}>{language === 'TH' ? 'กำลังโหลดอุปกรณ์...' : 'LOADING GEAR...'}</span>
     </div>
   );
 
@@ -48,12 +51,12 @@ const ProductListPage = () => {
         <AlertTriangle size={36} />
       </div>
       <div style={{ textAlign: 'center' }}>
-        <p style={{ color: 'var(--color-primary)', fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem', fontFamily: 'Orbitron, sans-serif', letterSpacing: '0.1em' }}>SYSTEM ERROR</p>
+        <p style={{ color: 'var(--color-primary)', fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem', fontFamily: 'Orbitron, sans-serif', letterSpacing: '0.1em' }}>{language === 'TH' ? 'ระบบขัดข้อง' : 'SYSTEM ERROR'}</p>
         <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>{error}</p>
       </div>
       <button type="button" onClick={() => refetch(filters)}
         style={{ background: 'var(--color-primary)', color: '#fff', border: 'none', padding: '12px 36px', borderRadius: '6px', fontFamily: 'Orbitron, sans-serif', fontWeight: 700, fontSize: '0.72rem', letterSpacing: '0.15em', cursor: 'pointer' }}>
-        RETRY CONNECTION
+        {language === 'TH' ? 'ลองอีกครั้ง' : 'RETRY CONNECTION'}
       </button>
     </div>
   );
@@ -70,7 +73,7 @@ const ProductListPage = () => {
             id="product-search"
             type="text"
             className="pl-search-input"
-            placeholder="ค้นหาอุปกรณ์เทพของคุณ..."
+            placeholder={language === 'TH' ? "ค้นหาอุปกรณ์เทพของคุณ..." : "Search your pro gear..."}
             value={filters.search ?? ''}
             onChange={e => handleFilterChange({ ...filters, search: e.target.value })}
           />

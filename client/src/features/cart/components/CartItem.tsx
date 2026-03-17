@@ -1,5 +1,6 @@
 import { Trash2, Minus, Plus, Square, CheckSquare } from 'lucide-react';
 import type { CartItem as CartItemType } from '../types/cart.types'; 
+import { useLanguage } from '../../../shared/context/LanguageContext';
 
 interface CartItemProps {
   item: CartItemType;
@@ -10,6 +11,8 @@ interface CartItemProps {
 }
 
 export default function CartItem({ item, isSelected, onToggleSelect, onUpdateQty, onDelete }: CartItemProps) {
+  const { language } = useLanguage();
+  const fmt = (n: number) => n.toLocaleString(language === 'TH' ? 'th-TH' : 'en-US');
   return (
     <article className={`bg-[#000000]/60 border ${isSelected ? 'border-[#FF0000]/60 bg-[#2E0505]/20' : 'border-[#990000]/20'} backdrop-blur-xl rounded-2xl p-5 transition-all duration-300 relative overflow-hidden flex items-start gap-4`}>
       
@@ -42,12 +45,12 @@ export default function CartItem({ item, isSelected, onToggleSelect, onUpdateQty
               {/* ✨ จุดที่แก้ไข 1: เช็คว่ามี originalPrice ก่อน และแปลงเป็น Number */}
               {item.originalPrice && Number(item.originalPrice) !== Number(item.price) && (
                 <span className="text-xs text-[#F2F4F6]/30 line-through font-['Kanit']">
-                  ฿{Number(item.originalPrice).toLocaleString('th-TH')}
+                  ฿{fmt(Number(item.originalPrice))}
                 </span>
               )}
               {/* ✨ จุดที่แก้ไข 2: แปลง price เป็น Number เสมอ ป้องกันค่าว่างด้วย || 0 */}
               <span className="text-xl font-['Orbitron'] font-bold text-[#FF0000] drop-shadow-[0_0_5px_rgba(255,0,0,0.3)]">
-                ฿{(Number(item.price) || 0).toLocaleString('th-TH')}
+                ฿{fmt(Number(item.price) || 0)}
               </span>
             </div>
             

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { SlidersHorizontal, ChevronDown, ChevronUp } from 'lucide-react';
 import type { ProductFilterParams } from '../types/product.types';
+import { useLanguage } from '../../../shared/context/LanguageContext';
 
 interface ProductFilterProps {
   categories: string[];
@@ -18,10 +19,27 @@ const ProductFilter = ({
   onReset,
 }: ProductFilterProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const { t } = useLanguage();
 
   const handleCategoryClick = (cat: string) => {
     onFilterChange({ ...filters, category: cat });
     setIsOpen(false); // ปิด filter หลังเลือกหมวดหมู่บนมือถือ
+  };
+
+  const getCategoryLabel = (cat: string) => {
+    if (cat === 'All') return t('allCategories');
+    const keyMap: Record<string, any> = {
+      'Keyboard': 'keyboards',
+      'Mouse': 'mice',
+      'Headset': 'headsets',
+      'Chair': 'chairs',
+      'Monitor': 'monitors',
+      'Mousepad': 'mousepads',
+      'Accessories': 'accessories',
+      'Gaming Gear': 'gamingGear'
+    };
+    const key = keyMap[cat];
+    return key ? t(key) : cat;
   };
 
   const handlePriceSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -40,8 +58,8 @@ const ProductFilter = ({
   const filterContent = (
     <>
       {/* Category Filter */}
-      <nav aria-label="หมวดหมู่สินค้า">
-        <p className="text-gray-500 text-xs font-bold uppercase mb-2">หมวดหมู่</p>
+      <nav aria-label={t('categories')}>
+        <p className="text-gray-500 text-xs font-bold uppercase mb-2">{t('categories')}</p>
         <ul className="space-y-2">
           {categories.map((cat) => {
             const isActive = (filters.category ?? 'All') === cat;
@@ -57,7 +75,7 @@ const ProductFilter = ({
                       : 'text-gray-400 hover:text-white hover:bg-white/5'
                   }`}
                 >
-                  <span>{cat === 'All' ? 'ทั้งหมด' : cat}</span>
+                  <span>{getCategoryLabel(cat)}</span>
                   <span className="text-xs bg-black/30 px-2 py-0.5 rounded-full opacity-70">
                     {categoryCounts[cat] ?? 0}
                   </span>
@@ -70,19 +88,19 @@ const ProductFilter = ({
 
       {/* Price Range Filter */}
       <div className="mt-6 pt-4 border-t border-white/10">
-        <p className="text-gray-500 text-xs font-bold uppercase mb-3">ช่วงราคา</p>
-        <form onSubmit={handlePriceSubmit} aria-label="กรองตามช่วงราคา">
+        <p className="text-gray-500 text-xs font-bold uppercase mb-3">{t('priceRange')}</p>
+        <form onSubmit={handlePriceSubmit} aria-label={t('priceRange')}>
           <div className="flex items-center gap-2 text-sm text-gray-400">
-            <label htmlFor="minPrice" className="sr-only">ราคาต่ำสุด</label>
+            <label htmlFor="minPrice" className="sr-only">{t('minPrice')}</label>
             <input
-              id="minPrice" name="minPrice" type="number" placeholder="Min" min={0}
+              id="minPrice" name="minPrice" type="number" placeholder={t('minPrice')} min={0}
               defaultValue={filters.minPrice ?? ''}
               className="w-full bg-black/50 border border-white/10 rounded px-2 py-1 text-white focus:border-red-500 outline-none"
             />
             <span aria-hidden="true">-</span>
-            <label htmlFor="maxPrice" className="sr-only">ราคาสูงสุด</label>
+            <label htmlFor="maxPrice" className="sr-only">{t('maxPrice')}</label>
             <input
-              id="maxPrice" name="maxPrice" type="number" placeholder="Max" min={0}
+              id="maxPrice" name="maxPrice" type="number" placeholder={t('maxPrice')} min={0}
               defaultValue={filters.maxPrice ?? ''}
               className="w-full bg-black/50 border border-white/10 rounded px-2 py-1 text-white focus:border-red-500 outline-none"
             />
@@ -91,7 +109,7 @@ const ProductFilter = ({
             type="submit"
             className="w-full mt-3 bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2 rounded transition active:scale-95"
           >
-            ค้นหาตามราคา
+            {t('searchByPrice')}
           </button>
         </form>
       </div>
@@ -100,7 +118,7 @@ const ProductFilter = ({
         type="button" onClick={onReset}
         className="w-full mt-3 text-gray-500 hover:text-red-400 text-xs underline transition"
       >
-        ล้างตัวกรองทั้งหมด
+        {t('clearFilters')}
       </button>
     </>
   );
@@ -115,7 +133,7 @@ const ProductFilter = ({
       >
         <span className="flex items-center gap-2 text-red-500 font-bold text-sm">
           <SlidersHorizontal size={16} />
-          ตัวกรอง {filters.category !== 'All' && `· ${filters.category}`}
+          {t('filter')} {filters.category !== 'All' && `· ${getCategoryLabel(filters.category || 'All')}`}
         </span>
         {isOpen ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
       </button>

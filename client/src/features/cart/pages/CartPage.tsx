@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 // นำเข้า API และ Types
 import { fetchCartItems, validateCoupon, updateCartQuantity, removeFromCart } from '../services/cart.service';
 import type { CartItem as CartItemType, CouponData } from '../types/cart.types';
+import { useLanguage } from '../../../shared/context/LanguageContext';
 
 // นำเข้า Components
 import CartItem from '../components/CartItem';
@@ -22,6 +23,7 @@ interface DeleteModalState {
 }
 
 export default function CartPage({ onNavigate }: CartProps) {
+  const { language, t } = useLanguage();
   // ─── 1. STATE MANAGEMENT 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [cartItems, setCartItems] = useState<CartItemType[]>([]);
@@ -103,10 +105,10 @@ export default function CartPage({ onNavigate }: CartProps) {
     const validCoupon = await validateCoupon(code);
     if (validCoupon) {
       setAppliedCoupon({ code, ...validCoupon });
-      setCouponSuccess(`คูปอง "${code}" ใช้งานได้! (${validCoupon.label})`);
+      setCouponSuccess(language === 'TH' ? `คูปอง "${code}" ใช้งานได้! (${validCoupon.label})` : `Coupon "${code}" is valid! (${validCoupon.label})`);
       setCouponCode('');
     } else {
-      setCouponError('รหัสคูปองไม่ถูกต้องหรือหมดอายุ');
+      setCouponError(language === 'TH' ? 'รหัสคูปองไม่ถูกต้องหรือหมดอายุ' : 'Invalid or expired coupon code');
     }
   };
 
@@ -132,7 +134,7 @@ export default function CartPage({ onNavigate }: CartProps) {
   // ✨ จัดการเมื่อกดปุ่มชำระเงิน (แพ็คข้อมูลใส่ localStorage แล้วพาไปหน้า Payment)
   const handleCheckout = () => {
     if (selectedItems.length === 0) {
-      toast.error("กรุณาเลือกสินค้าอย่างน้อย 1 ชิ้นเพื่อดำเนินการต่อ");
+      toast.error(language === 'TH' ? "กรุณาเลือกสินค้าอย่างน้อย 1 ชิ้นเพื่อดำเนินการต่อ" : "Please select at least 1 item to proceed");
       return;
     }
 
@@ -147,7 +149,7 @@ export default function CartPage({ onNavigate }: CartProps) {
       subtotal: subtotal,
       discount: discountAmount,
       shipping: shippingFee,
-      coupon: appliedCoupon ? appliedCoupon.code : 'ไม่มี'
+      coupon: appliedCoupon ? appliedCoupon.code : (language === 'TH' ? 'ไม่มี' : 'None')
     };
 
     // ยัดใส่กระเป๋า (localStorage)
@@ -161,7 +163,7 @@ export default function CartPage({ onNavigate }: CartProps) {
   if (isLoading) {
     return (
       <main className="min-h-screen bg-[#000000] flex justify-center items-center">
-        <p className="text-[#FF0000] font-['Orbitron'] animate-pulse text-2xl tracking-widest">กำลังดำเนินการ...</p>
+        <p className="text-[#FF0000] font-['Orbitron'] animate-pulse text-2xl tracking-widest">{t('loading')}</p>
       </main>
     );
   }
@@ -181,11 +183,11 @@ export default function CartPage({ onNavigate }: CartProps) {
             <ShoppingCart aria-hidden="true" className="w-24 h-24 text-[#990000] relative z-10" />
           </figure>
           <header className="text-center">
-            <h2 className="text-3xl font-['Orbitron'] font-bold text-[#F2F4F6] mb-2 tracking-widest">ตะกร้าสินค้าว่างเปล่า</h2>
-            <p className="text-[#F2F4F6]/40 mb-8 font-light">ยังไม่มีไอเทมเทพๆ ในตะกร้าของคุณเลย</p>
+            <h2 className="text-3xl font-['Orbitron'] font-bold text-[#F2F4F6] mb-2 tracking-widest">{t('emptyCart')}</h2>
+            <p className="text-[#F2F4F6]/40 mb-8 font-light">{language === 'TH' ? 'ยังไม่มีไอเทมเทพๆ ในตะกร้าของคุณเลย' : 'Your cart is looking empty. Let’s find some gear!'}</p>
           </header>
           <button onClick={() => onNavigate?.('home')} className="bg-[#990000] hover:bg-[#FF0000] text-white px-8 py-3 rounded-xl font-['Orbitron'] font-bold tracking-wider transition-all shadow-[0_0_15px_rgba(153,0,0,0.4)]">
-            ไปเลือกซื้อไอเทม
+            {language === 'TH' ? 'ไปเลือกซื้อไอเทม' : 'Go Shopping'}
           </button>
         </section>
       </main>
@@ -206,15 +208,15 @@ export default function CartPage({ onNavigate }: CartProps) {
         {/* Page Header */}
         <section aria-labelledby="cart-heading" className="max-w-7xl mx-auto px-4 pt-8 pb-4">
           <button onClick={() => onNavigate?.('products')} className="flex items-center gap-2 text-[#F2F4F6]/40 hover:text-[#FF0000] transition text-sm mb-6 group" aria-label="กลับไปหน้าสินค้า">
-            <ArrowLeft aria-hidden="true" className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> กลับไปคลังสินค้า
+            <ArrowLeft aria-hidden="true" className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> {t('backToProducts')}
           </button>
           <header className="flex items-center gap-4 mb-2">
             <div aria-hidden="true" className="w-1.5 h-10 bg-[#FF0000] rounded-full shadow-[0_0_15px_#FF0000]"></div>
             <h2 id="cart-heading" className="text-3xl md:text-4xl font-['Orbitron'] font-bold tracking-wide text-[#F2F4F6]">
-              ตะกร้าสินค้าของคุณ
+              {t('cart')}
             </h2>
             <span className="text-lg font-normal text-[#F2F4F6]/40 font-['Kanit'] mt-2">
-              ({cartItems.reduce((s, i) => s + i.quantity, 0)} รายการ)
+              ({cartItems.reduce((s, i) => s + i.quantity, 0)} {t('piece')})
             </span>
           </header>
         </section>
@@ -235,7 +237,7 @@ export default function CartPage({ onNavigate }: CartProps) {
                 </div>
                 <div className="flex-1 text-right">
                     <button onClick={() => openDeleteModal('all')} className="text-[#990000] hover:text-[#FF0000] text-xs font-['Orbitron'] tracking-wider transition flex items-center gap-2 group justify-end ml-auto">
-                        <Trash2 className="w-3 h-3 group-hover:rotate-12 transition-transform" /> ลบทั้งหมด
+                        <Trash2 className="w-3 h-3 group-hover:rotate-12 transition-transform" /> {language === 'TH' ? 'ลบทั้งหมด' : 'DELETE ALL'}
                     </button>
                 </div>
             </header>

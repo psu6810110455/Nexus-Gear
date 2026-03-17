@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Product } from '../types/product.types';
 import ProductCard from './ProductCard';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useLanguage } from '../../../shared/context/LanguageContext';
 
 interface ProductGridProps {
   products: Product[];
@@ -14,6 +15,23 @@ const PRODUCTS_PER_PAGE = 9;
 
 const ProductGrid = ({ products, selectedCategory, onReset }: ProductGridProps) => {
   const [currentPage, setCurrentPage] = useState(1);
+  const { t } = useLanguage();
+
+  const getCategoryLabel = (cat: string) => {
+    if (cat === 'All') return t('allCategories');
+    const keyMap: Record<string, any> = {
+      'Keyboard': 'keyboards',
+      'Mouse': 'mice',
+      'Headset': 'headsets',
+      'Chair': 'chairs',
+      'Monitor': 'monitors',
+      'Mousepad': 'mousepads',
+      'Accessories': 'accessories',
+      'Gaming Gear': 'gamingGear'
+    };
+    const key = keyMap[cat];
+    return key ? t(key) : cat;
+  };
 
   // คำนวณจำนวนหน้าทั้งหมด
   const totalPages = Math.max(1, Math.ceil(products.length / PRODUCTS_PER_PAGE));
@@ -54,9 +72,9 @@ const ProductGrid = ({ products, selectedCategory, onReset }: ProductGridProps) 
       <header className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold flex items-center gap-2">
           <span className="w-1 h-6 bg-red-600 block" aria-hidden="true" />
-          {selectedCategory === 'All' ? 'สินค้าทั้งหมด' : selectedCategory}
+          {getCategoryLabel(selectedCategory)}
           <span className="text-gray-500 text-base font-normal ml-2">
-            ({products.length} รายการ)
+            ({products.length} {t('piece')})
           </span>
         </h2>
       </header>
@@ -95,7 +113,7 @@ const ProductGrid = ({ products, selectedCategory, onReset }: ProductGridProps) 
 
               <button
                 className="pg-btn" disabled={safePage === 1}
-                onClick={() => goToPage(safePage - 1)} aria-label="หน้าก่อนหน้า"
+                onClick={() => goToPage(safePage - 1)} aria-label={t('previous')}
               >
                 <ChevronLeft size={16} />
               </button>
@@ -109,7 +127,7 @@ const ProductGrid = ({ products, selectedCategory, onReset }: ProductGridProps) 
                     className={`pg-btn ${page === safePage ? 'pg-active' : ''}`}
                     onClick={() => goToPage(page as number)}
                     aria-current={page === safePage ? 'page' : undefined}
-                    aria-label={`หน้า ${page}`}
+                    aria-label={`${t('page')} ${page}`}
                   >
                     {page}
                   </button>
@@ -118,7 +136,7 @@ const ProductGrid = ({ products, selectedCategory, onReset }: ProductGridProps) 
 
               <button
                 className="pg-btn" disabled={safePage === totalPages}
-                onClick={() => goToPage(safePage + 1)} aria-label="หน้าถัดไป"
+                onClick={() => goToPage(safePage + 1)} aria-label={t('next')}
               >
                 <ChevronRight size={16} />
               </button>
@@ -127,13 +145,13 @@ const ProductGrid = ({ products, selectedCategory, onReset }: ProductGridProps) 
         </>
       ) : (
         <div className="text-center py-20 text-gray-500" role="status">
-          <p className="text-xl">ไม่พบสินค้าในหมวดหมู่นี้</p>
+          <p className="text-xl">{t('noProducts')}</p>
           <button
             type="button"
             onClick={onReset}
             className="mt-4 text-red-500 underline hover:text-red-400"
           >
-            ล้างตัวกรองและดูสินค้าทั้งหมด
+            {t('clearAndViewAll')}
           </button>
         </div>
       )}

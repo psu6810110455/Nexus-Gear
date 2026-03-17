@@ -7,10 +7,12 @@ import { Search, AlertTriangle, CheckCircle, Package, TrendingDown, TrendingUp, 
 import { getProducts, updateProduct } from '../../../shared/services/api';
 import type { Product, Category } from '../../../shared/types';
 import AdminLayout from '../../navigation/components/AdminLayout';
+import { useLanguage } from '../../../shared/context/LanguageContext';
 
 type StockStatus = 'all' | 'out' | 'low' | 'ok';
 
 const AdminStockPage = () => {
+  const { t, language } = useLanguage();
   const [products, setProducts]   = useState<Product[]>([]);
   const [loading, setLoading]     = useState(true);
   const [search, setSearch]       = useState('');
@@ -29,7 +31,7 @@ const AdminStockPage = () => {
       setLoading(true);
       setProducts(await getProducts());
     } catch {
-      showToast('โหลดข้อมูลไม่สำเร็จ', false);
+      showToast(t('toastLoadError'), false);
     } finally {
       setLoading(false);
     }
@@ -39,7 +41,7 @@ const AdminStockPage = () => {
 
   const handleSaveStock = async (product: Product) => {
     const newStock = Number(editing[product.id]);
-    if (isNaN(newStock) || newStock < 0) return showToast('กรุณากรอกจำนวนที่ถูกต้อง', false);
+    if (isNaN(newStock) || newStock < 0) return showToast(language === 'TH' ? 'กรุณากรอกจำนวนที่ถูกต้อง' : 'Please enter a valid amount', false);
     setSaving(product.id);
     try {
       await updateProduct(product.id, { stock: newStock });
@@ -47,9 +49,9 @@ const AdminStockPage = () => {
         prev.map((p) => p.id === product.id ? { ...p, stock: newStock } : p),
       );
       setEditing((prev) => { const n = { ...prev }; delete n[product.id]; return n; });
-      showToast(`อัปเดตสต็อก "${product.name}" สำเร็จ`, true);
+      showToast(language === 'TH' ? `อัปเดตสต็อก "${product.name}" สำเร็จ` : `Stock updated for "${product.name}"`, true);
     } catch {
-      showToast('บันทึกไม่สำเร็จ', false);
+      showToast(t('toastSaveError') || 'Save failed', false);
     } finally {
       setSaving(null);
     }
@@ -76,14 +78,14 @@ const AdminStockPage = () => {
   const totalOk   = products.filter((p) => (p.stock ?? 0) >= 10).length;
 
   const FILTER_TABS: { value: StockStatus; label: string; count: number; color: string }[] = [
-    { value: 'all', label: 'ทั้งหมด',     count: products.length, color: 'text-[#F2F4F6]/60' },
-    { value: 'out', label: 'หมดสต็อก',    count: totalOut,        color: 'text-red-400' },
-    { value: 'low', label: 'สต็อกต่ำ',    count: totalLow,        color: 'text-yellow-400' },
-    { value: 'ok',  label: 'ปกติ',        count: totalOk,         color: 'text-green-400' },
+    { value: 'all', label: t('all'),     count: products.length, color: 'text-[#F2F4F6]/60' },
+    { value: 'out', label: language === 'TH' ? 'หมดสต็อก' : 'Out of Stock',    count: totalOut,        color: 'text-red-400' },
+    { value: 'low', label: language === 'TH' ? 'สต็อกต่ำ' : 'Low Stock',    count: totalLow,        color: 'text-yellow-400' },
+    { value: 'ok',  label: language === 'TH' ? 'ปกติ' : 'Normal',        count: totalOk,         color: 'text-green-400' },
   ];
 
   return (
-    <AdminLayout breadcrumb="จัดการสต็อก">
+    <AdminLayout breadcrumb={t('manageStock')}>
 
       {/* ── Toast ── */}
       {toast && (
@@ -105,7 +107,7 @@ const AdminStockPage = () => {
             STOCK
           </h1>
           <p className="text-[#F2F4F6]/40 text-sm mt-1 font-['Kanit']">
-            ตรวจสอบและอัปเดตจำนวนสต็อกสินค้า
+            {language === 'TH' ? 'ตรวจสอบและอัปเดตจำนวนสต็อกสินค้า' : 'Monitor and update product inventory'}
           </p>
         </div>
         <div className="relative w-full xl:w-96 group shrink-0">
@@ -113,7 +115,7 @@ const AdminStockPage = () => {
           <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#F2F4F6]/30 group-focus-within:text-[#FF0000] transition-colors z-10" />
           <input
             type="text"
-            placeholder="ค้นหาสินค้า..."
+            placeholder={t('searchProducts')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-[#150000] border border-[#990000]/30 text-[#F2F4F6] text-sm rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-[#FF0000]/50 focus:ring-1 focus:ring-[#FF0000]/30 transition-all placeholder-[#F2F4F6]/20 font-['Kanit'] relative z-10"
@@ -128,7 +130,7 @@ const AdminStockPage = () => {
             <Package size={24} className="text-red-400" />
           </div>
           <div>
-            <p className="text-[#F2F4F6]/40 text-xs font-['Kanit'] uppercase tracking-wider">หมดสต็อก</p>
+            <p className="text-[#F2F4F6]/40 text-xs font-['Kanit'] uppercase tracking-wider">{language === 'TH' ? 'หมดสต็อก' : 'Out of Stock'}</p>
             <p className="text-3xl font-['Orbitron'] font-bold text-red-400">{totalOut}</p>
           </div>
         </div>
@@ -137,7 +139,7 @@ const AdminStockPage = () => {
             <TrendingDown size={24} className="text-yellow-400" />
           </div>
           <div>
-            <p className="text-[#F2F4F6]/40 text-xs font-['Kanit'] uppercase tracking-wider">สต็อกต่ำ (&lt;10)</p>
+            <p className="text-[#F2F4F6]/40 text-xs font-['Kanit'] uppercase tracking-wider">{language === 'TH' ? 'สต็อกต่ำ (<10)' : 'Low Stock (<10)'}</p>
             <p className="text-3xl font-['Orbitron'] font-bold text-yellow-400">{totalLow}</p>
           </div>
         </div>
@@ -146,7 +148,7 @@ const AdminStockPage = () => {
             <TrendingUp size={24} className="text-green-400" />
           </div>
           <div>
-            <p className="text-[#F2F4F6]/40 text-xs font-['Kanit'] uppercase tracking-wider">สต็อกปกติ</p>
+            <p className="text-[#F2F4F6]/40 text-xs font-['Kanit'] uppercase tracking-wider">{language === 'TH' ? 'สต็อกปกติ' : 'Normal Stock'}</p>
             <p className="text-3xl font-['Orbitron'] font-bold text-green-400">{totalOk}</p>
           </div>
         </div>
@@ -186,11 +188,11 @@ const AdminStockPage = () => {
           <table className="w-full text-left min-w-[900px]">
             <thead>
               <tr className="border-b border-[#990000]/30 bg-[#2E0505]/50 font-['Orbitron'] text-xs uppercase">
-                <th className="py-4 pl-6 text-[#FF0000] rounded-tl-2xl">สินค้า</th>
-                <th className="py-4 px-4 text-[#FF0000]">หมวดหมู่</th>
-                <th className="py-4 px-4 text-[#FF0000] text-center">สถานะ</th>
-                <th className="py-4 px-4 text-[#FF0000] text-center">สต็อกปัจจุบัน</th>
-                <th className="py-4 pr-6 text-[#FF0000] text-right rounded-tr-2xl">อัปเดตสต็อก</th>
+                <th className="py-4 pl-6 text-[#FF0000] rounded-tl-2xl">{t('productName')}</th>
+                <th className="py-4 px-4 text-[#FF0000]">{t('category')}</th>
+                <th className="py-4 px-4 text-[#FF0000] text-center">{language === 'TH' ? 'สถานะ' : 'Status'}</th>
+                <th className="py-4 px-4 text-[#FF0000] text-center">{language === 'TH' ? 'สต็อกปัจจุบัน' : 'Current Stock'}</th>
+                <th className="py-4 pr-6 text-[#FF0000] text-right rounded-tr-2xl">{language === 'TH' ? 'อัปเดตสต็อก' : 'Update Stock'}</th>
               </tr>
             </thead>
             <tbody>
@@ -232,8 +234,8 @@ const AdminStockPage = () => {
                                    'text-green-400 bg-green-500/10 border-green-500/20';
 
                   const stockLabel =
-                    st === 'out' ? 'หมดสต็อก' :
-                    st === 'low' ? 'สต็อกต่ำ' : 'ปกติ';
+                    st === 'out' ? (language === 'TH' ? 'หมดสต็อก' : 'Out of Stock') :
+                    st === 'low' ? (language === 'TH' ? 'สต็อกต่ำ' : 'Low Stock') : (language === 'TH' ? 'ปกติ' : 'Normal');
 
                   return (
                     <tr key={p.id} className="border-b border-[#990000]/10 hover:bg-[#2E0505]/20 transition group">
@@ -289,21 +291,21 @@ const AdminStockPage = () => {
                               try {
                                 await updateProduct(p.id, { isHidden: !p.isHidden });
                                 setProducts(prev => prev.map(prod => prod.id === p.id ? { ...prod, isHidden: !p.isHidden } : prod));
-                                showToast(p.isHidden ? 'แสดงสินค้าสำเร็จ' : 'ซ่อนสินค้าสำเร็จ', true);
+                                showToast(p.isHidden ? (language === 'TH' ? 'แสดงสินค้าสำเร็จ' : 'Product visible') : (language === 'TH' ? 'ซ่อนสินค้าสำเร็จ' : 'Product hidden'), true);
                               } catch {
-                                showToast('เกิดข้อผิดพลาดในการซ่อน/แสดงสินค้า', false);
+                                showToast(language === 'TH' ? 'เกิดข้อผิดพลาดในการซ่อน/แสดงสินค้า' : 'Error toggling visibility', false);
                               }
                             }}
                             className={`px-3 py-1.5 border rounded-lg transition font-['Kanit'] text-xs font-bold flex items-center gap-1 ${p.isHidden ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/20' : 'bg-[#252525] border-[#990000]/30 text-[#F2F4F6]/50 hover:bg-yellow-500/20 hover:text-yellow-400'}`}
                           >
-                            {p.isHidden ? 'ซ่อนอยู่' : 'แสดงอยู่'}
+                            {p.isHidden ? t('isHidden') : (language === 'TH' ? 'แสดงอยู่' : 'Showing')}
                           </button>
                           <button
                             onClick={() => handleSaveStock(p)}
                             disabled={!isEdit || saving === p.id}
-                            className="px-3 py-1.5 bg-[#990000] hover:bg-[#FF0000] disabled:opacity-30 disabled:cursor-not-allowed text-white text-xs font-bold rounded-lg transition font-['Kanit'] active:scale-95"
+                            className="px-3 py-1.5 bg-[#990000] hover:bg-[#FF0000] disabled:opacity-30 disabled:cursor-not-allowed text-white text-xs font-bold rounded-lg transition font-['Kanit'] active:scale-95 shadow-[0_0_10px_rgba(153,0,0,0.3)]"
                           >
-                            {saving === p.id ? '...' : 'บันทึก'}
+                            {saving === p.id ? '...' : t('save')}
                           </button>
                         </div>
                       </td>

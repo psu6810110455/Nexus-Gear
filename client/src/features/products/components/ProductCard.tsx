@@ -9,6 +9,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Product } from '../../../shared/types/index';
 import { getCategoryName } from '../services/product.service';
 import { getServerUrl } from '../../../shared/services/api';
+import { useLanguage } from '../../../shared/context/LanguageContext';
 
 interface ProductCardProps {
   product: Product;
@@ -18,10 +19,25 @@ interface ProductCardProps {
 
 function ProductCard({ product, onClick, variant = 'shop' }: ProductCardProps) {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [isHovered, setIsHovered] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const categoryName = getCategoryName(product);
+  const getCategoryLabel = (cat: string) => {
+    const keyMap: Record<string, any> = {
+      'Keyboard': 'keyboards',
+      'Mouse': 'mice',
+      'Headset': 'headsets',
+      'Chair': 'chairs',
+      'Monitor': 'monitors',
+      'Mousepad': 'mousepads',
+      'Accessories': 'accessories',
+      'Gaming Gear': 'gamingGear'
+    };
+    const key = keyMap[cat];
+    return key ? t(key) : cat;
+  };
 
   const imagesList = product.images && product.images.length > 0 
     ? product.images.map(img => getServerUrl(img.imageUrl))
@@ -112,7 +128,7 @@ function ProductCard({ product, onClick, variant = 'shop' }: ProductCardProps) {
         </figure>
 
         <div className="p-5 flex flex-col flex-grow">
-          <p className="text-gray-500 text-xs mb-1">{categoryName}</p>
+          <p className="text-gray-500 text-xs mb-1">{getCategoryLabel(categoryName)}</p>
 
           <h3 className="font-bold text-lg text-white mb-2 line-clamp-2 leading-snug group-hover:text-red-500 transition">
             {product.name}
@@ -120,7 +136,7 @@ function ProductCard({ product, onClick, variant = 'shop' }: ProductCardProps) {
 
           <footer className="mt-auto pt-4 flex items-center justify-between border-t border-white/5">
             <div>
-              <p className="text-xs text-gray-500">ราคา</p>
+              <p className="text-xs text-gray-500">{t('priceLabel')}</p>
               <p className="text-xl font-bold text-red-500">
                 ฿{Number(product.price).toLocaleString()}
               </p>
@@ -131,10 +147,10 @@ function ProductCard({ product, onClick, variant = 'shop' }: ProductCardProps) {
                 e.stopPropagation();
                 goToDetail();
               }}
-              aria-label={`ดูรายละเอียด ${product.name}`}
+              aria-label={`${t('viewDetails')} ${product.name}`}
               className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-4 py-2 rounded transition shadow-lg shadow-red-900/20 active:scale-95"
             >
-              ดูรายละเอียด
+              {t('viewDetails')}
             </button>
           </footer>
         </div>

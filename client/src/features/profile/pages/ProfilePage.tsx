@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { LogOut, Trash2 } from "lucide-react";
 import NexusGearOrderStatus from "../../orders/pages/NexusGearOrderStatus";
+import { useLanguage } from "../../../shared/context/LanguageContext";
 
 // ✅ 1. นำเข้า useAuth จาก Context ของเรา
 import { useAuth } from "../../auth/context/AuthContext";
@@ -29,6 +30,7 @@ import * as profileApi from "../services/profile.service";
 export const ProfilePage = () => {
   // ✅ 2. ดึงข้อมูล user จากระบบ
   const { user, logout } = useAuth();
+  const { language, t } = useLanguage();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get("tab") || "orders";
@@ -208,13 +210,13 @@ export const ProfilePage = () => {
   // @ts-ignore - unused function
   const openStatusModal = (label: string) => {
     let filteredOrders: Order[] = [];
-    if (label === "ที่ต้องชำระ") {
+    if (label === (language === 'TH' ? "ที่ต้องชำระ" : "To Pay")) {
       filteredOrders = orders.filter((o) => o.status === "pending_payment");
-    } else if (label === "ที่ต้องจัดส่ง") {``
+    } else if (label === (language === 'TH' ? "ที่ต้องจัดส่ง" : "To Ship")) {``
       filteredOrders = orders.filter((o) => o.status === "processing");
-    } else if (label === "ที่ต้องได้รับ") {
+    } else if (label === (language === 'TH' ? "ที่ต้องได้รับ" : "To Receive")) {
       filteredOrders = orders.filter((o) => o.status === "shipping");
-    } else if (label === "ให้คะแนน") {
+    } else if (label === (language === 'TH' ? "ให้คะแนน" : "To Rate")) {
       filteredOrders = orders.filter((o) => o.status === "delivered");
     }
     setStatusModal({ title: label, items: filteredOrders });
@@ -316,8 +318,8 @@ export const ProfilePage = () => {
         isOpen={showLogoutModal}
         onClose={() => setShowLogoutModal(false)}
         onConfirm={handleLogout}
-        title="LOGOUT?"
-        description="คุณต้องการออกจากระบบใช่หรือไม่?"
+        title={t('logout').toUpperCase() + '?'}
+        description={language === 'TH' ? "คุณต้องการออกจากระบบใช่หรือไม่?" : "Are you sure you want to log out?"}
         icon={<LogOut className="w-8 h-8 text-[#FF0000]" />}
       />
 
@@ -325,10 +327,10 @@ export const ProfilePage = () => {
         isOpen={showDeleteAddrModal}
         onClose={() => setShowDeleteAddrModal(false)}
         onConfirm={deleteAddress}
-        title="DELETE ADDRESS?"
-        description="คุณต้องการลบที่อยู่นี้ใช่หรือไม่?"
+        title={language === 'TH' ? "ลบที่อยู่?" : "DELETE ADDRESS?"}
+        description={language === 'TH' ? "คุณต้องการลบที่อยู่นี้ใช่หรือไม่?" : "Are you sure you want to delete this address?"}
         icon={<Trash2 className="w-8 h-8 text-[#FF0000]" />}
-        confirmText="DELETE"
+        confirmText={language === 'TH' ? "ลบ" : "DELETE"}
       />
     </div>
   );

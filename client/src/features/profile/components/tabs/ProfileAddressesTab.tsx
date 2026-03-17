@@ -1,6 +1,7 @@
 import React from 'react';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import type { Address } from '../../types/profile.types';
+import { useLanguage } from '../../../../shared/context/LanguageContext';
 
 interface ProfileAddressesTabProps {
   addresses: Address[];
@@ -10,14 +11,15 @@ interface ProfileAddressesTabProps {
 }
 
 export const ProfileAddressesTab: React.FC<ProfileAddressesTabProps> = ({ addresses, onOpenAdd, onOpenEdit, onOpenDelete }) => {
+  const { language } = useLanguage();
   return (
     <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-4 sm:p-8 shadow-2xl animate-in fade-in">
       <div className="flex items-center justify-between mb-8">
         <h3 className="text-2xl font-bold flex items-center gap-3 font-['Orbitron'] tracking-wide">
-          <span className="w-1.5 h-8 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></span> ADDRESSES
+          <span className="w-1.5 h-8 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></span> {language === 'TH' ? 'ที่อยู่จัดส่ง' : 'ADDRESSES'}
         </h3>
         <button onClick={onOpenAdd} className="bg-[#990000] hover:bg-[#FF0000] text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg transition-all shadow-[0_0_10px_rgba(153,0,0,0.4)] text-[11px] sm:text-sm font-bold flex items-center gap-1.5 sm:gap-2">
-          <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> เพิ่มที่อยู่
+          <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> {language === 'TH' ? 'เพิ่มที่อยู่' : 'ADD ADDRESS'}
         </button>
       </div>
 

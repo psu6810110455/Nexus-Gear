@@ -1,6 +1,6 @@
-import React from 'react';
 import { Package, Wallet, Truck, Star } from 'lucide-react';
 import type { Order } from '../../types/profile.types';
+import { useLanguage } from '../../../../shared/context/LanguageContext';
 
 interface ProfileOrdersTabProps {
   orders: Order[];
@@ -9,24 +9,35 @@ interface ProfileOrdersTabProps {
 }
 
 export const ProfileOrdersTab: React.FC<ProfileOrdersTabProps> = ({ orders, onOpenStatus, onOpenDetail }) => {
+  const { language } = useLanguage();
   
   const getStatusBadge = (status: string) => {
-    const styles: Record<string, string> = { delivered: 'bg-green-900/20 text-green-400 border-green-900', shipping: 'bg-blue-900/20 text-blue-400 border-blue-900', processing: 'bg-yellow-900/20 text-yellow-400 border-yellow-900', pending_payment: 'bg-orange-900/20 text-orange-400 border-orange-900' };
-    const labels: Record<string, string> = { delivered: 'สำเร็จ', shipping: 'ที่ต้องได้รับ', processing: 'ที่ต้องจัดส่ง', pending_payment: 'รอชำระ' };
+    const styles: Record<string, string> = { 
+      delivered: 'bg-green-900/20 text-green-400 border-green-900', 
+      shipping: 'bg-blue-900/20 text-blue-400 border-blue-900', 
+      processing: 'bg-yellow-900/20 text-yellow-400 border-yellow-900', 
+      pending_payment: 'bg-orange-900/20 text-orange-400 border-orange-900' 
+    };
+    const labels: Record<string, string> = { 
+      delivered: language === 'TH' ? 'สำเร็จ' : 'Delivered', 
+      shipping: language === 'TH' ? 'ที่ต้องได้รับ' : 'To Receive', 
+      processing: language === 'TH' ? 'ที่ต้องจัดส่ง' : 'Processing', 
+      pending_payment: language === 'TH' ? 'รอชำระ' : 'Pending Payment' 
+    };
     return <span className={`px-3 py-1 rounded-full text-[10px] font-['Orbitron'] tracking-wider border ${styles[status] || 'bg-gray-900/20 text-gray-400 border-gray-900'}`}>{labels[status] || status}</span>;
   };
 
   const statusIcons = [
-    { icon: Wallet, label: 'ที่ต้องชำระ', count: orders.filter(o => o.status === 'pending_payment').length },
-    { icon: Package, label: 'ที่ต้องจัดส่ง', count: orders.filter(o => o.status === 'processing').length },
-    { icon: Truck, label: 'ที่ต้องได้รับ', count: orders.filter(o => o.status === 'shipping').length },
-    { icon: Star, label: 'ให้คะแนน', count: orders.filter(o => o.status === 'delivered').length }
+    { icon: Wallet, label: language === 'TH' ? 'ที่ต้องชำระ' : 'To Pay', count: orders.filter(o => o.status === 'pending_payment').length },
+    { icon: Package, label: language === 'TH' ? 'ที่ต้องจัดส่ง' : 'To Ship', count: orders.filter(o => o.status === 'processing').length },
+    { icon: Truck, label: language === 'TH' ? 'ที่ต้องได้รับ' : 'To Receive', count: orders.filter(o => o.status === 'shipping').length },
+    { icon: Star, label: language === 'TH' ? 'ให้คะแนน' : 'To Rate', count: orders.filter(o => o.status === 'delivered').length }
   ];
 
   return (
     <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-8 shadow-2xl animate-in fade-in">
       <h3 className="text-2xl font-bold mb-6 flex items-center gap-3 font-['Orbitron'] tracking-wide">
-        <span className="w-1.5 h-8 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></span> ORDER HISTORY
+        <span className="w-1.5 h-8 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></span> {language === 'TH' ? 'ประวัติการสั่งซื้อ' : 'ORDER HISTORY'}
       </h3>
       
       <div className="grid grid-cols-4 gap-4 mb-8 pb-6 border-b border-[#990000]/20">
@@ -49,11 +60,11 @@ export const ProfileOrdersTab: React.FC<ProfileOrdersTabProps> = ({ orders, onOp
               {getStatusBadge(order.status)}
             </div>
             <div className="flex items-center justify-between border-t border-[#990000]/20 pt-4 mt-2">
-              <p className="text-[#F2F4F6]/60 text-sm font-['Kanit']">{order.itemsDetail.length} รายการ</p>
+              <p className="text-[#F2F4F6]/60 text-sm font-['Kanit']">{order.itemsDetail.length} {language === 'TH' ? 'รายการ' : 'items'}</p>
               <p className="text-xl font-['Orbitron'] font-bold text-[#FF0000]">฿{order.total}</p>
             </div>
             <button onClick={() => onOpenDetail(order)} className="w-full mt-4 bg-[#2E0505] hover:bg-[#FF0000] text-[#FF0000] hover:text-white py-2 rounded-lg transition-all text-sm font-bold border border-[#990000]/30">
-              ดูรายละเอียด
+              {language === 'TH' ? 'ดูรายละเอียด' : 'View Details'}
             </button>
           </div>
         ))}

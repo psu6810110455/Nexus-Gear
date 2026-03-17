@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../../shared/services/api';
 import { useAuth } from '../../auth/context/AuthContext';
+import { useLanguage } from '../../../shared/context/LanguageContext';
 import { toast } from 'sonner';
 
 const IconInfo = () => (
@@ -34,6 +35,7 @@ const IconGoogle = () => (
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { language, t } = useLanguage();
   const [email, setEmail]               = useState('');
   const [password, setPassword]         = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -50,15 +52,15 @@ const Login = () => {
       const actualToken = data.access_token || data.token; 
 
       if (!actualToken) {
-        toast.error('ระบบไม่ได้รับ Token จากเซิร์ฟเวอร์ กรุณาตรวจสอบ Backend ครับ');
+        toast.error(language === 'TH' ? 'ระบบไม่ได้รับ Token จากเซิร์ฟเวอร์ กรุณาตรวจสอบ Backend ครับ' : 'No token received from server. Please check backend.');
         return;
       }
 
       login(actualToken, data.user); 
-      toast.success('ยินดีต้อนรับกลับสู่ Nexus Gear!');
+      toast.success(language === 'TH' ? 'ยินดีต้อนรับกลับสู่ Nexus Gear!' : 'Welcome back to Nexus Gear!');
       navigate('/');
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'อีเมลหรือรหัสผ่านไม่ถูกต้องครับ');
+      toast.error(err.response?.data?.message || (language === 'TH' ? 'อีเมลหรือรหัสผ่านไม่ถูกต้องครับ' : 'Invalid email or password'));
     }
   };
 
@@ -89,17 +91,17 @@ const Login = () => {
                 zIndex: 10
               }}
             >
-              กลับสู่หน้าหลัก
+              {t('backToHome')}
             </Link>
           </div>
-          <h1 className="auth-title">เข้าสู่ระบบ</h1>
+          <h1 className="auth-title">{t('login')}</h1>
 
           <form onSubmit={handleSubmit} noValidate>
             <div style={{ marginBottom: '1.5rem' }}>
-              <label htmlFor="email" style={{ display: 'block', color: '#fff', marginBottom: '0.5rem', textAlign: 'left' }}>อีเมล</label>
+              <label htmlFor="email" style={{ display: 'block', color: '#fff', marginBottom: '0.5rem', textAlign: 'left' }}>{t('email')}</label>
               <div className="auth-input-wrap">
                 <input
-                  id="email" type="email" placeholder="ที่อยู่อีเมล"
+                  id="email" type="email" placeholder={t('email')}
                   className="auth-input" value={email}
                   onChange={(e) => setEmail(e.target.value)} required
                 />
@@ -107,18 +109,18 @@ const Login = () => {
             </div>
 
             <div style={{ marginBottom: '1.25rem' }}>
-              <label htmlFor="password" style={{ display: 'block', color: '#fff', marginBottom: '0.5rem', textAlign: 'left' }}>รหัสผ่าน</label>
+              <label htmlFor="password" style={{ display: 'block', color: '#fff', marginBottom: '0.5rem', textAlign: 'left' }}>{t('password')}</label>
               <div className="auth-input-wrap">
                 <input
                   id="password" type={showPassword ? 'text' : 'password'}
-                  placeholder="กรอกรหัสผ่านของคุณ" className="auth-input"
+                  placeholder={t('password')} className="auth-input"
                   value={password} onChange={(e) => setPassword(e.target.value)} required
                 />
                 <span style={{ display: 'flex', gap: '6px', alignItems: 'center', color: '#888' }}>
                   
                   {/* ✅ เพิ่ม title (Tooltip) และเปลี่ยน cursor เป็น help เมื่อวางเมาส์ */}
                   <span 
-                    title="รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร ประกอบด้วยตัวอักษรภาษาอังกฤษและตัวเลข" 
+                    title={t('pwdHint')} 
                     style={{ cursor: 'help', display: 'flex', alignItems: 'center' }}
                   >
                     <IconInfo />
@@ -127,7 +129,7 @@ const Login = () => {
                   <button
                     type="button" onClick={() => setShowPassword(!showPassword)}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888', display: 'flex', alignItems: 'center' }}
-                    aria-label={showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}
+                    aria-label={showPassword ? t('hidePwd') : t('showPwd')}
                   >
                     {showPassword ? <IconEye /> : <IconEyeOff />}
                   </button>
@@ -138,23 +140,23 @@ const Login = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', color: '#ccc', fontSize: '0.9rem' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                 <input type="checkbox" />
-                <span>จดจำฉัน</span>
+                <span>{t('rememberMe')}</span>
               </label>
-              <Link to="/forgot-password" style={{ color: '#ccc', textDecoration: 'none' }}>ลืมรหัสผ่าน?</Link>
+              <Link to="/forgot-password" style={{ color: '#ccc', textDecoration: 'none' }}>{t('forgotPassword')}</Link>
             </div>
 
             <button
               type="submit" className="btn-primary"
               style={{ width: '100%', padding: '14px', fontFamily: 'Orbitron, sans-serif', fontSize: '1.4rem', textTransform: 'lowercase' }}
             >
-              เข้าสู่ระบบ
+              {t('login')}
             </button>
           </form>
 
           {/* ส่วนที่เพิ่มใหม่: ปุ่ม Login with Google */}
           <div style={{ display: 'flex', alignItems: 'center', margin: '1.5rem 0', color: '#555' }}>
             <hr style={{ flex: 1, border: 'none', borderTop: '1px solid #333' }} />
-            <span style={{ padding: '0 10px', fontSize: '0.9rem' }}>หรือ</span>
+            <span style={{ padding: '0 10px', fontSize: '0.9rem' }}>{t('or')}</span>
             <hr style={{ flex: 1, border: 'none', borderTop: '1px solid #333' }} />
           </div>
 
@@ -169,12 +171,12 @@ const Login = () => {
             onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#f1f1f1')}
             onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#fff')}
           >
-            <IconGoogle /> ล็อกอินด้วย Google
+            <IconGoogle /> {t('googleLogin')}
           </button>
 
           <p style={{ textAlign: 'center', marginTop: '2rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.08)', color: '#ccc', fontSize: '0.95rem' }}>
-            ยังไม่มีบัญชี?{' '}
-            <Link to="/register" style={{ color: 'var(--color-primary)', fontWeight: 'bold', marginLeft: '4px' }}>สมัครสมาชิก</Link>
+            {t('noAccount')}{' '}
+            <Link to="/register" style={{ color: 'var(--color-primary)', fontWeight: 'bold', marginLeft: '4px' }}>{t('register')}</Link>
           </p>
         </div>
       </div>

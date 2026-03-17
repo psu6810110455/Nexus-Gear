@@ -11,6 +11,7 @@ import {
 import type { Category, Product } from '../../../shared/types';
 import { Plus, Edit, Trash2, X, Save, CheckCircle, AlertTriangle, EyeOff, Eye, ImagePlus, Star } from 'lucide-react';
 import AdminLayout from '../../navigation/components/AdminLayout';
+import { useLanguage } from '../../../shared/context/LanguageContext';
 
 // ── Types ─────────────────────────────────────────────────────
 interface FormData {
@@ -38,26 +39,26 @@ const CategoryManagerModal = ({
   <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
     <div className="bg-[#0a0a0a] border border-[#FF0000]/50 w-full max-w-lg rounded-3xl shadow-[0_0_50px_rgba(153,0,0,0.5)] overflow-hidden">
       <div className="bg-[#2E0505]/40 p-6 border-b border-[#990000]/20 flex justify-between items-center">
-        <h3 className="text-xl font-['Orbitron'] font-bold text-[#F2F4F6]">MANAGE CATEGORIES</h3>
+        <h3 className="text-xl font-['Orbitron'] font-bold text-[#F2F4F6] uppercase tracking-wider">{useLanguage().t('manageCategories')}</h3>
         <button onClick={onClose} className="p-2 hover:bg-[#990000] rounded-full transition text-[#F2F4F6]/50 hover:text-white"><X size={20} /></button>
       </div>
       <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
         <div className="flex gap-3">
-          <input type="text" value={categoryNameInput} onChange={(e) => onInputChange(e.target.value)} placeholder="ชื่อหมวดหมู่"
+          <input type="text" value={categoryNameInput} onChange={(e) => onInputChange(e.target.value)} placeholder={useLanguage().t('enterCategoryName')}
             className="flex-1 bg-[#000000] border border-[#990000]/30 rounded-lg px-4 py-2 text-[#F2F4F6] focus:border-[#FF0000] outline-none font-['Kanit']" />
           <button onClick={onSave} className="bg-[#990000] hover:bg-[#FF0000] text-white px-4 py-2 rounded-lg font-['Kanit'] font-bold transition">
-            {editingCategoryId ? 'บันทึก' : 'สร้างใหม่'}
+            {editingCategoryId ? useLanguage().t('save') : useLanguage().t('create')}
           </button>
         </div>
         <div className="space-y-2">
           {categories.length === 0 ? (
-            <p className="text-[#F2F4F6]/30 text-sm font-['Kanit'] text-center py-4">ยังไม่มีหมวดหมู่</p>
+            <p className="text-[#F2F4F6]/30 text-sm font-['Kanit'] text-center py-4">{useLanguage().t('noCategories')}</p>
           ) : categories.map((c) => (
             <div key={c.id} className="flex items-center justify-between bg-[#000000] p-3 rounded-xl border border-[#990000]/20 hover:border-[#FF0000] transition group">
               <span className="text-[#F2F4F6] font-['Kanit']">{c.name}</span>
               <div className="flex gap-2 opacity-60 group-hover:opacity-100 transition">
-                <button onClick={() => onEdit(c)} className="text-xs px-3 py-1 bg-[#2E0505] border border-[#990000]/50 hover:border-[#FF0000] text-[#F2F4F6] rounded transition font-['Kanit']">แก้ไข</button>
-                <button onClick={() => onDelete(c.id)} className="text-xs px-3 py-1 bg-[#990000] hover:bg-[#FF0000] text-white rounded transition font-['Kanit']">ลบ</button>
+                <button onClick={() => onEdit(c)} className="text-xs px-3 py-1 bg-[#2E0505] border border-[#990000]/50 hover:border-[#FF0000] text-[#F2F4F6] rounded transition font-['Kanit']">{useLanguage().t('edit')}</button>
+                <button onClick={() => onDelete(c.id)} className="text-xs px-3 py-1 bg-[#990000] hover:bg-[#FF0000] text-white rounded transition font-['Kanit']">{useLanguage().t('delete')}</button>
               </div>
             </div>
           ))}
@@ -74,11 +75,11 @@ const DeleteConfirmModal = ({ onConfirm, onCancel }: DeleteConfirmModalProps) =>
       <div className="w-16 h-16 bg-[#2E0505] rounded-full flex items-center justify-center mx-auto mb-4 border border-[#FF0000]/30">
         <Trash2 className="w-8 h-8 text-[#FF0000]" />
       </div>
-      <h3 className="text-xl font-['Orbitron'] font-bold text-[#F2F4F6] mb-2">ยืนยันการลบ?</h3>
-      <p className="text-sm text-[#F2F4F6]/60 mb-6 font-['Kanit']">การกระทำนี้ไม่สามารถย้อนกลับได้</p>
+      <h3 className="text-xl font-['Orbitron'] font-bold text-[#F2F4F6] mb-2">{useLanguage().t('confirmDelete')}</h3>
+      <p className="text-sm text-[#F2F4F6]/60 mb-6 font-['Kanit']">{useLanguage().t('noUndo')}</p>
       <div className="flex gap-3">
-        <button onClick={onCancel} className="flex-1 py-3 rounded-xl border border-[#990000]/50 text-[#F2F4F6] hover:border-[#FF0000] transition font-bold font-['Kanit']">ยกเลิก</button>
-        <button onClick={onConfirm} className="flex-1 py-3 rounded-xl bg-[#FF0000] text-white hover:bg-[#990000] transition font-bold font-['Kanit']">ลบเลย</button>
+        <button onClick={onCancel} className="flex-1 py-3 rounded-xl border border-[#990000]/50 text-[#F2F4F6] hover:border-[#FF0000] transition font-bold font-['Kanit']">{useLanguage().t('cancel')}</button>
+        <button onClick={onConfirm} className="flex-1 py-3 rounded-xl bg-[#FF0000] text-white hover:bg-[#990000] transition font-bold font-['Kanit']">{useLanguage().t('deleteNow')}</button>
       </div>
     </div>
   </div>
@@ -113,7 +114,7 @@ const ProductFormModal = ({ form, categories, isEditing, submitting, pendingFile
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
       <div className="bg-[#0a0a0a] border border-[#FF0000]/50 w-full max-w-lg rounded-3xl shadow-[0_0_50px_rgba(153,0,0,0.5)] overflow-hidden">
         <div className="bg-[#2E0505]/40 p-6 border-b border-[#990000]/20 flex justify-between items-center">
-          <h3 className="text-xl font-['Orbitron'] font-bold text-[#F2F4F6]">{isEditing ? 'แก้ไขสินค้า' : 'เพิ่มสินค้าใหม่'}</h3>
+          <h3 className="text-xl font-['Orbitron'] font-bold text-[#F2F4F6] tracking-wider">{isEditing ? useLanguage().t('editProduct') : useLanguage().t('addProduct')}</h3>
           <button onClick={onClose} className="p-2 hover:bg-[#990000] rounded-full transition text-[#F2F4F6]/50 hover:text-white"><X size={20} /></button>
         </div>
         <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto font-['Kanit']">
@@ -137,11 +138,11 @@ const ProductFormModal = ({ form, categories, isEditing, submitting, pendingFile
                     </button>
                     
                     {/* Set Main button */}
-                    <button type="button" onClick={() => onSetMainImage(img.imageUrl)} title="ตั้งเป็นรูปหลัก" className={`absolute top-1 left-1 w-5 h-5 rounded-full flex items-center justify-center transition shadow-lg z-10 ${isMain ? 'bg-yellow-500 opacity-100' : 'bg-black/50 opacity-0 group-hover:opacity-100 hover:bg-yellow-500/50'}`}>
+                    <button type="button" onClick={() => onSetMainImage(img.imageUrl)} title={useLanguage().t('mainImage')} className={`absolute top-1 left-1 w-5 h-5 rounded-full flex items-center justify-center transition shadow-lg z-10 ${isMain ? 'bg-yellow-500 opacity-100' : 'bg-black/50 opacity-0 group-hover:opacity-100 hover:bg-yellow-500/50'}`}>
                       <Star size={10} className={`${isMain ? 'text-black fill-black' : 'text-white'}`} />
                     </button>
                     
-                    {isMain && <span className="absolute bottom-1 right-1 bg-yellow-500 text-black text-[8px] font-bold px-1.5 py-0.5 rounded shadow">MAIN</span>}
+                    {isMain && <span className="absolute bottom-1 right-1 bg-yellow-500 text-black text-[8px] font-bold px-1.5 py-0.5 rounded shadow uppercase">MAIN</span>}
                   </div>
                 );
               })}
@@ -160,38 +161,38 @@ const ProductFormModal = ({ form, categories, isEditing, submitting, pendingFile
                 <button type="button" onClick={() => fileInputRef.current?.click()}
                   className="w-full aspect-square bg-black border-2 border-dashed border-[#990000]/50 rounded-xl flex flex-col items-center justify-center gap-1 hover:border-[#FF0000] transition cursor-pointer">
                   <ImagePlus className="text-[#F2F4F6]/30" size={24} />
-                  <span className="text-[9px] text-[#F2F4F6]/30">เพิ่มรูป</span>
+                  <span className="text-[9px] text-[#F2F4F6]/30 uppercase tracking-tighter">{useLanguage().t('create')}</span>
                 </button>
               )}
             </div>
-            <p className="text-[9px] text-[#F2F4F6]/30 mt-2">รองรับ JPG, PNG, WebP (ไม่เกิน 5MB ต่อรูป)</p>
+            <p className="text-[9px] text-[#F2F4F6]/30 mt-2">{useLanguage().t('imageSupport')}</p>
             <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={handleFileSelect} className="hidden" />
           </div>
 
           {/* ── Name ── */}
           <div>
-            <label className="text-xs font-['Orbitron'] text-[#FF0000] mb-2 block uppercase tracking-wider">ชื่อสินค้า *</label>
+            <label className="text-xs font-['Orbitron'] text-[#FF0000] mb-2 block uppercase tracking-wider">{useLanguage().t('productNameLabel')}</label>
             <input type="text" value={form.name} onChange={(e) => onFormChange({ ...form, name: e.target.value })}
-              placeholder="เช่น ROG Phone 8"
+              placeholder={useLanguage().t('productNamePlaceholder')}
               className="w-full bg-[#000000] border border-[#990000]/30 rounded-lg px-4 py-2.5 text-[#F2F4F6] text-sm focus:border-[#FF0000] outline-none transition" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-['Orbitron'] text-[#FF0000] mb-2 block uppercase tracking-wider">หมวดหมู่</label>
+              <label className="text-xs font-['Orbitron'] text-[#FF0000] mb-2 block uppercase tracking-wider">{useLanguage().t('category')}</label>
               <select value={form.categoryId} onChange={(e) => onFormChange({ ...form, categoryId: e.target.value })}
-                className="w-full bg-[#000000] border border-[#990000]/30 rounded-lg px-3 py-2.5 text-sm text-[#F2F4F6] focus:border-[#FF0000] outline-none transition">
-                <option value="">-- เลือก --</option>
+                className="w-full bg-[#000000] border border-[#990000]/30 rounded-lg px-3 py-2.5 text-sm text-[#F2F4F6] focus:border-[#FF0000] outline-none transition uppercase">
+                <option value="">{useLanguage().t('selectCategory')}</option>
                 {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-xs font-['Orbitron'] text-[#FF0000] mb-2 block uppercase tracking-wider">ราคา (฿) *</label>
+              <label className="text-xs font-['Orbitron'] text-[#FF0000] mb-2 block uppercase tracking-wider">{useLanguage().t('priceThb')}</label>
               <input type="number" value={form.price} onChange={(e) => onFormChange({ ...form, price: e.target.value })} placeholder="0"
                 className="w-full bg-[#000000] border border-[#990000]/30 rounded-lg px-4 py-2.5 text-[#F2F4F6] text-sm focus:border-[#FF0000] outline-none transition" />
             </div>
           </div>
           <div>
-            <label className="text-xs font-['Orbitron'] text-[#FF0000] mb-2 block uppercase tracking-wider">จำนวนสต็อก</label>
+            <label className="text-xs font-['Orbitron'] text-[#FF0000] mb-2 block uppercase tracking-wider">{useLanguage().t('stockCount')}</label>
             <input type="number" value={form.stock} onChange={(e) => onFormChange({ ...form, stock: e.target.value })} placeholder="0"
               className="w-full bg-[#000000] border border-[#990000]/30 rounded-lg px-4 py-2.5 text-[#F2F4F6] text-sm focus:border-[#FF0000] outline-none transition" />
           </div>
@@ -204,8 +205,8 @@ const ProductFormModal = ({ form, categories, isEditing, submitting, pendingFile
         </div>
         <div className="p-5 bg-[#2E0505]/20 border-t border-[#990000]/20">
           <button onClick={onSubmit} disabled={submitting}
-            className="w-full bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] disabled:opacity-50 text-white py-3 rounded-xl font-['Orbitron'] font-bold tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95">
-            <Save size={20} /> {submitting ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}
+            className="w-full bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] disabled:opacity-50 text-white py-3 rounded-xl font-['Orbitron'] font-bold tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95 shadow-[0_0_20px_rgba(255,0,0,0.3)]">
+            <Save size={20} /> {submitting ? useLanguage().t('saving') : useLanguage().t('saveProduct')}
           </button>
         </div>
       </div>
@@ -215,6 +216,7 @@ const ProductFormModal = ({ form, categories, isEditing, submitting, pendingFile
 
 // ── Main Page ─────────────────────────────────────────────────
 function AdminPage() {
+  const { t, language } = useLanguage();
   const [products, setProducts]                             = useState<Product[]>([]);
   const [categories, setCategories]                         = useState<Category[]>([]);
   const [loading, setLoading]                               = useState(true);
@@ -241,7 +243,7 @@ function AdminPage() {
 
   const fetchProducts = async () => {
     try { setProducts(await getProducts()); }
-    catch { showToast('โหลดสินค้าไม่สำเร็จ', 'error'); }
+    catch { showToast(t('toastLoadError'), 'error'); }
     finally { setLoading(false); }
   };
 
@@ -316,10 +318,10 @@ function AdminPage() {
   const handleToggleHide = async (p: Product) => {
     try {
       await updateProduct(p.id, { isHidden: !p.isHidden });
-      showToast(p.isHidden ? 'แสดงสินค้าสำเร็จ' : 'ซ่อนสินค้าสำเร็จ', 'success');
+      showToast(p.isHidden ? (language === 'TH' ? 'แสดงสินค้าสำเร็จ' : 'Product visible') : (language === 'TH' ? 'ซ่อนสินค้าสำเร็จ' : 'Product hidden'), 'success');
       fetchProducts();
     } catch {
-      showToast('เกิดข้อผิดพลาดในการซ่อน/แสดงสินค้า', 'error');
+      showToast(language === 'TH' ? 'เกิดข้อผิดพลาดในการซ่อน/แสดงสินค้า' : 'Error toggling visibility', 'error');
     }
   };
 
@@ -331,7 +333,7 @@ function AdminPage() {
   });
 
   return (
-    <AdminLayout breadcrumb="ศูนย์บริหารสินค้า">
+    <AdminLayout breadcrumb={t('adminCenter')}>
 
       {/* ── Toast ── */}
       {toast && (
@@ -370,12 +372,12 @@ function AdminPage() {
       {/* ── Page Header ── */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-['Orbitron'] font-bold text-[#F2F4F6] tracking-widest uppercase">INVENTORY</h1>
-          <p className="text-[#F2F4F6]/40 text-sm mt-1 font-['Kanit']">ศูนย์รวบรวมและบริหารจัดการสินค้าทั้งหมด</p>
+          <h1 className="text-3xl font-['Orbitron'] font-bold text-[#F2F4F6] tracking-widest uppercase">{t('inventory')}</h1>
+          <p className="text-[#F2F4F6]/40 text-sm mt-1 font-['Kanit']">{t('inventoryDesc')}</p>
         </div>
         <button onClick={openAddForm}
           className="bg-[#990000] hover:bg-[#FF0000] text-white px-5 py-2.5 rounded-lg flex items-center gap-2 font-['Kanit'] font-bold shadow-[0_0_15px_rgba(153,0,0,0.5)] transition hover:scale-105 active:scale-95">
-          <Plus size={18} /> เพิ่มสินค้าใหม่
+          <Plus size={18} /> {t('addProduct')}
         </button>
       </div>
 
@@ -384,7 +386,7 @@ function AdminPage() {
         <div className="flex gap-4 mb-6">
           <div className="relative flex-1 group">
             <div className="absolute inset-0 bg-[#FF0000]/10 blur-lg rounded-xl opacity-0 group-focus-within:opacity-100 transition duration-500" />
-            <input type="text" placeholder="ค้นหาสินค้า (ชื่อ, รหัส)..." value={searchTerm}
+            <input type="text" placeholder={t('searchProducts')} value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full bg-[#000000] border border-[#990000]/50 rounded-lg pl-4 pr-4 py-2 text-[#F2F4F6] focus:border-[#FF0000] outline-none font-['Kanit'] relative z-10" />
           </div>
@@ -395,7 +397,7 @@ function AdminPage() {
           </select>
           <button onClick={() => setShowCategoryManager(true)}
             className="bg-[#2E0505] hover:bg-[#990000] border border-[#990000]/50 hover:border-[#FF0000] text-[#F2F4F6]/70 hover:text-white text-xs px-4 py-2 rounded-lg transition font-['Kanit']">
-            จัดการหมวดหมู่
+            {t('manageCategories')}
           </button>
         </div>
 
@@ -405,18 +407,18 @@ function AdminPage() {
           <table className="w-full text-left text-[#F2F4F6]/70 min-w-[900px]">
             <thead>
               <tr className="border-b border-[#990000]/30 text-xs uppercase bg-[#2E0505]/50 font-['Orbitron']">
-                <th className="py-3 pl-4 rounded-tl-lg text-[#FF0000]">Product</th>
-                <th className="text-[#FF0000]">Category</th>
-                <th className="text-[#FF0000]">Price</th>
-                <th className="text-[#FF0000]">Stock</th>
-                <th className="text-right pr-4 rounded-tr-lg text-[#FF0000]">Actions</th>
+                <th className="py-3 pl-4 rounded-tl-lg text-[#FF0000]">{t('productName')}</th>
+                <th className="text-[#FF0000]">{t('category')}</th>
+                <th className="text-[#FF0000]">{t('price')}</th>
+                <th className="text-[#FF0000]">{t('stock')}</th>
+                <th className="text-right pr-4 rounded-tr-lg text-[#FF0000]">{t('actions')}</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={5} className="text-center py-16 text-[#F2F4F6]/30 font-['Kanit']">กำลังโหลด...</td></tr>
+                <tr><td colSpan={5} className="text-center py-16 text-[#F2F4F6]/30 font-['Kanit']">{t('loading')}</td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={5} className="text-center py-16 text-[#F2F4F6]/30 font-['Kanit']">ไม่พบสินค้า</td></tr>
+                <tr><td colSpan={5} className="text-center py-16 text-[#F2F4F6]/30 font-['Kanit']">{t('notFound')}</td></tr>
               ) : (
                 filtered.map((p) => (
                   <tr key={p.id} className="border-b border-[#990000]/20 hover:bg-[#2E0505]/30 transition group">
@@ -426,7 +428,7 @@ function AdminPage() {
                           <img src={p.imageUrl || 'https://dummyimage.com/50x50/000/fff'} alt="" className="max-w-full max-h-full object-contain p-1"
                             onError={(e) => { e.currentTarget.src = 'https://dummyimage.com/50x50/000/fff'; }} />
                         </div>
-                        <span className="font-bold text-[#F2F4F6] font-['Kanit']">{p.name} {p.isHidden && <span className="text-xs bg-red-500/20 text-red-500 px-2 py-0.5 rounded-full ml-2">ซ่อนอยู่</span>}</span>
+                        <span className="font-bold text-[#F2F4F6] font-['Kanit']">{p.name} {p.isHidden && <span className="text-xs bg-red-500/20 text-red-500 px-2 py-0.5 rounded-full ml-2">{t('isHidden')}</span>}</span>
                       </div>
                     </td>
                     <td><span className="bg-[#000000] px-2 py-1 rounded text-xs border border-[#990000]/30 font-['Kanit']">
@@ -444,11 +446,11 @@ function AdminPage() {
                     </td>
                     <td className="text-right pr-4">
                       <div className="flex justify-end gap-2">
-                        <button onClick={() => handleToggleHide(p)} className="p-2 bg-[#252525] hover:bg-yellow-500/20 text-yellow-400 rounded-lg transition border border-yellow-500/20" title={p.isHidden ? "แสดงสินค้า" : "ซ่อนสินค้า"}>
+                        <button onClick={() => handleToggleHide(p)} className="p-2 bg-[#252525] hover:bg-yellow-500/20 text-yellow-400 rounded-lg transition border border-yellow-500/20" title={p.isHidden ? t('show') : t('hide')}>
                           {p.isHidden ? <Eye size={16} /> : <EyeOff size={16} />}
                         </button>
-                        <button onClick={() => openEditForm(p)} className="p-2 bg-[#252525] hover:bg-blue-500/20 text-blue-400 rounded-lg transition border border-blue-500/20" title="แก้ไข"><Edit size={16} /></button>
-                        <button onClick={() => setDeleteConfirm(p.id)} className="p-2 bg-[#252525] hover:bg-red-500/20 text-[#FF0000] rounded-lg transition border border-red-500/20" title="ลบ"><Trash2 size={16} /></button>
+                        <button onClick={() => openEditForm(p)} className="p-2 bg-[#252525] hover:bg-blue-500/20 text-blue-400 rounded-lg transition border border-blue-500/20" title={t('edit')}><Edit size={16} /></button>
+                        <button onClick={() => setDeleteConfirm(p.id)} className="p-2 bg-[#252525] hover:bg-red-500/20 text-[#FF0000] rounded-lg transition border border-red-500/20" title={t('delete')}><Trash2 size={16} /></button>
                       </div>
                     </td>
                   </tr>

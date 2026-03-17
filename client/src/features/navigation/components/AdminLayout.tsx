@@ -124,29 +124,14 @@ const AdminLayout = ({ children, breadcrumb = 'ศูนย์บริหาร
         </nav>
 
         {/* Bottom actions */}
-        <div className="p-4 border-t border-[#990000]/30 space-y-1">
-          {/* ── Admin Dashboard Home ── */}
-          <button
-            onClick={() => navigate('/admin')}
-            title={isCollapsed ? t('adminHome') : ""}
-            className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-4 py-3 rounded-xl transition shadow-lg ${
-              location.pathname === '/admin' 
-              ? 'bg-[#990000] text-white border border-[#FF0000]/50' 
-              : 'hover:bg-[#2E0505] text-[#F2F4F6]/60 border border-transparent hover:border-[#990000]/30'
-            } group`}
-          >
-            <Home size={18} className={`shrink-0 ${location.pathname === '/admin' ? 'text-white' : 'text-[#F2F4F6]/30 group-hover:text-[#FF0000]'} transition`} />
-            {!isCollapsed && <span className="font-['Kanit'] text-sm font-semibold">{t('adminHome')}</span>}
-          </button>
-
+        <div className="p-4 border-t border-[#990000]/30 space-y-2">
           {/* ── Back to Site Home ── */}
           <button
             onClick={() => navigate('/')}
-            title={isCollapsed ? t('backToHome') : ""}
-            className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-4 py-2.5 rounded-lg hover:bg-white/5 text-[#F2F4F6]/30 hover:text-[#F2F4F6]/70 transition group`}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-[#2E0505] hover:bg-[#FF0000] text-[#FF0000] hover:text-white border border-[#990000]/30 transition group shadow-lg`}
           >
-            <Package size={16} className="shrink-0 group-hover:text-[#FF0000] transition" />
-            {!isCollapsed && <span className="font-['Kanit'] text-xs uppercase tracking-tighter">{t('backToHome')}</span>}
+            <Home size={18} className="shrink-0 group-hover:text-white transition" />
+            {!isCollapsed && <span className="font-['Kanit'] text-sm font-bold uppercase tracking-wider">{t('backToHomeShort')}</span>}
           </button>
         </div>
       </aside>
@@ -167,7 +152,7 @@ const AdminLayout = ({ children, breadcrumb = 'ศูนย์บริหาร
           </div>
           <div className="flex items-center gap-3">
             <div className="w-7 h-7 rounded-full bg-[#2E0505] flex items-center justify-center text-xs font-bold text-[#FF0000] border border-[#990000]">AD</div>
-            <span className="text-xs text-[#F2F4F6]/60 font-['Kanit']">{language === 'TH' ? 'ผู้ดูแลระบบ' : 'Administrator'}</span>
+            <span className="text-xs text-[#F2F4F6]/60 font-['Kanit']">{t('administrator')}</span>
           </div>
         </header>
 

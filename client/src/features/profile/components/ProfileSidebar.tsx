@@ -1,6 +1,7 @@
 import React from 'react';
 import { User, MapPin, Package } from 'lucide-react';
 import type { UserData } from '../types/profile.types';
+import { useLanguage } from '../../../shared/context/LanguageContext';
 
 interface ProfileSidebarProps {
   userData: UserData;
@@ -10,10 +11,11 @@ interface ProfileSidebarProps {
 }
 
 export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ userData, activeTab, setActiveTab, picture }) => {
+  const { t } = useLanguage();
   const navItems = [
-    { id: 'info', icon: User, label: 'ข้อมูลส่วนตัว' },
-    { id: 'addresses', icon: MapPin, label: 'ที่อยู่จัดส่ง' },
-    { id: 'orders', icon: Package, label: 'ประวัติการสั่งซื้อ' }
+    { id: 'info', icon: User, label: t('personalInfo') },
+    { id: 'addresses', icon: MapPin, label: t('addresses') },
+    { id: 'orders', icon: Package, label: t('orders') }
   ];
 
   return (

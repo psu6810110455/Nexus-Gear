@@ -11,6 +11,7 @@ import {
   getServerUrl,
 } from "../../../shared/services/api";
 import type { Product } from "../../../shared/types";
+import { useLanguage } from "../../../shared/context/LanguageContext";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import ReviewList from "../components/ReviewList";
@@ -18,6 +19,7 @@ import ReviewList from "../components/ReviewList";
 const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { language, t } = useLanguage();
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,10 +49,10 @@ const ProductDetailPage: React.FC = () => {
     setAddingToCart(true);
     try {
       await addToCart(product.id, quantity);
-      toast.success(`✅ เพิ่ม "${product.name}" ลงตะกร้าแล้ว!`);
+      toast.success(language === 'TH' ? `✅ เพิ่ม "${product.name}" ลงตะกร้าแล้ว!` : `✅ Added "${product.name}" to cart!`);
     } catch (err) {
       console.error(err);
-      toast.error("❌ เกิดข้อผิดพลาด กรุณาลองใหม่");
+      toast.error(language === 'TH' ? "❌ เกิดข้อผิดพลาด กรุณาลองใหม่" : "❌ Error, please try again");
     } finally {
       setAddingToCart(false);
     }
@@ -64,7 +66,7 @@ const ProductDetailPage: React.FC = () => {
       navigate("/cart");
     } catch (err) {
       console.error(err);
-      toast.error("❌ เกิดข้อผิดพลาด กรุณาลองใหม่");
+      toast.error(language === 'TH' ? "❌ เกิดข้อผิดพลาด กรุณาลองใหม่" : "❌ Error, please try again");
       setAddingToCart(false);
     }
   };
@@ -124,13 +126,13 @@ const ProductDetailPage: React.FC = () => {
   if (loading)
     return (
       <div className="min-h-screen bg-[#0f0f12] flex items-center justify-center text-white">
-        กำลังโหลด...
+        {t('loading')}
       </div>
     );
   if (!product)
     return (
       <div className="min-h-screen bg-[#0f0f12] flex items-center justify-center text-white">
-        ไม่พบสินค้า
+        {t('notFound')}
       </div>
     );
 
@@ -143,7 +145,7 @@ const ProductDetailPage: React.FC = () => {
             className="text-gray-500 hover:text-white flex items-center gap-2 text-sm font-bold transition group"
           >
             <span className="group-hover:-translate-x-1 transition">←</span>{" "}
-            กลับหน้ารายการสินค้า
+            {t('backToProducts')}
           </button>
         </div>
 
@@ -218,7 +220,7 @@ const ProductDetailPage: React.FC = () => {
             )}
 
             <span className="absolute top-4 left-4 bg-red-600 text-white text-[10px] font-bold px-3 py-1 rounded uppercase tracking-wider shadow-lg">
-              New Arrival
+              {t('newArrival')}
             </span>
           </div>
 
@@ -236,15 +238,15 @@ const ProductDetailPage: React.FC = () => {
                 {renderStars(Math.floor((product.id % 2) + 4))}
               </div>
               <span className="text-gray-400">
-                ({((product.id % 2) + 4).toFixed(1)} Reviews)
+                ({((product.id % 2) + 4).toFixed(1)} {language === 'TH' ? 'รีวิว' : 'Reviews'})
               </span>
               <span className="text-gray-600">|</span>
               <span className="text-green-400">
-                ขายแล้ว {((product.id % 15) * 123 + 45).toLocaleString()} ชิ้น
+                {t('sold')} {((product.id % 15) * 123 + 45).toLocaleString()} {t('piece')}
               </span>
             </div>
             <div className="mb-8">
-              <p className="text-gray-400 text-sm mb-1">ราคาพิเศษ</p>
+              <p className="text-gray-400 text-sm mb-1">{t('specialPrice')}</p>
               <div className="flex items-end gap-3">
                 <p className="text-4xl font-bold text-red-500">
                   ฿{Number(product.price).toLocaleString()}
@@ -256,9 +258,9 @@ const ProductDetailPage: React.FC = () => {
             </div>
             <div className="mb-8 bg-[#18181b] p-4 rounded-xl border border-white/5">
               <p className="text-sm text-gray-400 mb-3 flex justify-between">
-                <span>จำนวน</span>
+                <span>{t('quantity')}</span>
                 <span className="text-xs text-gray-500">
-                  มีสินค้า {product.stock} ชิ้น
+                  {t('inStock')} {product.stock} {t('piece')}
                 </span>
               </p>
               <div className="flex items-center bg-black border border-white/20 rounded-lg w-fit">
@@ -291,37 +293,18 @@ const ProductDetailPage: React.FC = () => {
                 className="flex-1 bg-[#18181b] border border-white/20 hover:bg-white hover:text-black text-white py-3.5 rounded-lg font-bold transition flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span className="group-hover:scale-110 transition">🛒</span>
-                {addingToCart ? "กำลังเพิ่ม..." : "ใส่ตะกร้า"}
+                {addingToCart ? t('adding') : t('addToCart')}
               </button>
               <button
                 onClick={handleBuyNow}
                 disabled={addingToCart || product.stock === 0}
                 className="flex-1 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-white py-3.5 rounded-lg font-bold shadow-lg shadow-red-900/40 transition transform active:scale-95"
               >
-                {product.stock === 0 ? "สินค้าหมด" : "ซื้อเลย"}
+                {product.stock === 0 ? t('outOfStock') : t('buyNow')}
               </button>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-white/10">
-              <p className="text-xs text-gray-500 uppercase font-bold mb-3">
-                อุปกรณ์ภายในกล่อง 📦
-              </p>
-              <div className="flex gap-3 opacity-60">
-                {[
-                  ["📄", "Manual"],
-                  ["🔌", "Cable"],
-                  ["🛡️", "Warranty"],
-                ].map(([icon, label]) => (
-                  <div
-                    key={label}
-                    className="w-12 h-12 bg-white/5 border border-white/10 rounded flex flex-col items-center justify-center text-[8px] gap-1"
-                  >
-                    <span>{icon}</span>
-                    <span>{label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            {/* Package details removed as requested */}
           </div>
         </div>
 
@@ -329,41 +312,18 @@ const ProductDetailPage: React.FC = () => {
         <div className="mb-12">
           <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
             <span className="w-1.5 h-8 bg-red-600 rounded-full block"></span>{" "}
-            รายละเอียดสินค้า
+            {t('productDetail')}
           </h3>
           <div className="bg-[#18181b] p-8 rounded-2xl border border-white/5 text-gray-300 leading-relaxed shadow-lg">
             <p className="text-xl font-semibold text-white mb-6">
               {product.name}
             </p>
-            <p className="mb-6 text-gray-400">
+            <p className="mb-0 text-gray-400">
               {product.description ||
-                "สัมผัสประสบการณ์การเล่นเกมที่เหนือกว่าด้วยอุปกรณ์ Gaming Gear ระดับโปร..."}
+                (language === 'TH' 
+                  ? "สัมผัสประสบการณ์การเล่นเกมที่เหนือกว่าด้วยอุปกรณ์ Gaming Gear ระดับโปร..."
+                  : "Experience superior gaming with professional-level Gaming Gear...")}
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-black/30 p-4 rounded-lg border border-white/5">
-                <h4 className="text-white font-bold mb-2">Key Features</h4>
-                <ul className="list-disc list-inside space-y-2 text-sm text-gray-400">
-                  <li>การเชื่อมต่อความเร็วสูง (Low Latency)</li>
-                  <li>วัสดุพรีเมียม ทนทานพิเศษ</li>
-                  <li>RGB Lighting ปรับแต่งได้ 16.8 ล้านสี</li>
-                </ul>
-              </div>
-              <div className="bg-black/30 p-4 rounded-lg border border-white/5">
-                <h4 className="text-white font-bold mb-2">Technical Specs</h4>
-                <ul className="space-y-2 text-sm text-gray-400">
-                  {[
-                    ["Warranty:", "2 Years"],
-                    ["Weight:", "350g"],
-                    ["Color:", "Black / Red"],
-                  ].map(([k, v]) => (
-                    <li key={k} className="flex justify-between">
-                      <span>{k}</span>
-                      <span className="text-white">{v}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -373,9 +333,9 @@ const ProductDetailPage: React.FC = () => {
         {/* Related Products */}
         <div className="border-t border-white/10 pt-10">
           <h3 className="text-2xl font-bold mb-8 text-white flex items-center gap-2">
-            สินค้าที่คุณอาจจะชอบ
-            <span className="text-red-600 text-sm font-normal cursor-pointer hover:underline">
-              ดูทั้งหมด →
+            {t('relatedProducts')}
+            <span className="text-red-600 text-sm font-normal cursor-pointer hover:underline" onClick={() => navigate('/shop')}>
+               {t('viewAll')} →
             </span>
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -431,7 +391,7 @@ const ProductDetailPage: React.FC = () => {
               ))
             ) : (
               <p className="text-gray-500 col-span-4 text-center py-10">
-                ไม่มีสินค้าแนะนำในหมวดนี้
+                {language === 'TH' ? 'ไม่มีสินค้าแนะนำในหมวดนี้' : 'No related products found'}
               </p>
             )}
           </div>

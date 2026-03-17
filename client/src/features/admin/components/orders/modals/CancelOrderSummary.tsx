@@ -3,12 +3,14 @@
 import { MapPin, Package, CreditCard } from "lucide-react";
 import { getServerUrl } from "../../../../../shared/services/api";
 import type { Order } from "../../../../../shared/types";
+import { useLanguage } from "../../../../../shared/context/LanguageContext";
 
 interface Props {
   order: Order;
 }
 
 const CancelOrderSummary = ({ order }: Props) => {
+  const { t } = useLanguage();
   const slipUrl = order.slip_image
     ? getServerUrl(`/uploads/slips/${order.slip_image}`)
     : null;
@@ -20,7 +22,7 @@ const CancelOrderSummary = ({ order }: Props) => {
         {/* ผู้ซื้อ */}
         <div className="bg-zinc-900/50 rounded-xl p-4 border border-zinc-800 space-y-3">
           <p className="text-[#FF0000] text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-            <MapPin size={12} /> ผู้ซื้อ & ที่อยู่
+            <MapPin size={12} /> {t('buyerAddress')}
           </p>
           <div>
             <p className="text-white font-bold">
@@ -36,7 +38,7 @@ const CancelOrderSummary = ({ order }: Props) => {
         {/* รายการสินค้า */}
         <div className="bg-zinc-900/50 rounded-xl p-4 border border-zinc-800">
           <p className="text-[#FF0000] text-xs font-bold uppercase tracking-widest flex items-center gap-2 mb-3">
-            <Package size={12} /> รายการสินค้า
+            <Package size={12} /> {t('productList')}
           </p>
           <div className="space-y-2 max-h-40 overflow-y-auto scrollbar-hide">
             {order.items.map((item, i) => (
@@ -65,7 +67,7 @@ const CancelOrderSummary = ({ order }: Props) => {
             ))}
           </div>
           <div className="mt-3 pt-3 border-t border-zinc-800 flex justify-between">
-            <span className="text-zinc-500 text-xs">ยอดรวมทั้งสิ้น</span>
+            <span className="text-zinc-500 text-xs">{t('total')}</span>
             <span className="text-red-400 font-bold text-sm">
               ฿{Number(order.total_price).toLocaleString()}
             </span>
@@ -77,7 +79,7 @@ const CancelOrderSummary = ({ order }: Props) => {
       {slipUrl && (
         <div className="bg-zinc-900/50 rounded-xl p-4 border border-zinc-800">
           <p className="text-[#FF0000] text-xs font-bold uppercase tracking-widest flex items-center gap-2 mb-3">
-            <CreditCard size={12} /> หลักฐานการชำระเงินของลูกค้า
+            <CreditCard size={12} /> {t('customerPaymentSlip')}
           </p>
           <div className="flex items-center gap-4">
             <img
@@ -87,19 +89,19 @@ const CancelOrderSummary = ({ order }: Props) => {
             />
             <div className="text-xs text-zinc-400 space-y-1">
               <p>
-                ช่องทาง:{" "}
+                {t('channel')}:{" "}
                 <span className="text-zinc-200">
-                  {order.payment_method === "qr" ? "QR Code" : "โอนเงินธนาคาร"}
+                  {order.payment_method === "qr" ? "QR Code" : t('transferPayment')}
                 </span>
               </p>
               <p>
-                วันที่สั่งซื้อ:{" "}
+                {t('orderDate')}:{" "}
                 <span className="text-zinc-200">
                   {new Date(order.created_at).toLocaleString("th-TH")}
                 </span>
               </p>
               <p>
-                ยอดชำระ:{" "}
+                {t('paymentAmount')}:{" "}
                 <span className="text-red-400 font-bold">
                   ฿{Number(order.total_price).toLocaleString()}
                 </span>
@@ -116,17 +118,17 @@ const CancelOrderSummary = ({ order }: Props) => {
         order.refund_bank_account) && (
         <div className="bg-emerald-950/30 rounded-xl p-4 border border-emerald-800/40">
           <p className="text-emerald-400 text-xs font-bold uppercase tracking-widest flex items-center gap-2 mb-3">
-            <CreditCard size={12} /> ข้อมูลธนาคารลูกค้า
+            <CreditCard size={12} /> {t('customerBankInfo')}
           </p>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <p className="text-zinc-500 text-[10px] mb-0.5">ชื่อธนาคาร</p>
+              <p className="text-zinc-500 text-[10px] mb-0.5">{t('bankName')}</p>
               <p className="text-zinc-200 text-sm font-bold">
                 {order.refund_bank_name || order.user?.bank_name || "—"}
               </p>
             </div>
             <div>
-              <p className="text-zinc-500 text-[10px] mb-0.5">เลขบัญชี</p>
+              <p className="text-zinc-500 text-[10px] mb-0.5">{t('accountNumber')}</p>
               <p className="text-zinc-200 text-sm font-bold">
                 {order.refund_bank_account || order.user?.bank_account || "—"}
               </p>

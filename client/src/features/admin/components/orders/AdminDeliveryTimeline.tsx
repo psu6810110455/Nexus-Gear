@@ -9,13 +9,14 @@ import {
   Ban,
   RotateCcw,
 } from "lucide-react";
+import { useLanguage } from "../../../../shared/context/LanguageContext";
 
-const DELIVERY_STEPS = [
-  { key: "pending", label: "แจ้งชำระเงิน", icon: Clock },
-  { key: "paid", label: "เตรียมพัสดุ", icon: Package },
-  { key: "to_ship", label: "เตรียมจัดส่ง", icon: PackageCheck },
-  { key: "shipped", label: "กำลังจัดส่ง", icon: Truck },
-  { key: "completed", label: "สำเร็จ", icon: Star },
+const DELIVERY_STEPS = (t: any) => [
+  { key: "pending", label: t('paymentNotified'), icon: Clock },
+  { key: "paid", label: t('packaging'), icon: Package },
+  { key: "to_ship", label: t('readyToShip'), icon: PackageCheck },
+  { key: "shipped", label: t('shippedLabel'), icon: Truck },
+  { key: "completed", label: t('completedStatus'), icon: Star },
 ];
 const STATUS_ORDER = ["pending", "paid", "to_ship", "shipped", "completed"];
 
@@ -25,16 +26,18 @@ interface Props {
 }
 
 const AdminDeliveryTimeline = ({ status, cancelReason }: Props) => {
+  const { t } = useLanguage();
   const isCancelled = status === "cancelled";
   const isReturn = isCancelled && !!cancelReason?.startsWith("ขอคืนสินค้า:");
   const currentIdx = STATUS_ORDER.indexOf(status);
+  const steps = DELIVERY_STEPS(t);
 
   return (
     <div className="bg-zinc-900/50 rounded-xl border border-zinc-800 overflow-hidden">
       {/* ── ส่วนบน: สถานะการจัดส่ง ── */}
       <div className="p-4">
         <div className="flex items-center gap-2 text-red-500 mb-4 font-bold text-xs uppercase tracking-widest">
-          <Truck size={13} /> สถานะการจัดส่ง
+          <Truck size={13} /> {t('deliveryStatus')}
         </div>
 
         {isCancelled ? (
@@ -43,10 +46,10 @@ const AdminDeliveryTimeline = ({ status, cancelReason }: Props) => {
               <RotateCcw size={16} className="text-orange-400 shrink-0" />
               <div>
                 <p className="text-orange-400 font-bold text-sm">
-                  แจ้งดำเนินการคืนสินค้า
+                  {t('returnRequested')}
                 </p>
                 <p className="text-zinc-500 text-xs mt-0.5">
-                  ลูกค้าขอคืนสินค้า
+                  {t('customerReturnReq')}
                 </p>
               </div>
             </div>
@@ -55,17 +58,17 @@ const AdminDeliveryTimeline = ({ status, cancelReason }: Props) => {
               <Ban size={16} className="text-red-400 shrink-0" />
               <div>
                 <p className="text-red-400 font-bold text-sm">
-                  ยกเลิกคำสั่งซื้อ
+                  {t('orderCancelled')}
                 </p>
                 <p className="text-zinc-500 text-xs mt-0.5">
-                  คำสั่งซื้อนี้ถูกยกเลิกแล้ว
+                  {t('orderCancelledMsg')}
                 </p>
               </div>
             </div>
           )
         ) : (
           <ol className="relative ml-3">
-            {DELIVERY_STEPS.map(({ key, label, icon: Icon }, idx) => {
+            {steps.map(({ key, label, icon: Icon }, idx) => {
               const isDone = currentIdx >= idx;
               const isCurrent = currentIdx === idx;
               return (
@@ -101,7 +104,7 @@ const AdminDeliveryTimeline = ({ status, cancelReason }: Props) => {
                     {isCurrent && (
                       <p className="text-xs text-zinc-500 mt-0.5 flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse inline-block" />
-                        สถานะปัจจุบัน
+                        {t('currentStatus')}
                       </p>
                     )}
                   </div>

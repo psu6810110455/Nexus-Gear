@@ -19,20 +19,53 @@ import AdminOrdersTabs from "../components/orders/AdminOrdersTabs";
 import AdminOrdersTable from "../components/orders/AdminOrdersTable";
 import OrderDetailModal from "../../orders/components/OrderDetailModal";
 import AdminCancelOrderModal from "../components/orders/modals/AdminCancelOrderModal";
-
-const THAI_STATUS: Record<string, string> = {
-  pending: "รอชำระเงิน",
-  paid: "ชำระเงินแล้ว",
-  to_ship: "เตรียมจัดส่ง",
-  shipped: "จัดส่งแล้ว",
-  completed: "สำเร็จ",
-  cancelled: "ยกเลิก",
-};
+import { useLanguage } from '../../../shared/context/LanguageContext';
 
 const NexusGearAdminOrders = () => {
+  const { t, language } = useLanguage();
+
+  // Localized Status Mapping
+  const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
+    'pending': {
+      label: language === 'TH' ? 'รอตรวจสอบ' : 'Wait Verify',
+      color: 'text-yellow-500',
+      bg: 'bg-yellow-500/10'
+    },
+    'paid': {
+      label: language === 'TH' ? 'ชำระเงินแล้ว' : 'Paid',
+      color: 'text-blue-500',
+      bg: 'bg-blue-500/10'
+    },
+    'processing': {
+      label: language === 'TH' ? 'เตรียมจัดส่ง' : 'To Ship',
+      color: 'text-purple-500',
+      bg: 'bg-purple-500/10'
+    },
+    'shipped': {
+      label: language === 'TH' ? 'ระหว่างขนส่ง' : 'Shipping',
+      color: 'text-orange-500',
+      bg: 'bg-orange-500/10'
+    },
+    'completed': {
+      label: language === 'TH' ? 'สำเร็จ' : 'Completed',
+      color: 'text-green-500',
+      bg: 'bg-green-500/10'
+    },
+    'cancelled': {
+      label: language === 'TH' ? 'ยกเลิก' : 'Cancelled',
+      color: 'text-red-500',
+      bg: 'bg-red-500/10'
+    },
+    'returned': {
+      label: language === 'TH' ? 'คืนสินค้า' : 'Returned',
+      color: 'text-gray-400',
+      bg: 'bg-gray-400/10'
+    }
+  };
+
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("All");
+  const [activeTab, setActiveTab] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [cancelTarget, setCancelTarget] = useState<Order | null>(null);
@@ -91,7 +124,7 @@ const NexusGearAdminOrders = () => {
       );
       setSelectedOrder(null);
       showToast(
-        `อัปเดตสถานะเป็น "${THAI_STATUS[newStatus] || newStatus}" สำเร็จ!`,
+        `อัปเดตสถานะเป็น "${STATUS_CONFIG[newStatus]?.label || newStatus}" สำเร็จ!`,
         true,
       );
     } catch {
@@ -208,7 +241,7 @@ const NexusGearAdminOrders = () => {
   };
 
   const filtered = orders.filter((order) => {
-    const matchTab = activeTab === "All" || order.status === activeTab;
+    const matchTab = activeTab === "all" || order.status === activeTab;
     const search = searchTerm.toLowerCase();
     const matchSearch =
       `ORD-${String(order.id).padStart(3, "0")}`
@@ -225,7 +258,7 @@ const NexusGearAdminOrders = () => {
   const STATUS_RANK: Record<string, number> = {
     pending: 0,
     paid: 1,
-    to_ship: 2,
+    processing: 2, // Changed from to_ship to processing
     shipped: 3,
     completed: 4,
   };
@@ -284,14 +317,15 @@ const NexusGearAdminOrders = () => {
 
       {/* ── Header ── */}
       <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-8">
-        <div>
-          <h1 className="text-3xl font-['Orbitron'] font-bold text-[#F2F4F6] tracking-widest uppercase">
-            ORDERS
-          </h1>
-          <p className="text-[#F2F4F6]/40 text-sm mt-1 font-['Kanit']">
-            จัดการและตรวจสอบสถานะคำสั่งซื้อทั้งหมด
-          </p>
-        </div>
+          <div className="flex flex-col gap-2">
+            <h1 className="text-3xl font-['Orbitron'] font-bold text-[#F2F4F6] flex items-center gap-3">
+              <div aria-hidden="true" className="w-1.5 h-8 bg-[#FF0000] rounded-full shadow-[0_0_15px_#FF0000]"></div>
+              {t('manageOrders')}
+            </h1>
+            <p className="text-[#F2F4F6]/40 font-['Kanit'] text-sm">
+              {language === 'TH' ? 'ตรวจสอบยอดชำระและจัดการสถานะการจัดส่ง' : 'Verify payments and manage shipping status'}
+            </p>
+          </div>
 
         {/* Search */}
         <div className="relative w-full xl:w-96 group shrink-0">

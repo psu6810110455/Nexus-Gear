@@ -104,7 +104,7 @@ const ChatWidget: React.FC = () => {
       });
 
       return () => {
-        socket.disconnect();
+        // Remove socket.disconnect() to keep singleton alive
       };
     }
   }, [isLoggedIn, user, isOpen]);

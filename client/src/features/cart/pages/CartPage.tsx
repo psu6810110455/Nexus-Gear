@@ -237,7 +237,7 @@ export default function CartPage({ onNavigate }: CartProps) {
                 </div>
                 <div className="flex-1 text-right">
                     <button onClick={() => openDeleteModal('all')} className="text-[#990000] hover:text-[#FF0000] text-xs font-['Orbitron'] tracking-wider transition flex items-center gap-2 group justify-end ml-auto">
-                        <Trash2 className="w-3 h-3 group-hover:rotate-12 transition-transform" /> {language === 'TH' ? 'ลบทั้งหมด' : 'DELETE ALL'}
+                        <Trash2 className="w-3 h-3 group-hover:rotate-12 transition-transform" /> {t('deleteAll')}
                     </button>
                 </div>
             </header>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Brain, TrendingUp, TrendingDown, Minus, Zap } from 'lucide-react';
+import { useLanguage } from '../../../shared/context/LanguageContext';
 
 export interface AISummaryData {
   todaySales: number;
@@ -15,36 +16,46 @@ interface AISummaryBoxProps {
   data: AISummaryData | null;
 }
 
-function generateInsights(data: AISummaryData): string {
-  const sales = Number(data.todaySales).toLocaleString('th-TH', { minimumFractionDigits: 2 });
+function generateInsights(data: AISummaryData, lang: 'TH' | 'EN'): string {
+  const isTH = lang === 'TH';
+  const sales = Number(data.todaySales).toLocaleString(isTH ? 'th-TH' : 'en-US', { minimumFractionDigits: 2 });
   const lines: string[] = [];
 
-  lines.push(`วันนี้มียอดขาย ฿${sales} จาก ${data.todayOrders} ออเดอร์`);
+  if (isTH) {
+    lines.push(`วันนี้มียอดขาย ฿${sales} จาก ${data.todayOrders} ออเดอร์`);
+  } else {
+    lines.push(`Today's sales: ฿${sales} from ${data.todayOrders} orders`);
+  }
 
   if (data.trend === 'up') {
-    lines.push(`📈 สูงกว่าเมื่อวาน ${data.trendPercent.toFixed(1)}% — แนวโน้มดีมาก`);
+    lines.push(isTH 
+      ? `📈 สูงกว่าเมื่อวาน ${data.trendPercent.toFixed(1)}% — แนวโน้มดีมาก`
+      : `📈 ${data.trendPercent.toFixed(1)}% higher than yesterday — excellent trend`);
   } else if (data.trend === 'down') {
-    lines.push(`📉 ต่ำกว่าเมื่อวาน ${data.trendPercent.toFixed(1)}% — ควรตรวจสอบ stock`);
+    lines.push(isTH 
+      ? `📉 ต่ำกว่าเมื่อวาน ${data.trendPercent.toFixed(1)}% — ควรตรวจสอบ stock`
+      : `📉 ${data.trendPercent.toFixed(1)}% lower than yesterday — check stock levels`);
   } else {
-    lines.push(`➡️ ใกล้เคียงกับเมื่อวาน — ยอดขายคงที่`);
+    lines.push(isTH ? `➡️ ใกล้เคียงกับเมื่อวาน — ยอดขายคงที่` : `➡️ Similar to yesterday — stable sales`);
   }
 
   if (data.topProduct && data.topProduct !== 'N/A') {
-    lines.push(`🏆 สินค้าขายดีที่สุด: ${data.topProduct}`);
+    lines.push(isTH ? `🏆 สินค้าขายดีที่สุด: ${data.topProduct}` : `🏆 Top Selling: ${data.topProduct}`);
   }
 
   if (data.trend === 'down') {
-    lines.push(`💡 แนะนำ: ลองเพิ่ม promotion เพื่อกระตุ้นยอด`);
+    lines.push(isTH ? `💡 แนะนำ: ลองเพิ่ม promotion เพื่อกระตุ้นยอด` : `💡 Recommendation: Try adding promotions to boost sales`);
   } else if (data.todayOrders === 0) {
-    lines.push(`💡 ยังไม่มีออเดอร์วันนี้ — ระบบรอการสั่งซื้อ`);
+    lines.push(isTH ? `💡 ยังไม่มีออเดอร์วันนี้ — ระบบรอการสั่งซื้อ` : `💡 No orders today yet — system waiting for purchases`);
   } else {
-    lines.push(`💡 แนะนำ: เพิ่ม stock สินค้าขายดีเพื่อรองรับดีมานด์`);
+    lines.push(isTH ? `💡 แนะนำ: เพิ่ม stock สินค้าขายดีเพื่อรองรับดีมานด์` : `💡 Recommendation: Increase stock for best-sellers to meet demand`);
   }
 
   return lines.join('\n');
 }
 
 export default function AISummaryBox({ data }: AISummaryBoxProps) {
+  const { language, t } = useLanguage();
   const [displayText, setDisplayText] = useState('');
   const [isDone, setIsDone] = useState(false);
 
@@ -52,7 +63,7 @@ export default function AISummaryBox({ data }: AISummaryBoxProps) {
     if (!data) return;
 
     // รีเซ็ตทุกครั้งที่ได้รับข้อมูล
-    const fullText = generateInsights(data);
+    const fullText = generateInsights(data, language);
     setDisplayText('');
     setIsDone(false);
 
@@ -67,7 +78,7 @@ export default function AISummaryBox({ data }: AISummaryBoxProps) {
     }, 20);
 
     return () => clearInterval(timer);
-  }, [data?.todaySales, data?.todayOrders, data?.trend, data?.topProduct]);
+  }, [data?.todaySales, data?.todayOrders, data?.trend, data?.topProduct, language]);
 
   const TrendIcon = data?.trend === 'up' ? TrendingUp : data?.trend === 'down' ? TrendingDown : Minus;
 
@@ -85,7 +96,7 @@ export default function AISummaryBox({ data }: AISummaryBoxProps) {
           <span aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]" />
           <h3 className="text-lg font-['Orbitron'] font-bold text-[#F2F4F6] tracking-wider flex items-center gap-2">
             <Brain className="w-5 h-5 text-[#FF0000]" aria-hidden="true" />
-            AI ANALYSIS
+            {t('aiAnalysis')}
           </h3>
         </div>
         <div className="flex items-center gap-2 bg-[#0a0a0a] border border-[#990000]/30 rounded-lg px-3 py-1.5">
@@ -103,9 +114,9 @@ export default function AISummaryBox({ data }: AISummaryBoxProps) {
                                   'border-yellow-500/30 bg-yellow-500/10 text-yellow-400'
         }`}>
           <TrendIcon className="w-3 h-3" aria-hidden="true" />
-          {data.trend === 'up'   ? `+${data.trendPercent.toFixed(1)}% จากเมื่อวาน` :
-           data.trend === 'down' ? `-${data.trendPercent.toFixed(1)}% จากเมื่อวาน` :
-                                   'คงที่จากเมื่อวาน'}
+          {data.trend === 'up'   ? (language === 'TH' ? `+${data.trendPercent.toFixed(1)}% จากเมื่อวาน` : `+${data.trendPercent.toFixed(1)}% vs yesterday`) :
+           data.trend === 'down' ? (language === 'TH' ? `-${data.trendPercent.toFixed(1)}% จากเมื่อวาน` : `-${data.trendPercent.toFixed(1)}% vs yesterday`) :
+                                   (language === 'TH' ? 'คงที่จากเมื่อวาน' : 'Stable vs yesterday')}
         </div>
       )}
 
@@ -114,7 +125,7 @@ export default function AISummaryBox({ data }: AISummaryBoxProps) {
         {!data ? (
           <div className="flex items-center gap-3 text-[#F2F4F6]/40">
             <div className="w-4 h-4 border-2 border-[#FF0000]/50 border-t-[#FF0000] rounded-full animate-spin" />
-            <span className="text-sm">กำลังวิเคราะห์ข้อมูล...</span>
+            <span className="text-sm">{t('analyzing')}</span>
           </div>
         ) : (
           <p className="text-sm text-[#F2F4F6]/80 leading-7 whitespace-pre-line">
@@ -130,7 +141,7 @@ export default function AISummaryBox({ data }: AISummaryBoxProps) {
       {isDone && data && (
         <footer className="mt-5 pt-4 border-t border-[#990000]/20 flex items-center justify-between">
           <span className="text-[10px] text-[#F2F4F6]/30 font-['Orbitron'] tracking-widest">NEXUS AI ENGINE v1.0</span>
-          <span className="text-[10px] text-[#F2F4F6]/30 font-['Kanit']">อัปเดตทุก 30 วินาที</span>
+          <span className="text-[10px] text-[#F2F4F6]/30 font-['Kanit']">{t('updateEvery30Sec')}</span>
         </footer>
       )}
     </section>

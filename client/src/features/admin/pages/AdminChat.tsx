@@ -138,6 +138,10 @@ const AdminChat: React.FC = () => {
        addMessagesToSession(msg.userId, msg);
     });
 
+    if (!socket.connected) {
+      socket.connect();
+    }
+
     socket.on('adminTyping', (data: { userId: number; isTyping: boolean }) => {
       setSessions(prev => {
         if (!prev[data.userId]) return prev;
@@ -161,23 +165,32 @@ const AdminChat: React.FC = () => {
     });
 
     socket.on('adminSessionsHistory', (initialMessages: ChatMessage[]) => {
-      initialMessages.forEach(msg => {
-        setSessions(prev => {
-          if (prev[msg.userId]) return prev;
-          return {
-            ...prev,
-            [msg.userId]: {
+      setSessions(prev => {
+        const next = { ...prev };
+        initialMessages.forEach(msg => {
+          if (!next[msg.userId]) {
+            next[msg.userId] = {
               userId: msg.userId,
               userName: msg.user?.name || `User #${msg.userId}`,
               userPicture: msg.user?.picture,
               lastMessage: msg.message,
               lastTime: msg.createdAt,
-              unreadCount: 0, // Simplified for now
+              unreadCount: 0,
               messages: [msg],
               isTyping: false
+            };
+          } else {
+            // Update existing session if needed
+            const session = next[msg.userId];
+            if (!session.messages.some(m => m.id === msg.id)) {
+              session.messages = [...session.messages, msg].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+              const last = session.messages[session.messages.length - 1];
+              session.lastMessage = last.message;
+              session.lastTime = last.createdAt;
             }
-          };
+          }
         });
+        return next;
       });
     });
 
@@ -185,7 +198,7 @@ const AdminChat: React.FC = () => {
     socket.emit('adminGetAllSessions');
 
     return () => {
-      socket.disconnect();
+      // Remove socket.disconnect() to keep singleton alive
     };
   }, []); // Only once
 

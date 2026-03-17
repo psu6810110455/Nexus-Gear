@@ -1,5 +1,6 @@
-import { Check, Loader, RefreshCw, Clock } from 'lucide-react'; // ✨ เพิ่มไอคอน RefreshCw และ Clock
+import { Check, Loader, RefreshCw, Clock } from 'lucide-react'; 
 import { useEffect, useRef, useState } from 'react'; 
+import { useLanguage } from '../../../shared/context/LanguageContext';
 import api from '../../../shared/services/api';        
 import QRCode from 'qrcode';                               
 
@@ -20,7 +21,7 @@ const QR_EXPIRY_SECONDS = 300; // ✨ 300 วินาที = 5 นาที
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function PaymentMethod({ payMethod, onSelectMethod, grandTotal, onQrPaymentSuccess }: PaymentMethodProps) {
-
+  const { t } = useLanguage();
   const [qrStatus,         setQrStatus]         = useState<QrStatus>('idle');
   const [qrDataUrl,        setQrDataUrl]        = useState<string | null>(null);
   const [timeLeft,         setTimeLeft]         = useState<number>(QR_EXPIRY_SECONDS); // ✨ State นับเวลา
@@ -28,8 +29,8 @@ export default function PaymentMethod({ payMethod, onSelectMethod, grandTotal, o
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const methods = [
-    { id: 'qr',       title: 'สแกนคิวอาร์โค้ด',    sub: 'รองรับทุกแอปธนาคาร', emoji: '📱' },
-    { id: 'transfer', title: 'โอนเงินผ่านธนาคาร', sub: 'แนบสลิปเพื่อยืนยัน',  emoji: '🏦' },
+    { id: 'qr',       title: t('qrOptionTitle'),    sub: t('qrOptionSub'), emoji: '📱' },
+    { id: 'transfer', title: t('transferOptionTitle'), sub: t('transferOptionSub'),  emoji: '🏦' },
   ];
 
   // ─── ควบคุมการเปิด/ปิด QR ───
@@ -131,11 +132,11 @@ export default function PaymentMethod({ payMethod, onSelectMethod, grandTotal, o
   const statusMap: Record<QrStatus, { text: string; color: string } | null> = {
     idle:       null,
     loading:    null,
-    waiting:    { text: 'รอการสแกน QR Code...',  color: 'text-yellow-400' },
-    processing: { text: 'กำลังประมวลผล...',        color: 'text-blue-400'   },
-    succeeded:  { text: '✅ ชำระเงินสำเร็จ!',      color: 'text-green-400'  },
-    failed:     { text: '❌ ทำรายการไม่สำเร็จ',      color: 'text-red-400'    },
-    expired:    { text: '⚠️ QR Code หมดอายุ',     color: 'text-red-500'    }, // ✨ สถานะหมดอายุ
+    waiting:    { text: t('statusWaitingScan'),  color: 'text-yellow-400' },
+    processing: { text: t('statusProcessing'),        color: 'text-blue-400'   },
+    succeeded:  { text: t('statusSucceeded'),      color: 'text-green-400'  },
+    failed:     { text: t('statusFailed'),      color: 'text-red-400'    },
+    expired:    { text: t('statusExpired'),     color: 'text-red-500'    }, // ✨ สถานะหมดอายุ
   };
   const statusLabel = statusMap[qrStatus];
 
@@ -173,7 +174,7 @@ export default function PaymentMethod({ payMethod, onSelectMethod, grandTotal, o
           {qrStatus === 'loading' && (
             <div role="status" className="flex flex-col items-center gap-3 py-8">
               <Loader aria-hidden="true" className="w-10 h-10 text-[#FF0000] animate-spin" />
-              <p className="text-[#F2F4F6]/50 text-sm">กำลังสร้าง QR Code...</p>
+              <p className="text-[#F2F4F6]/50 text-sm">{t('creatingQr')}</p>
             </div>
           )}
 
@@ -223,7 +224,7 @@ export default function PaymentMethod({ payMethod, onSelectMethod, grandTotal, o
                 )}
               </figure>
 
-              <p className="text-[#F2F4F6]/50 text-sm mt-6 font-light">เปิดแอปพลิเคชันธนาคารเพื่อสแกน QR Code</p>
+              <p className="text-[#F2F4F6]/50 text-sm mt-6 font-light">{t('openBankApp')}</p>
               <p className="text-[#FF0000] font-['Orbitron'] font-bold text-2xl mt-2 drop-shadow-[0_0_5px_rgba(255,0,0,0.5)]">฿{fmt(grandTotal)}</p>
 
               {statusLabel && (
@@ -243,7 +244,7 @@ export default function PaymentMethod({ payMethod, onSelectMethod, grandTotal, o
       {payMethod === 'transfer' && (
         <article className="mt-6 bg-[#0a0a0a] border border-[#990000]/20 rounded-xl p-6 space-y-4 animate-in slide-in-from-top-2">
           <header>
-            <p className="text-sm text-[#F2F4F6]/60 font-['Kanit'] tracking-wide">บัญชีธนาคารสำหรับโอนเงิน</p>
+            <p className="text-sm text-[#F2F4F6]/60 font-['Kanit'] tracking-wide">{t('bankAccountsTitle')}</p>
           </header>
           {[
             { bank: 'KBANK (กสิกรไทย)', acct: '123-4-56789-0', name: 'Nexus Gear Co., Ltd.', color: 'text-green-500'  },
@@ -257,14 +258,14 @@ export default function PaymentMethod({ payMethod, onSelectMethod, grandTotal, o
               </div>
               <button
                 onClick={() => navigator.clipboard.writeText(b.acct)}
-                className="text-[#F2F4F6]/40 hover:text-[#FF0000] text-xs border border-[#F2F4F6]/20 hover:border-[#FF0000] px-3 py-1 rounded transition"
-              >
-                คัดลอก
-              </button>
+                  className="text-[#F2F4F6]/40 hover:text-[#FF0000] text-xs border border-[#F2F4F6]/20 hover:border-[#FF0000] px-3 py-1 rounded transition"
+                >
+                  {t('copy')}
+                </button>
             </div>
           ))}
           <footer className="bg-[#2E0505] rounded-lg p-4 text-center mt-4 border border-[#FF0000]/20">
-            <p className="text-[#F2F4F6]/60 text-xs mb-1">ยอดชำระทั้งหมด</p>
+            <p className="text-[#F2F4F6]/60 text-xs mb-1">{t('totalToPay')}</p>
             <p className="text-[#FF0000] font-bold text-2xl font-['Orbitron']">฿{fmt(grandTotal)}</p>
           </footer>
         </article>

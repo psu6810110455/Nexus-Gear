@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { X, AlertTriangle } from "lucide-react";
+import { useLanguage } from "../../../../../shared/context/LanguageContext";
 import type { Order } from "../../../../../shared/types";
 
 import CancelOrderSummary from "./CancelOrderSummary";
@@ -32,6 +33,7 @@ const AdminCancelOrderModal = ({
   onConfirm,
   mode = "cancel",
 }: Props) => {
+  const { t } = useLanguage();
   const [reason, setReason] = useState("");
   const [refundAmount, setRefundAmount] = useState("");
   const [refundChannel, setRefundChannel] = useState("");
@@ -91,7 +93,7 @@ const AdminCancelOrderModal = ({
             </div>
             <div>
               <h2 className="text-lg font-bold text-white font-['Orbitron'] tracking-wide">
-                {isQuickCancel ? "ปฏิเสธการคืนเงิน" : "ยกเลิกคำสั่งซื้อ"}
+                {isQuickCancel ? t('rejectRefund') : t('cancelOrder')}
               </h2>
               <p className="text-zinc-500 text-xs font-['Kanit']">
                 ORD-{new Date().getFullYear() + 543}-
@@ -116,11 +118,11 @@ const AdminCancelOrderModal = ({
           {!isQuickCancel && (
             <div>
               <label className="text-zinc-400 text-xs font-bold uppercase tracking-widest block mb-2">
-                เหตุผลการยกเลิก *
+                {t('cancelReason')} *
               </label>
               <textarea
                 rows={3}
-                placeholder="ระบุเหตุผลในการยกเลิกคำสั่งซื้อ..."
+                placeholder={t('cancelPlaceholder')}
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 className="w-full bg-zinc-900 border border-zinc-700 focus:border-[#FF0000]/50 text-zinc-200 text-sm rounded-xl px-4 py-3 resize-none outline-none placeholder-zinc-600 transition-colors"
@@ -132,19 +134,19 @@ const AdminCancelOrderModal = ({
           {!isQuickCancel && (
             <div className="bg-zinc-900/50 rounded-xl p-4 border border-zinc-800">
               <p className="text-zinc-300 text-sm font-bold mb-3">
-                คืนสต็อกสินค้า (Restock items): *
+                {t('restockItems')}: *
               </p>
               <div className="flex gap-4">
                 {[
                   {
                     val: true,
-                    label: "✅ ใช่ — คืนสต็อก",
+                    label: t('yesRestock'),
                     active:
                       "border-green-500/60 bg-green-500/10 text-green-400",
                   },
                   {
                     val: false,
-                    label: "❌ ไม่ใช่ — ไม่คืนสต็อก",
+                    label: t('noRestock'),
                     active: "border-red-500/60 bg-red-500/10 text-red-400",
                   },
                 ].map(({ val, label, active }) => (
@@ -199,7 +201,7 @@ const AdminCancelOrderModal = ({
             onClick={onClose}
             className="flex-1 py-3 rounded-xl font-bold text-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors font-['Kanit']"
           >
-            ยกเลิก
+            {t('cancel')}
           </button>
           <button
             onClick={handleSubmit}
@@ -207,10 +209,10 @@ const AdminCancelOrderModal = ({
             className="flex-[2] py-3 rounded-xl font-bold text-sm bg-[#FF0000] hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-all font-['Kanit'] flex items-center justify-center gap-2"
           >
             {loading
-              ? "กำลังดำเนินการ..."
+              ? t('processing')
               : isQuickCancel
-                ? "🚫 ยืนยันปฏิเสธการคืนเงิน"
-                : "⚠️ ยืนยันยกเลิกคำสั่งซื้อ"}
+                ? t('confirmReject')
+                : t('confirmCancel')}
           </button>
         </footer>
       </article>

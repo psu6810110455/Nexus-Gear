@@ -3,6 +3,7 @@
 import { FileText, CreditCard, Ban, ZoomIn, CheckCircle } from "lucide-react";
 import type { Order } from "../../../../shared/types";
 import { getServerUrl } from "../../../../shared/services/api";
+import { useLanguage } from "../../../../shared/context/LanguageContext";
 
 interface Props {
   order: Order;
@@ -14,31 +15,39 @@ interface Props {
   setQuickCancelLoading: (v: boolean) => void;
 }
 
-const ACTION_BUTTONS: Record<
-  string,
-  { label: string; next: string; cls: string }
-> = {
+const ACTION_BUTTONS = (t: any) => ({
+  paymentNotified: { TH: 'แจ้งชำระเงิน', EN: 'Payment Notified' },
+  qrCode: { TH: '📱 QR Code', EN: '📱 QR Code' },
+  bankTransfer: { TH: '🏦 โอนเงินธนาคาร', EN: '🏦 Bank Transfer' },
+  scanQrCode: { TH: 'สแกน QR Code', EN: 'Scan QR Code' },
+  noEvidenceYet: { TH: 'ยังไม่มีหลักฐานการชำระเงิน', EN: 'No payment evidence yet' },
+  noSlipAttached: { TH: '(ลูกค้ายังไม่ได้แนบสลิป)', EN: '(Customer has not attached a slip)' },
+  confirmPayment: { TH: 'ยืนยันการโอนเงิน', EN: 'Confirm Payment' },
+  confirmShipping: { TH: 'ยืนยันการส่งของ', EN: 'Confirm Shipping' },
+  quickCancelFakeSlip: { TH: 'ยกเลิกด่วน (สลิปปลอม)', EN: 'Quick Cancel (Fake Slip)' },
+  close: { TH: 'ปิดหน้าต่าง', EN: 'Close' },
+  manageStock: { TH: 'จัดการสต็อก', EN: 'Manage Stock' },
   pending: {
-    label: "ยืนยันการโอนเงิน",
+    label: t('confirmPayment'),
     next: "paid",
     cls: "bg-orange-600 hover:bg-orange-500",
   },
   paid: {
-    label: "เตรียมจัดส่ง",
+    label: t('toShip'),
     next: "to_ship",
     cls: "bg-blue-600 hover:bg-blue-500",
   },
   to_ship: {
-    label: "ยืนยันการส่งของ",
+    label: t('confirmShipping'),
     next: "shipped",
     cls: "bg-indigo-600 hover:bg-indigo-500",
   },
   shipped: {
-    label: "สำเร็จ",
+    label: t('completedStatus'),
     next: "completed",
     cls: "bg-green-600 hover:bg-green-500",
   },
-};
+});
 
 const AdminSlipViewer = ({
   order,
@@ -49,10 +58,11 @@ const AdminSlipViewer = ({
   quickCancelLoading,
   setQuickCancelLoading,
 }: Props) => {
+  const { t } = useLanguage();
   const slipUrl = order.slip_image
     ? getServerUrl(`/uploads/slips/${order.slip_image}`)
     : null;
-  const action = ACTION_BUTTONS[order.status];
+  const action = (ACTION_BUTTONS(t) as any)[order.status];
 
   return (
     <div className="space-y-4">
@@ -61,11 +71,11 @@ const AdminSlipViewer = ({
         {/* header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800/50">
           <div className="flex items-center gap-2 text-red-500 font-bold text-xs uppercase tracking-widest">
-            <FileText size={13} /> หลักฐานการโอนเงิน
+            <FileText size={13} /> {t('evidenceLabel')}
           </div>
           {order.payment_method && (
             <span className="text-xs px-2.5 py-1 rounded-full bg-zinc-800 border border-zinc-700 text-zinc-300 font-medium">
-              {order.payment_method === "qr" ? "📱 QR Code" : "🏦 โอนเงิน"}
+              {order.payment_method === "qr" ? t('qrCode') : t('bankTransfer')}
             </span>
           )}
         </div>
@@ -91,8 +101,8 @@ const AdminSlipViewer = ({
             <div className="flex justify-between text-xs px-0.5">
               <span className="text-zinc-500">
                 {order.payment_method === "qr"
-                  ? "สแกน QR Code"
-                  : "โอนเงินผ่านธนาคาร"}
+                  ? t('scanQrCode')
+                  : t('bankTransfer')}
               </span>
               <span className="text-zinc-500">
                 {new Date(order.created_at).toLocaleDateString("th-TH")}
@@ -102,9 +112,9 @@ const AdminSlipViewer = ({
         ) : (
           <div className="m-3 bg-black/40 rounded-lg border-2 border-dashed border-zinc-800 flex flex-col items-center justify-center text-zinc-600 py-10">
             <CreditCard size={32} className="mb-2 opacity-40" />
-            <span className="text-sm">ยังไม่มีหลักฐานการชำระเงิน</span>
+            <span className="text-sm">{t('noEvidenceYet')}</span>
             <span className="text-xs text-zinc-700 mt-0.5">
-              (ลูกค้ายังไม่ได้แนบสลิป)
+              {t('noSlipAttached')}
             </span>
           </div>
         )}
@@ -113,17 +123,17 @@ const AdminSlipViewer = ({
       {/* ── ยอดรวม + วิธีชำระ ── */}
       <div className="bg-zinc-900/50 rounded-xl border border-zinc-800 px-4 py-3 flex items-center justify-between">
         <div>
-          <p className="text-zinc-500 text-xs">วิธีชำระเงิน</p>
+          <p className="text-zinc-500 text-xs">{t('paymentMethod')}</p>
           <p className="text-zinc-200 text-sm font-semibold mt-0.5">
             {order.payment_method === "qr"
-              ? "📱 QR Code"
+              ? t('qrCode')
               : order.payment_method
-                ? "🏦 โอนเงินธนาคาร"
+                ? t('bankTransfer')
                 : "—"}
           </p>
         </div>
         <div className="text-right">
-          <p className="text-zinc-500 text-xs">ยอดรวมทั้งสิ้น</p>
+          <p className="text-zinc-500 text-xs">{t('total')}</p>
           <p className="text-2xl font-black text-red-500 mt-0.5">
             ฿{Number(order.total_price).toLocaleString()}
           </p>
@@ -151,10 +161,10 @@ const AdminSlipViewer = ({
             className="w-full py-2.5 bg-red-900/30 hover:bg-red-900/50 border border-red-500/30 text-red-400 font-bold rounded-xl transition-all text-sm flex items-center justify-center gap-2 disabled:opacity-40"
           >
             {quickCancelLoading ? (
-              "กำลังยกเลิก..."
+              t('processing')
             ) : (
               <>
-                <Ban size={15} /> ยกเลิกด่วน (สลิปปลอม)
+                <Ban size={15} /> {t('quickCancelFakeSlip')}
               </>
             )}
           </button>
@@ -163,7 +173,7 @@ const AdminSlipViewer = ({
           onClick={onClose}
           className="w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl transition-colors text-sm font-medium"
         >
-          ปิดหน้าต่าง
+          {t('close')}
         </button>
       </div>
     </div>

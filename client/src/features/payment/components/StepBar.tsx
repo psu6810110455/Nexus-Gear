@@ -1,15 +1,17 @@
 import React from 'react';
 import { Check, MapPin, CreditCard, FileText } from 'lucide-react';
+import { useLanguage } from '../../../shared/context/LanguageContext';
 
 interface StepBarProps {
   current: number;
 }
 
 export default function StepBar({ current }: StepBarProps) {
+  const { t } = useLanguage();
   const steps = [
-    { id: 1, label: 'ที่อยู่จัดส่ง', icon: MapPin },
-    { id: 2, label: 'วิธีชำระเงิน', icon: CreditCard },
-    { id: 3, label: 'ยืนยันคำสั่งซื้อ', icon: FileText },
+    { id: 1, label: t('selectShippingAddress'), icon: MapPin },
+    { id: 2, label: t('selectPaymentMethod'), icon: CreditCard },
+    { id: 3, label: t('confirmOrderTitle'), icon: FileText },
   ];
 
   return (

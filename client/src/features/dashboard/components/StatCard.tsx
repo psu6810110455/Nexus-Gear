@@ -1,4 +1,5 @@
 import { TrendingUp, TrendingDown } from 'lucide-react';
+import { useLanguage } from '../../../shared/context/LanguageContext';
 
 interface StatCardProps {
   title: string;
@@ -8,6 +9,7 @@ interface StatCardProps {
 }
 
 export default function StatCard({ title, value, trend, icon: Icon }: StatCardProps) {
+  const { language } = useLanguage();
   const isUp = trend && trend > 0;
   
   return (
@@ -31,7 +33,7 @@ export default function StatCard({ title, value, trend, icon: Icon }: StatCardPr
             {isUp ? <TrendingUp aria-hidden="true" className="w-3 h-3" /> : <TrendingDown aria-hidden="true" className="w-3 h-3" />}
             {Math.abs(trend)}%
           </span>
-          <span className="text-[#F2F4F6]/40">เทียบกับเดือนที่แล้ว</span>
+          <span className="text-[#F2F4F6]/40">{language === 'TH' ? 'เทียบกับเดือนที่แล้ว' : 'Compared to last month'}</span>
         </footer>
       )}
     </article>

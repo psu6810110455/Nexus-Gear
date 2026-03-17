@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X, MapPin, Package } from "lucide-react";
 import { type Order } from "../../../shared/types";
+import { useLanguage } from "../../../shared/context/LanguageContext";
 
 import AdminDeliveryTimeline from "../../admin/components/orders/AdminDeliveryTimeline";
 import AdminSlipViewer from "../../admin/components/orders/AdminSlipViewer";
@@ -60,15 +61,7 @@ const STATUS_BADGE: Record<string, string> = {
   returned: "bg-orange-500/15 text-orange-400 border-orange-500/30",
 };
 
-const THAI_STATUS: Record<string, string> = {
-  pending: "รอตรวจสอบ",
-  paid: "ชำระเงินแล้ว",
-  to_ship: "เตรียมจัดส่ง",
-  shipped: "จัดส่งแล้ว",
-  completed: "สำเร็จ",
-  cancelled: "ยกเลิก",
-  returned: "คืนสินค้า",
-};
+// (THAI_STATUS removed)
 
 // ── Section Header ─────────────────────────────────────────────
 const SectionLabel = ({ label }: { label: string }) => (
@@ -87,6 +80,7 @@ const OrderDetailModal = ({
   onQuickCancel,
   onRejectRefund,
 }: Props) => {
+  const { t } = useLanguage();
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [quickCancelLoading, setQuickCancelLoading] = useState(false);
 
@@ -95,9 +89,20 @@ const OrderDetailModal = ({
   const isCancelled = order.status === "cancelled";
   const isReturnOrder =
     isCancelled && !!order.cancel_reason?.startsWith("ขอคืนสินค้า:");
-  const thaiStatus = isReturnOrder
-    ? "คืนสินค้า"
-    : THAI_STATUS[order.status] || order.status;
+  
+  const getStatusLabel = (status: string) => {
+    if (isReturnOrder) return t('returnedStatus');
+    switch (status) {
+      case 'pending': return t('waitVerify');
+      case 'paid': return t('paidStatus');
+      case 'to_ship': return t('toShip');
+      case 'shipped': return t('shippingStatus');
+      case 'completed': return t('completedStatus');
+      case 'cancelled': return t('cancel');
+      default: return status;
+    }
+  };
+
   const badgeCls = isReturnOrder
     ? STATUS_BADGE.returned
     : (STATUS_BADGE[order.status] ??
@@ -115,12 +120,12 @@ const OrderDetailModal = ({
           <header className="px-6 py-4 border-b border-white/8 flex justify-between items-center bg-gradient-to-r from-red-900/15 to-transparent shrink-0">
             <div className="flex items-center gap-2.5">
               <h2 className="text-lg font-bold text-white">
-                รายละเอียดคำสั่งซื้อ
+                {t('viewOrderDetails')}
               </h2>
               <span
                 className={`px-2.5 py-0.5 text-xs font-bold rounded-full border ${badgeCls}`}
               >
-                {thaiStatus}
+                {getStatusLabel(order.status)}
               </span>
             </div>
             <div className="flex items-center gap-4">
@@ -146,7 +151,7 @@ const OrderDetailModal = ({
           <div className="overflow-y-auto flex-1">
             {/* ═══ ส่วนบน ═══ */}
             <div className="p-6 space-y-4">
-              <SectionLabel label="ข้อมูลคำสั่งซื้อ" />
+              <SectionLabel label={t('viewOrderDetails')} />
 
               {/* 2 col: ซ้าย = Timeline + ที่อยู่ + สินค้า / ขวา = Slip + ปุ่ม */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
@@ -160,11 +165,11 @@ const OrderDetailModal = ({
                   {/* ที่อยู่ */}
                   <div className="bg-zinc-900/50 rounded-xl border border-zinc-800 overflow-hidden">
                     <div className="flex items-center gap-2 text-red-500 px-4 py-3 border-b border-zinc-800/50 font-bold text-xs uppercase tracking-widest">
-                      <MapPin size={13} /> ที่อยู่ในการจัดส่ง
+                      <MapPin size={13} /> {t('shippingAddress')}
                     </div>
                     <div className="px-4 py-3">
                       <p className="text-white text-sm font-semibold">
-                        {order.user?.name || "ไม่ระบุชื่อ"}
+                        {order.user?.name || t('administrator')}
                       </p>
                       <p className="text-zinc-400 text-sm mt-1 leading-relaxed">
                         {order.shipping_address}
@@ -175,9 +180,9 @@ const OrderDetailModal = ({
                   {/* รายการสินค้า */}
                   <div className="bg-zinc-900/50 rounded-xl border border-zinc-800 overflow-hidden">
                     <div className="flex items-center gap-2 text-red-500 px-4 py-3 border-b border-zinc-800/50 font-bold text-xs uppercase tracking-widest">
-                      <Package size={13} /> รายการสินค้า
+                      <Package size={13} /> {t('productList')}
                       <span className="ml-auto text-zinc-600 font-normal normal-case">
-                        {order.items.length} รายการ
+                        {order.items.length} {t('itemsLabel')}
                       </span>
                     </div>
                     <div className="divide-y divide-zinc-800/40">
@@ -203,7 +208,7 @@ const OrderDetailModal = ({
                                 {item.product.name}
                               </p>
                               <p className="text-zinc-500 text-xs mt-0.5">
-                                x{item.quantity} ชิ้น
+                                x{item.quantity} {t('piece')}
                               </p>
                             </div>
                           </div>
@@ -215,7 +220,7 @@ const OrderDetailModal = ({
                     </div>
                     <div className="flex items-center justify-between px-4 py-3 border-t border-zinc-800/50 bg-zinc-900/30">
                       <span className="text-zinc-500 text-xs font-bold uppercase tracking-widest">
-                        ยอดรวมทั้งสิ้น
+                        {t('total')}
                       </span>
                       <span className="text-red-500 font-black text-lg">
                         ฿{Number(order.total_price).toLocaleString()}
@@ -244,7 +249,7 @@ const OrderDetailModal = ({
 
                 {/* ═══ ส่วนล่าง ═══ */}
                 <div className="p-6 space-y-4">
-                  <SectionLabel label="รายละเอียดการยกเลิก / คืนเงิน" />
+                  <SectionLabel label={t('rejectRefund')} />
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                     {/* ซ้าย: Cancel Reason */}

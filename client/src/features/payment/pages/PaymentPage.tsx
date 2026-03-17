@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useLanguage } from '../../../shared/context/LanguageContext';
 import {
   ArrowLeft, ArrowRight, Check, MapPin,
-  CreditCard, Upload, Loader, ChevronDown, ChevronUp,
+  CreditCard, Upload, Loader, ChevronDown, ChevronUp
 } from 'lucide-react';
 import api from '../../../shared/services/api';
 import { toast } from 'sonner';
@@ -26,6 +27,7 @@ const fmt = (n: number) => n.toLocaleString('th-TH');
 
 // ─── Component ───────────────────────────────────────────────────────────────
 export default function PaymentPage({ onNavigate }: PaymentProps) {
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   // ── State ──────────────────────────────────────────────────────────────────
@@ -155,7 +157,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
     return (
       <main className="min-h-screen bg-[#000000] flex justify-center items-center">
         <p role="status" className="text-[#FF0000] font-['Orbitron'] animate-pulse text-2xl tracking-widest">
-          กำลังโหลดระบบชำระเงิน...
+          {t('loadingPayment')}
         </p>
       </main>
     );
@@ -208,17 +210,16 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
               </figure>
 
               <h1 id="success-title" className="text-4xl font-['Orbitron'] font-black text-[#FF0000] mb-3 tracking-wide">
-                สั่งซื้อสำเร็จ!
+                {t('orderSuccessTitle')}
               </h1>
-              <p className="text-[#F2F4F6]/50 mb-2">หมายเลขคำสั่งซื้อ (ORDER ID)</p>
+              <p className="text-[#F2F4F6]/50 mb-2">{t('orderIdLabel')}</p>
 
               <div className="bg-[#2E0505]/50 px-6 py-2 rounded-lg border border-[#FF0000]/20 mb-8">
                 <p className="text-xl font-['Orbitron'] font-bold text-[#F2F4F6] tracking-widest">{finalOrderNum}</p>
               </div>
 
               <p className="text-[#F2F4F6]/60 text-sm max-w-sm leading-relaxed mb-8">
-                ระบบได้รับคำสั่งซื้อของคุณแล้ว<br />
-                เราจะส่งรายละเอียดการจัดส่งไปยังอีเมลที่ลงทะเบียนไว้
+                {t('orderSuccessDesc')}
               </p>
 
               <nav className="flex flex-col sm:flex-row gap-4 w-full justify-center">
@@ -226,13 +227,13 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                   onClick={() => navigate('/profile')}
                   className="bg-[#990000] hover:bg-[#FF0000] text-white px-8 py-3 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(153,0,0,0.4)]"
                 >
-                  ดูรายละเอียดคำสั่งซื้อ
+                  {t('viewOrderDetails')}
                 </button>
                 <button
                   onClick={() => { if (onNavigate) onNavigate('home'); else navigate('/'); }}
                   className="border border-[#990000]/50 text-[#F2F4F6]/60 hover:text-[#FF0000] hover:border-[#FF0000] px-8 py-3 rounded-xl font-bold transition-all"
                 >
-                  กลับสู่หน้าหลัก
+                  {t('backToHomeShort')}
                 </button>
               </nav>
             </section>
@@ -251,7 +252,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                   onClick={() => onNavigate?.('cart')}
                   className="flex items-center gap-2 text-[#F2F4F6]/40 hover:text-[#FF0000] transition text-sm mb-4"
                 >
-                  <ArrowLeft className="w-4 h-4" /> กลับไปตะกร้าสินค้า
+                  <ArrowLeft className="w-4 h-4" /> {t('backToCart')}
                 </button>
               </nav>
               <h1 className="text-3xl md:text-4xl font-['Orbitron'] font-bold flex items-center gap-4">
@@ -273,7 +274,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                     <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl">
                       <header className="flex items-center gap-3 mb-6 border-b border-[#990000]/20 pb-4">
                         <div aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]" />
-                        <h2 id="step1-title" className="text-xl font-bold">เลือกที่อยู่จัดส่ง</h2>
+                        <h2 id="step1-title" className="text-xl font-bold">{t('selectShippingAddress')}</h2>
                       </header>
                       <AddressSelect
                         addresses={savedAddresses}
@@ -288,7 +289,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                         disabled={!selectedAddr}
                         className="w-full bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] text-white py-4 rounded-xl font-bold disabled:opacity-50 flex items-center justify-center gap-3 group transition-all shadow-[0_0_20px_rgba(153,0,0,0.4)]"
                       >
-                        ดำเนินการชำระเงิน
+                        {t('proceedToPayment')}
                         <ArrowRight aria-hidden="true" className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                       </button>
                     </nav>
@@ -301,7 +302,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                     <div className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl">
                       <header className="flex items-center gap-3 mb-6 border-b border-[#990000]/20 pb-4">
                         <div aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]" />
-                        <h2 id="step2-title" className="text-xl font-bold">เลือกวิธีชำระเงิน</h2>
+                        <h2 id="step2-title" className="text-xl font-bold">{t('selectPaymentMethod')}</h2>
                       </header>
 
                       {/* ✨ ส่ง onQrPaymentSuccess เพื่อรับแจ้งเมื่อ QR จ่ายสำเร็จ */}
@@ -318,7 +319,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                         onClick={goBack}
                         className="flex-1 border border-[#990000]/50 text-[#F2F4F6]/60 hover:text-[#FF0000] hover:border-[#FF0000] py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all"
                       >
-                        <ArrowLeft aria-hidden="true" className="w-4 h-4" /> ย้อนกลับ
+                        <ArrowLeft aria-hidden="true" className="w-4 h-4" /> {t('backBtn')}
                       </button>
 
                       {/* ✨ QR: disabled จนกว่าจะจ่ายสำเร็จ | Transfer: กดต่อได้ทันที */}
@@ -328,8 +329,8 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                         className="flex-[2] bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] text-white py-4 rounded-xl font-bold disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-3 group transition-all shadow-[0_0_18px_rgba(153,0,0,0.5)]"
                       >
                         {payMethod === 'qr' && !isQrPaid
-                          ? <><Loader aria-hidden="true" className="w-4 h-4 animate-spin" /> รอการชำระเงิน...</>
-                          : <>ขั้นตอนต่อไป <ArrowRight aria-hidden="true" className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></>
+                          ? <><Loader aria-hidden="true" className="w-4 h-4 animate-spin" /> {t('waitingForPayment')}</>
+                          : <>{t('nextStep')} <ArrowRight aria-hidden="true" className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></>
                         }
                       </button>
                     </nav>
@@ -344,9 +345,9 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                       <header className="mb-8">
                         <h2 id="step3-title" className="text-xl font-bold flex items-center gap-3 mb-2">
                           <span aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]" />
-                          ยืนยันคำสั่งซื้อ
+                          {t('confirmOrderTitle')}
                         </h2>
-                        <p className="text-[#F2F4F6]/40 text-sm pl-5">โปรดตรวจสอบรายละเอียดให้ถูกต้องก่อนดำเนินการ</p>
+                        <p className="text-[#F2F4F6]/40 text-sm pl-5">{t('checkDetailsAccurate')}</p>
                       </header>
 
                       {/* สรุปที่อยู่ + วิธีชำระ */}
@@ -355,10 +356,10 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                         <article className="bg-[#0a0a0a] border border-[#990000]/20 rounded-xl p-5 hover:border-[#FF0000]/50 transition">
                           <header className="flex items-center justify-between mb-3 border-b border-[#990000]/20 pb-2">
                             <h3 className="text-xs text-[#990000] flex items-center gap-2">
-                              <MapPin aria-hidden="true" className="w-3 h-3" /> จัดส่งไปที่
+                              <MapPin aria-hidden="true" className="w-3 h-3" /> {t('shipTo')}
                             </h3>
                             <button onClick={() => setStep(1)} disabled={loadingAction} className="text-[#F2F4F6]/40 text-[10px] hover:text-[#FF0000] transition-colors">
-                              แก้ไข
+                              {t('edit')}
                             </button>
                           </header>
                           <address className="not-italic">
@@ -370,21 +371,21 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                         <article className="bg-[#0a0a0a] border border-[#990000]/20 rounded-xl p-5 hover:border-[#FF0000]/50 transition">
                           <header className="flex items-center justify-between mb-3 border-b border-[#990000]/20 pb-2">
                             <h3 className="text-xs text-[#990000] flex items-center gap-2">
-                              <CreditCard aria-hidden="true" className="w-3 h-3" /> วิธีชำระเงิน
+                              <CreditCard aria-hidden="true" className="w-3 h-3" /> {t('paymentMethod')}
                             </h3>
                             <button onClick={() => setStep(2)} disabled={loadingAction} className="text-[#F2F4F6]/40 text-[10px] hover:text-[#FF0000] transition-colors">
-                              แก้ไข
+                              {t('edit')}
                             </button>
                           </header>
                           <p className="text-lg font-bold">
-                            {payMethod === 'qr' ? '📱 สแกน QR Code' : '🏦 โอนเงินผ่านธนาคาร'}
+                            {payMethod === 'qr' ? t('scanQr') : t('bankTransfer')}
                           </p>
-                          <p className="text-xs text-[#F2F4F6]/40 mt-1">ยอดรวม: ฿{fmt(grandTotal)}</p>
+                          <p className="text-xs text-[#F2F4F6]/40 mt-1">{t('totalInclusive')} ฿{fmt(grandTotal)}</p>
 
                           {/* ✨ Badge QR จ่ายแล้ว */}
                           {isQrPaid && (
                             <span className="inline-flex items-center gap-1 mt-2 text-xs text-green-400 bg-green-900/30 px-2 py-1 rounded-full border border-green-800/40">
-                              <Check aria-hidden="true" className="w-3 h-3" /> ชำระเงินสำเร็จแล้ว
+                              <Check aria-hidden="true" className="w-3 h-3" /> {t('paymentSuccess')}
                             </span>
                           )}
                         </article>
@@ -395,7 +396,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                         <fieldset className="bg-[#0a0a0a] border border-[#990000]/20 rounded-xl p-6 relative animate-in fade-in zoom-in-95 duration-300">
                           <div aria-hidden="true" className="absolute top-0 left-0 w-1 h-full bg-[#FF0000]" />
                           <legend className="text-sm text-[#F2F4F6] mb-4 flex items-center gap-2 w-full">
-                            <Upload aria-hidden="true" className="w-4 h-4 text-[#FF0000]" /> อัปโหลดสลิปชำระเงิน
+                            <Upload aria-hidden="true" className="w-4 h-4 text-[#FF0000]" /> {t('uploadSlipTitle')}
                           </legend>
 
                           {!uploadedSlip ? (
@@ -403,8 +404,8 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                               <div className="w-12 h-12 rounded-full bg-[#2E0505] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                                 <Upload aria-hidden="true" className="w-6 h-6 text-[#FF0000]" />
                               </div>
-                              <span className="text-sm font-bold">คลิกเพื่ออัปโหลดสลิป</span>
-                              <span className="text-xs text-[#F2F4F6]/30 mt-1">รองรับไฟล์: JPG, PNG (ไม่เกิน 5MB)</span>
+                              <span className="text-sm font-bold">{t('clickToUploadSlip')}</span>
+                              <span className="text-xs text-[#F2F4F6]/30 mt-1">{t('supportFiles')}</span>
                               <input
                                 type="file"
                                 accept="image/jpeg, image/png, image/jpg"
@@ -422,13 +423,13 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                               <figcaption className="flex-1 py-1">
                                 <p className="text-sm font-bold truncate mb-1">{uploadedSlip.name}</p>
                                 <p className="text-xs text-green-400 flex items-center gap-1 mb-3">
-                                  <Check aria-hidden="true" className="w-3 h-3" /> อัปโหลดสำเร็จ
+                                  <Check aria-hidden="true" className="w-3 h-3" /> {t('uploadSuccess')}
                                 </p>
                                 <button
                                   onClick={() => { setUploadedSlip(null); setSlipFile(null); }}
                                   className="text-xs border border-[#F2F4F6]/10 px-3 py-1.5 rounded hover:border-[#FF0000] hover:text-[#FF0000] transition-colors"
                                 >
-                                  เปลี่ยนรูปใหม่
+                                  {t('changeImage')}
                                 </button>
                               </figcaption>
                             </figure>
@@ -446,8 +447,8 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                             <Check className="w-5 h-5 text-green-400" />
                           </div>
                           <div>
-                            <p className="text-green-400 font-bold">ชำระเงินผ่าน QR Code สำเร็จแล้ว</p>
-                            <p className="text-[#F2F4F6]/40 text-xs mt-1">ไม่จำเป็นต้องแนบสลิป กดยืนยันการสั่งซื้อได้เลย</p>
+                            <p className="text-green-400 font-bold">{t('qrSuccessDescTitle')}</p>
+                            <p className="text-[#F2F4F6]/40 text-xs mt-1">{t('qrSuccessDesc')}</p>
                           </div>
                         </aside>
                       )}
@@ -460,7 +461,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                         disabled={loadingAction}
                         className="flex-1 border border-[#990000]/50 text-[#F2F4F6]/60 hover:text-[#FF0000] hover:border-[#FF0000] py-4 rounded-xl font-bold flex items-center justify-center gap-2 disabled:opacity-30 transition-all"
                       >
-                        <ArrowLeft aria-hidden="true" className="w-4 h-4" /> ย้อนกลับ
+                        <ArrowLeft aria-hidden="true" className="w-4 h-4" /> {t('backBtn')}
                       </button>
 
                       <button
@@ -469,8 +470,8 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                         className="flex-[2] bg-gradient-to-r from-[#990000] to-[#FF0000] hover:from-[#FF0000] hover:to-[#990000] text-white py-4 rounded-xl font-bold flex items-center justify-center gap-3 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-[0_0_18px_rgba(153,0,0,0.5)]"
                       >
                         {loadingAction
-                          ? <><Loader aria-hidden="true" className="w-5 h-5 animate-spin" /> กำลังดำเนินการ...</>
-                          : <>ยืนยันการสั่งซื้อ <Check aria-hidden="true" className="w-5 h-5" /></>
+                          ? <><Loader aria-hidden="true" className="w-5 h-5 animate-spin" /> {t('processing')}</>
+                          : <>{t('confirmOrderBtn')} <Check aria-hidden="true" className="w-5 h-5" /></>
                         }
                       </button>
                     </nav>
@@ -491,7 +492,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                     >
                       <h2 className="text-lg font-bold flex items-center gap-3">
                         <span aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]" />
-                        สรุปคำสั่งซื้อ
+                        {t('orderSummary')}
                       </h2>
                       <span aria-hidden="true" className="lg:hidden text-[#F2F4F6]/40">
                         {showSummary ? <ChevronUp /> : <ChevronDown />}
@@ -514,7 +515,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                             </figure>
                             <div>
                               <p className="text-sm font-bold w-32 truncate group-hover:text-[#FF0000] transition-colors">{item.name}</p>
-                              <p className="text-xs text-[#F2F4F6]/40">จำนวน: {item.qty}</p>
+                              <p className="text-xs text-[#F2F4F6]/40">{t('quantity')}: {item.qty}</p>
                             </div>
                           </div>
                           <span className="text-sm font-['Orbitron']">฿{fmt(item.price * item.qty)}</span>
@@ -525,26 +526,26 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                     {/* ยอดสรุป */}
                     <dl className="border-t border-[#990000]/25 pt-4 space-y-2 m-0">
                       <div className="flex justify-between text-sm">
-                        <dt className="text-[#F2F4F6]/50">ราคาสินค้า</dt>
+                        <dt className="text-[#F2F4F6]/50">{t('summaryProductsPrice')}</dt>
                         <dd className="font-['Orbitron'] m-0">฿{fmt(orderSummary.subtotal)}</dd>
                       </div>
 
                       {/* ✨ แสดงส่วนลดคูปองเฉพาะตอนที่มีส่วนลดมากกว่า 0 เท่านั้น */}
                       {orderSummary.discount > 0 && (
                         <div className="flex justify-between text-sm text-[#FF0000]">
-                          <dt>ส่วนลดคูปอง ({orderSummary.coupon})</dt>
+                          <dt>{t('summaryCouponDiscount')} ({orderSummary.coupon})</dt>
                           <dd className="font-['Orbitron'] m-0">-฿{fmt(orderSummary.discount)}</dd>
                         </div>
                       )}
 
                       <div className="flex justify-between text-sm">
-                        <dt className="text-[#F2F4F6]/50">ค่าจัดส่ง</dt>
-                        <dd className="text-green-400 font-bold m-0">ส่งฟรี</dd>
+                        <dt className="text-[#F2F4F6]/50">{t('summaryShippingFee')}</dt>
+                        <dd className="text-green-400 font-bold m-0">{t('free')}</dd>
                       </div>
                     </dl>
 
                     <dl className="border-t border-[#990000]/30 pt-4 flex justify-between items-end bg-[#2E0505]/30 p-4 rounded-xl m-0">
-                      <dt className="text-xs text-[#F2F4F6]/50">ยอดรวมสุทธิ</dt>
+                      <dt className="text-xs text-[#F2F4F6]/50">{t('summaryNetTotal')}</dt>
                       <dd className="font-['Orbitron'] text-2xl font-black text-[#FF0000] drop-shadow-[0_0_8px_rgba(255,0,0,0.5)] m-0">
                         ฿{fmt(grandTotal)}
                       </dd>

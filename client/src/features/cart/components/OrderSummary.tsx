@@ -98,7 +98,7 @@ export default function OrderSummary({
         </div>
         {totalSaved > 0 && selectedCount > 0 && (
           <div className="flex justify-between text-sm font-['Kanit']">
-            <span className="text-green-500/80">{language === 'TH' ? 'ส่วนลดโปรโมชั่น' : 'Promotion Discount'}</span>
+            <span className="text-green-500/80">{t('promotionDiscount')}</span>
             <span className="text-green-500 font-['Orbitron']">-฿{fmt(totalSaved)}</span>
           </div>
         )}

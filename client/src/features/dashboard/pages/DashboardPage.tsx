@@ -8,12 +8,14 @@ import SalesChart from '../components/SalesChart';
 import RecentActivity from '../components/RecentActivity';
 import AISummaryBox from '../components/AISummaryBox';
 import type { AISummaryData } from '../components/AISummaryBox';
+import { useLanguage } from '../../../shared/context/LanguageContext';
 
 interface DashboardProps {
   onNavigate?: (page: string) => void;
 }
 
 export default function DashboardPage({ onNavigate }: DashboardProps) {
+  const { t } = useLanguage();
   // ─── 1. STATE ───
   const [dashboardData, setDashboardData] = useState<{
     totalSales: number;
@@ -68,19 +70,19 @@ export default function DashboardPage({ onNavigate }: DashboardProps) {
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10 border-b border-[#990000]/30 pb-6">
           <div>
             <button onClick={() => onNavigate?.('home')} className="flex items-center gap-2 text-[#F2F4F6]/40 hover:text-[#FF0000] transition text-sm mb-4 group">
-              <ArrowLeft aria-hidden="true" className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> กลับไปหน้าร้านค้า
+              <ArrowLeft aria-hidden="true" className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> {t('backToHomeShort')}
             </button>
             <h1 className="text-3xl md:text-4xl font-['Orbitron'] font-bold flex items-center gap-4">
               <div aria-hidden="true" className="w-1.5 h-10 bg-[#FF0000] rounded-full shadow-[0_0_15px_#FF0000]"></div>
-              ADMIN DASHBOARD
+              {t('dashboard')}
             </h1>
           </div>
           <div className="text-sm text-[#F2F4F6]/50 bg-[#0a0a0a] px-4 py-2 rounded-lg border border-[#990000]/20">
-            สถานะระบบ: {isLoading ? (
-              <span className="text-yellow-500 font-bold ml-1">กำลังโหลด...</span>
+            {t('systemStatus')}: {isLoading ? (
+              <span className="text-yellow-500 font-bold ml-1">{t('loading')}</span>
             ) : (
               <span className="text-green-500 font-bold ml-1 flex items-center gap-2 inline-flex">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div> ออนไลน์
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div> {t('online')}
               </span>
             )}
           </div>
@@ -91,19 +93,19 @@ export default function DashboardPage({ onNavigate }: DashboardProps) {
           {/* แถวที่ 1: Stat Cards */}
           <section aria-label="สถิติภาพรวม" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatCard 
-              title="ยอดขายรวมทั้งหมด" 
+              title={t('totalSales')} 
               value={`฿${Number(dashboardData.totalSales).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} 
               trend={0} 
               icon={DollarSign} 
             />
             <StatCard 
-              title="คำสั่งซื้อทั้งหมด" 
+              title={t('totalOrdersCount')} 
               value={dashboardData.totalOrders.toLocaleString()} 
               trend={0} 
               icon={Package} 
             />
-            <StatCard title="ลูกค้าสมัครใหม่" value="1,204" trend={-2.4} icon={Users} />
-            <StatCard title="อัตราการเข้าชม" value="45.2K" trend={15.0} icon={Activity} />
+            <StatCard title={t('newCustomers')} value="1,204" trend={-2.4} icon={Users} />
+            <StatCard title={t('trafficRate')} value="45.2K" trend={15.0} icon={Activity} />
           </section>
 
           {/* แถวที่ 2: กราฟ + Recent Orders */}

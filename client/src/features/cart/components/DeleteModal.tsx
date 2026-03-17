@@ -1,4 +1,5 @@
 import { AlertTriangle } from 'lucide-react';
+import { useLanguage } from '../../../shared/context/LanguageContext';
 
 // กำหนดว่า Component นี้ต้องรับค่าอะไรบ้าง
 interface DeleteModalProps {
@@ -9,6 +10,7 @@ interface DeleteModalProps {
 }
 
 export default function DeleteModal({ show, type, onConfirm, onCancel }: DeleteModalProps) {
+  const { t } = useLanguage();
   // ถ้า show เป็น false ไม่ต้องแสดงอะไรเลย
   if (!show) return null;
 
@@ -29,21 +31,21 @@ export default function DeleteModal({ show, type, onConfirm, onCancel }: DeleteM
         
         <header>
           <h3 className="text-xl font-black font-['Orbitron'] text-[#F2F4F6] mb-2">
-            {type === 'all' ? 'ล้างตะกร้าสินค้า?' : 'ลบไอเทมนี้?'}
+            {type === 'all' ? t('clearCartTitle') : t('deleteItemTitle')}
           </h3>
           <p className="text-sm text-[#F2F4F6]/60 mb-6 font-['Kanit']">
             {type === 'all' 
-              ? 'คุณแน่ใจหรือไม่ว่าต้องการลบสินค้าทั้งหมดออกจากตะกร้า?' 
-              : 'คุณแน่ใจหรือไม่ว่าต้องการลบไอเทมนี้ออกจากตะกร้า?'}
+              ? t('deleteAllConfirm') 
+              : t('deleteSingleConfirm')}
           </p>
         </header>
 
         <footer className="flex gap-3">
           <button onClick={onCancel} className="flex-1 bg-transparent border border-[#990000]/50 text-[#F2F4F6] py-3 rounded-xl font-bold hover:border-[#FF0000] transition font-['Orbitron'] tracking-wider">
-            ยกเลิก
+            {t('cancelBtn')}
           </button>
           <button onClick={onConfirm} className="flex-1 bg-[#FF0000] text-white py-3 rounded-xl font-bold hover:bg-[#990000] transition shadow-[0_0_15px_rgba(255,0,0,0.4)] font-['Orbitron'] tracking-wider">
-            ยืนยันการลบ
+            {t('confirmBtn')}
           </button>
         </footer>
       </article>

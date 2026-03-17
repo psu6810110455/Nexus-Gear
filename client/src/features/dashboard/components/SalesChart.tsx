@@ -1,4 +1,5 @@
 import { BarChart3 } from 'lucide-react';
+import { useLanguage } from '../../../shared/context/LanguageContext';
 
 // ✨ 1. สร้าง Interface เพื่อรับข้อมูลยอดขายเป็นรายวัน
 export interface DailySales {
@@ -11,6 +12,7 @@ interface SalesChartProps {
 }
 
 export default function SalesChart({ data }: SalesChartProps) {
+  const { t } = useLanguage();
   // ─── ข้อมูลจำลอง (Fallback) ในกรณีที่ยังไม่มีข้อมูลจริงส่งมา ───
   const defaultData: DailySales[] = [
     { label: 'DAY 1', amount: 40000 },
@@ -32,10 +34,10 @@ export default function SalesChart({ data }: SalesChartProps) {
     <section className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-xl relative overflow-hidden lg:col-span-2">
       <header className="flex items-center justify-between mb-6 border-b border-[#990000]/20 pb-4">
         <h3 className="text-lg font-['Orbitron'] font-bold flex items-center gap-3 text-[#F2F4F6]">
-          <span aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></span> ภาพรวมยอดขาย (7 วันล่าสุด)
+          <span aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></span> {t('salesOverview7Days')}
         </h3>
         <button className="text-xs text-[#F2F4F6]/40 hover:text-[#FF0000] font-['Kanit'] transition flex items-center gap-1">
-          <BarChart3 aria-hidden="true" className="w-4 h-4" /> ดูรายงานเต็ม
+          <BarChart3 aria-hidden="true" className="w-4 h-4" /> {t('viewFullReport')}
         </button>
       </header>
       

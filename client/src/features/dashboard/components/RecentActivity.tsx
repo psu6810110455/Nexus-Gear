@@ -1,4 +1,5 @@
 import { Clock, ShoppingBag } from 'lucide-react';
+import { useLanguage } from '../../../shared/context/LanguageContext';
 
 // ✨ 1. สร้าง Interface เพื่อบอก TypeScript ว่ากล่อง orders มีหน้าตาแบบนี้นะ
 export interface RecentOrder {
@@ -15,11 +16,12 @@ interface RecentActivityProps {
 }
 
 export default function RecentActivity({ orders = [] }: RecentActivityProps) {
+  const { t } = useLanguage();
   return (
     <section className="bg-[#000000]/60 border border-[#990000]/30 backdrop-blur-xl rounded-2xl p-6 shadow-xl relative overflow-hidden flex flex-col h-full">
       <header className="flex items-center justify-between mb-6 border-b border-[#990000]/20 pb-4 shrink-0">
         <h3 className="text-lg font-['Kanit'] font-bold flex items-center gap-3 text-[#F2F4F6]">
-          <span aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></span> บิลคำสั่งซื้อล่าสุด
+          <span aria-hidden="true" className="w-1.5 h-6 bg-[#FF0000] rounded-full shadow-[0_0_10px_#FF0000]"></span> {t('recentOrders')}
         </h3>
       </header>
       
@@ -28,7 +30,7 @@ export default function RecentActivity({ orders = [] }: RecentActivityProps) {
         {orders.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-[#F2F4F6]/40">
             <Clock className="w-8 h-8 mb-2 opacity-50" />
-            <p className="text-sm font-['Kanit']">ยังไม่มีคำสั่งซื้อใหม่</p>
+            <p className="text-sm font-['Kanit']">{t('noRecentOrders')}</p>
           </div>
         ) : (
           /* ✨ 4. วนลูปเอาข้อมูลบิลจาก Database มาแสดงผล */
@@ -43,11 +45,11 @@ export default function RecentActivity({ orders = [] }: RecentActivityProps) {
               
               <div className="flex-1 pt-1">
                 <p className="text-sm font-['Kanit'] text-[#F2F4F6] font-semibold">
-                  รหัสออเดอร์: <span className="text-[#FF0000] tracking-wider">{order.order_number}</span>
+                  {t('orderId')}: <span className="text-[#FF0000] tracking-wider">{order.order_number}</span>
                 </p>
                 {/* เปลี่ยนจากเวลาหลอกๆ เป็นชื่อลูกค้าและยอดเงิน */}
                 <p className="text-xs text-[#F2F4F6]/50 font-['Kanit'] mt-1 flex justify-between">
-                  <span>โดย: {order.shipping_name}</span>
+                  <span>{t('by')}: {order.shipping_name}</span>
                   <span className="text-green-400 font-medium">฿{Number(order.total).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                 </p>
               </div>

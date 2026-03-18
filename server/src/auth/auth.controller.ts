@@ -34,7 +34,7 @@ export class AuthController {
     const result = await this.authService.googleLogin(req.user);
     
     // พาสร้าง Token เสร็จ ให้เด้งกลับไปที่หน้า React ของเรา พร้อมแนบ Token ไปด้วย
-    const frontendUrl = `http://localhost:5173/login-success?token=${result.access_token}`;
+    const frontendUrl = `https://wd05.pupasoft.com/login-success?token=${result.access_token}`;
     return res.redirect(frontendUrl);
   }
 

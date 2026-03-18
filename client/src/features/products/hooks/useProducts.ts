@@ -17,12 +17,13 @@ interface UseProductsReturn {
 export const useProducts = (initialFilters?: ProductFilterParams): UseProductsReturn => {
   const [products, setProducts]           = useState<Product[]>([]);
   const [loading, setLoading]             = useState(true);
+  const [isFirstLoad, setIsFirstLoad]     = useState(true);
   const [error, setError]                 = useState<string | null>(null);
   const [categories, setCategories]       = useState<string[]>(['All']);
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
 
   const refetch = useCallback(async (filters?: ProductFilterParams) => {
-    setLoading(true);
+    if (isFirstLoad) setLoading(true);
     setError(null);
     try {
       const data = await fetchProducts(filters);
@@ -86,8 +87,9 @@ export const useProducts = (initialFilters?: ProductFilterParams): UseProductsRe
       // setProducts([]);  ← ลบออก: ถ้า refetch ล้มเหลว ข้อมูลเดิมยังใช้งานได้
     } finally {
       setLoading(false);
+      setIsFirstLoad(false);
     }
-  }, []);
+  }, [isFirstLoad]);
 
   useEffect(() => {
     refetch(initialFilters);

@@ -22,7 +22,7 @@ export const productDetailStyles = `
   /* ── Image Panel ── */
   .pd-img-panel {
     background: #fff; display: flex; align-items: center; justify-content: center;
-    padding: 3rem; position: relative; overflow: hidden; min-height: 500px;
+    padding: 1.5rem; position: relative; overflow: hidden; min-height: 650px;
   }
   .pd-img-panel::after {
     content: ''; position: absolute; inset: 0;

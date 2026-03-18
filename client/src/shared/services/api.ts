@@ -1,7 +1,7 @@
-// src/shared/services/api.ts
 import axios from 'axios';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+// ดึงค่าจาก Environment Variable
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 export const getServerUrl = (path: string): string => {
   if (!path) return '';
@@ -45,7 +45,6 @@ export const getProducts = () =>
 export const getProductById = (id: string | number) =>
   api.get(`/products/${id}`).then((r) => r.data);
 
-// ดึงรีวิวของสินค้าจาก order_items ที่ลูกค้าให้คะแนนแล้ว
 export const getProductReviews = (productId: number | string) =>
   api.get(`/products/${productId}/reviews`).then((r) => r.data);
 
@@ -58,7 +57,7 @@ export const updateProduct = (id: number, data: object) =>
 export const deleteProduct = (id: number) =>
   api.delete(`/products/${id}`).then((r) => r.data);
 
-// ── Product Images ────────────────────────────────────────────
+// ── Product Images (ฟังก์ชันที่หายไป) ──────────────────────────
 export const uploadProductImages = (productId: number, files: File[]) => {
   const formData = new FormData();
   files.forEach((f) => formData.append('images', f));
@@ -83,63 +82,44 @@ export const updateCategory = (id: number, name: string) =>
 export const deleteCategory = (id: number) =>
   api.delete(`/categories/${id}`).then((r) => r.data);
 
-// ── Orders ────────────────────────────────────────────────────
+// ── Orders (ฟังก์ชันที่หายไปเยอะมาก) ──────────────────────────
 export const getOrders = () =>
-  api.get('/api/orders').then((r) => r.data);
+  api.get('/orders').then((r) => r.data);
 
-export const getMyOrders = () =>                                    // ✅ ใช้ token แทน userId
-  api.get('/api/orders/my-orders').then((r) => r.data);
-
-export const getUserOrders = (userId: number) =>
-  api.get(`/api/orders/user/${userId}`).then((r) => r.data);
+export const getMyOrders = () =>
+  api.get('/orders/my-orders').then((r) => r.data);
 
 export const updateOrderStatus = (id: number, status: string) =>
-  api.patch(`/api/orders/${id}/status`, { status }).then((r) => r.data);
+  api.patch(`/orders/${id}/status`, { status }).then((r) => r.data);
 
-// รองรับทั้ง ratings (ดาว) และ reviews (ข้อความรีวิว)
+export const cancelOrder = (orderId: number, reason: string, restock?: boolean, bankName?: string, bankAccount?: string) =>
+  api.patch(`/orders/${orderId}/cancel`, { reason, restock, bankName, bankAccount }).then((r) => r.data);
+
+export const processRefund = (orderId: number, formData: FormData) =>
+  api.patch(`/orders/${orderId}/refund`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }).then((r) => r.data);
+
+export const rejectRefund = (orderId: number, reason?: string) =>
+  api.patch(`/orders/${orderId}/reject-refund`, { reason }).then(r => r.data);
+
+export const requestReturn = (orderId: number, reason: string, bankName?: string, bankAccount?: string) =>
+  api.patch(`/orders/${orderId}/return`, { reason, bankName, bankAccount }).then(r => r.data);
+
 export const submitOrderRating = (
   orderId: number,
   ratings: Record<number, number>,
   reviews?: Record<number, string>,
-) => api.post(`/api/orders/${orderId}/rating`, { ratings, reviews }).then((r) => r.data);
-
-// ยกเลิกคำสั่งซื้อ (ลูกค้า) — ได้เฉพาะสถานะ pending / paid
-export const cancelOrder = (orderId: number, reason: string, restock?: boolean, bankName?: string, bankAccount?: string) =>
-  api.patch(`/api/orders/${orderId}/cancel`, { reason, restock, bankName, bankAccount }).then((r) => r.data);
-
-// คืนเงินลูกค้า (Admin) — ส่งสลิปการคืนเงิน
-export const processRefund = (orderId: number, formData: FormData) =>
-  api.patch(`/api/orders/${orderId}/refund`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  }).then((r) => r.data);
-
-// ขอคืนสินค้า (ลูกค้า) — ภายใน 3 วันหลัง completed
-export const requestReturn = (orderId: number, reason: string, bankName?: string, bankAccount?: string) =>
-  api.patch(`/api/orders/${orderId}/return`, { reason, bankName, bankAccount }).then(r => r.data);
-
-// ส่งข้อมูลการคืนเงิน (ลูกค้า) — สำหรับ cancelled
-export const submitRefundInfo = (orderId: number, bankName: string, bankAccount: string) =>
-  api.patch(`/api/orders/${orderId}/refund-info`, { bankName, bankAccount }).then(r => r.data);
-
-// ปฏิเสธการคืนเงิน (Admin) — สลิปปลอม
-export const rejectRefund = (orderId: number, reason?: string) =>
-  api.patch(`/api/orders/${orderId}/reject-refund`, { reason }).then(r => r.data);
+) => api.post(`/orders/${orderId}/rating`, { ratings, reviews }).then((r) => r.data);
 
 // ── Cart ──────────────────────────────────────────────────────
 export const getCart = () =>
-  api.get('/api/cart').then((r) => r.data);
+  api.get('/cart').then((r) => r.data);
 
 export const addToCart = (productId: number, quantity: number) =>
-  api.post('/api/cart/add', { productId, quantity }).then((r) => r.data);
+  api.post('/cart/add', { productId, quantity }).then((r) => r.data);
 
 export const removeFromCart = (id: number) =>
-  api.delete(`/api/cart/${id}`).then((r) => r.data);
-
-// ── Sales ─────────────────────────────────────────────────────
-export const getSalesData = () =>
-  api.get('/sales-data').then((r) => r.data);
-
-// ── Re-export types ───────────────────────────────────────────
-export type { Order, OrderItem, Product, Category } from '../types';
+  api.delete(`/cart/${id}`).then((r) => r.data);
 
 export default api;

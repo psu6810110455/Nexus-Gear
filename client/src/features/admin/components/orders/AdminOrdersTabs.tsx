@@ -11,7 +11,7 @@ interface AdminOrdersTabsProps {
 }
 
 const TABS = [
-  { label: "ทั้งหมด", value: "All" },
+  { label: "ทั้งหมด", value: "all" },
   { label: "รอตรวจสอบ", value: "pending" },
   { label: "ชำระเงินแล้ว", value: "paid" },
   { label: "เตรียมจัดส่ง", value: "to_ship" },
@@ -28,7 +28,7 @@ const AdminOrdersTabs = ({
   <div className="flex items-center gap-2 border-b border-zinc-800/50 mb-6 overflow-x-auto scrollbar-hide">
     {TABS.map(({ label, value }) => {
       const count =
-        value === "All"
+        value === "all"
           ? orders.length
           : orders.filter((o) => o.status === value).length;
       const isActive = activeTab === value;

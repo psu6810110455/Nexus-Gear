@@ -76,7 +76,7 @@ export default function PaymentMethod({ payMethod, onSelectMethod, grandTotal, o
     try {
       const stripeAmount = Math.round(grandTotal * 100);
 
-      const { data } = await api.post('/api/payments/create-intent', {
+      const { data } = await api.post('/payments/create-intent', {
         amount: stripeAmount,
         orderId: 'PENDING',
       });
@@ -103,7 +103,7 @@ export default function PaymentMethod({ payMethod, onSelectMethod, grandTotal, o
     stopPolling();
     pollingRef.current = setInterval(async () => {
       try {
-        const { data } = await api.get(`/api/payments/status/${intentId}`);
+        const { data } = await api.get(`/payments/status/${intentId}`);
         if (data.status === 'succeeded') {
           setQrStatus('succeeded');
           stopPolling();

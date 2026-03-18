@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../../shared/services/api';
 import { Package, DollarSign, Users, Activity, ArrowLeft } from 'lucide-react';
 
 // นำเข้า Components
@@ -36,8 +36,7 @@ export default function DashboardPage({ onNavigate }: DashboardProps) {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-        const response = await axios.get(`${API_BASE}/api/dashboard/summary`);
+        const response = await api.get('/dashboard/summary');
         if (response.data.success) {
           setDashboardData(response.data.data);
         }

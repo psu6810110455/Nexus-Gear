@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { Product, ProductFilterParams } from '../types/product.types';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const BASE_URL = import.meta.env.VITE_API_URL || 'https://wd05.pupasoft.com/api';
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');

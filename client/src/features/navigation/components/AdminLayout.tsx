@@ -85,7 +85,7 @@ const AdminLayout = ({ children, breadcrumb = 'ศูนย์บริหาร
         >
           <div className="absolute inset-0 bg-[#FF0000]/10 blur-xl opacity-0 group-hover:opacity-50 transition duration-500" />
           <img
-            src="/nexus-logo.png" alt="Logo"
+            src="/logo.png" alt="Logo"
             className="w-8 h-8 object-contain relative z-10"
             onError={(e) => { e.currentTarget.src = 'https://dummyimage.com/50x50/000/fff/000000/red?text=NX'; }}
           />

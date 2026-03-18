@@ -101,7 +101,7 @@ const NexusGearAdminOrders = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      setOrders(await getOrders());
+      const data = await getOrders(); console.log("First order:", data[0]); setOrders(data);
     } catch (e) {
       console.error(e);
     } finally {
@@ -244,9 +244,8 @@ const NexusGearAdminOrders = () => {
     const matchTab = activeTab === "all" || order.status === activeTab;
     const search = searchTerm.toLowerCase();
     const matchSearch =
-      `ORD-${String(order.id).padStart(3, "0")}`
-        .toLowerCase()
-        .includes(search) ||
+      (order.order_number || "").toLowerCase().includes(search) ||
+      String(order.id).includes(search) ||
       (order.user?.name || "").toLowerCase().includes(search);
     return matchTab && matchSearch;
   });

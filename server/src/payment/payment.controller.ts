@@ -14,7 +14,7 @@ export class CreateIntentDto {
   orderId: string;
 }
 
-@Controller('api/payments')
+@Controller('payments')
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
 

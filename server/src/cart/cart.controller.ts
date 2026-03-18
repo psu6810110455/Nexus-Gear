@@ -3,7 +3,7 @@ import { Controller, Post, Body, Get, Delete, Param, Patch, UseGuards, Request }
 import { CartService } from './cart.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
-@Controller('api/cart')
+@Controller('cart')
 @UseGuards(JwtAuthGuard) // ✅ ทุก endpoint ต้อง login
 export class CartController {
   constructor(private readonly cartService: CartService) {}

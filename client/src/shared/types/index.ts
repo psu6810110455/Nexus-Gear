@@ -31,6 +31,7 @@ export interface OrderItem {
 
 export interface Order {
   id: number;
+  order_number?: string;
   total_price: string;
   status: string;
   created_at: string;
@@ -56,7 +57,9 @@ export interface CartItem {
   product_id: number;
   name: string;
   price: string;
-  image_url: string;
+  image_url?: string;
+  imageUrl?: string;
+  image?: string;
   quantity: number;
   total_price: string;
 }

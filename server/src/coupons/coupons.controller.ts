@@ -29,7 +29,7 @@ class CreateCouponDto {
   min_order_amount?: number;
 }
 
-@Controller('api/coupons')
+@Controller('coupons')
 export class CouponsController {
   constructor(private readonly couponsService: CouponsService) {}
 

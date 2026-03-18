@@ -460,7 +460,9 @@ const AdminChat: React.FC = () => {
                             {isAdmin ? (
                               <span className="text-[10px] font-bold text-white uppercase">AD</span>
                             ) : (
-                              <UserIcon size={14} className="text-red-500" />
+                              selectedSession.userPicture
+                                ? <img src={selectedSession.userPicture} alt="" className="w-full h-full object-cover rounded-full" />
+                                : <UserIcon size={14} className="text-red-500" />
                             )}
                           </div>
                           

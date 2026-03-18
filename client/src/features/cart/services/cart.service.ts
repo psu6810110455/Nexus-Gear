@@ -4,7 +4,7 @@ import type { CartItem, CouponData } from '../types/cart.types';
 
 export const fetchCartItems = async (): Promise<CartItem[]> => {
   try {
-    const response = await api.get('/api/cart');
+    const response = await api.get('/cart');
     return response.data;
   } catch (error) {
     console.error('❌ เกิดข้อผิดพลาดในการดึงข้อมูลตะกร้า:', error);
@@ -14,7 +14,7 @@ export const fetchCartItems = async (): Promise<CartItem[]> => {
 
 export const validateCoupon = async (code: string): Promise<CouponData | null> => {
   try {
-    const response = await api.post('/api/coupons/validate', { code: code.trim().toUpperCase() });
+    const response = await api.post('/coupons/validate', { code: code.trim().toUpperCase() });
     return response.data;
   } catch (error) {
     console.error(`❌ เกิดข้อผิดพลาดในการตรวจสอบคูปอง "${code}":`, error);
@@ -24,7 +24,7 @@ export const validateCoupon = async (code: string): Promise<CouponData | null> =
 
 export const updateCartQuantity = async (id: number, quantity: number) => {
   try {
-    await api.patch(`/api/cart/${id}`, { quantity });
+    await api.patch(`/cart/${id}`, { quantity });
   } catch (error) {
     console.error('❌ อัปเดตจำนวนสินค้าไม่สำเร็จ:', error);
     throw error;
@@ -33,7 +33,7 @@ export const updateCartQuantity = async (id: number, quantity: number) => {
 
 export const removeFromCart = async (id: number) => {
   try {
-    await api.delete(`/api/cart/${id}`);
+    await api.delete(`/cart/${id}`);
   } catch (error) {
     console.error('❌ ลบสินค้าไม่สำเร็จ:', error);
     throw error;

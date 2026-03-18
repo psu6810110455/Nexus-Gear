@@ -40,7 +40,7 @@ export const checkout = async (
     }
 
     // ✅ ไม่ต้องส่ง userId อีกต่อไป — backend ดึงจาก JWT token แทน
-    const response = await api.post('/api/orders/checkout', formData);
+    const response = await api.post('/orders/checkout', formData);
     return response.data;
   } catch (error) {
     console.error('❌ สั่งซื้อไม่สำเร็จ:', error);

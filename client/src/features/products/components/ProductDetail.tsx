@@ -29,6 +29,7 @@ const ProductDetail = () => {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading]                 = useState(true);
   const [quantity, setQuantity]               = useState(1);
+  const [zoomOpen, setZoomOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const changeQuantity = (dir: 'inc' | 'dec') => {
@@ -102,7 +103,8 @@ const ProductDetail = () => {
           <span className="pd-new-badge">New Arrival</span>
           {/* รูปหลัก */}
           <img src={currentImage} alt={product.name}
-            style={{ maxHeight: '28rem', maxWidth: '100%', objectFit: 'contain', transition: 'transform 0.5s, opacity 0.3s', position: 'relative', zIndex: 1, mixBlendMode: 'multiply' }}
+            style={{ maxHeight: '42rem', maxWidth: '100%', objectFit: 'contain', transition: 'transform 0.5s, opacity 0.3s', position: 'relative', zIndex: 1, mixBlendMode: 'multiply', cursor: 'zoom-in' }}
+            onClick={() => setZoomOpen(true)}
             onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.05)')}
             onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
             onError={e => { e.currentTarget.src = 'https://dummyimage.com/600x400/000/fff?text=Nexus+Gear'; }} />
@@ -164,6 +166,12 @@ const ProductDetail = () => {
             </div>
           </div>
         </div>
+      {zoomOpen && (
+        <div onClick={() => setZoomOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out' }}>
+          <button onClick={() => setZoomOpen(false)} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', fontSize: '1.5rem', width: '2.5rem', height: '2.5rem', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+          <img src={currentImage} alt={product.name} style={{ maxHeight: '90vh', maxWidth: '90vw', objectFit: 'contain', borderRadius: '8px' }} onClick={e => e.stopPropagation()} />
+        </div>
+      )}
       </section>
 
       <div className="red-divider" />

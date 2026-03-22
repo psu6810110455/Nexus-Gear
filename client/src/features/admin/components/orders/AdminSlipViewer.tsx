@@ -1,4 +1,4 @@
-// features/admin/components/orders/AdminSlipViewer.tsx
+﻿// features/admin/components/orders/AdminSlipViewer.tsx
 
 import { FileText, CreditCard, Ban, ZoomIn, CheckCircle } from "lucide-react";
 import type { Order } from "../../../../shared/types";
@@ -17,8 +17,8 @@ interface Props {
 
 const ACTION_BUTTONS = (t: any) => ({
   paymentNotified: { TH: 'แจ้งชำระเงิน', EN: 'Payment Notified' },
-  qrCode: { TH: '📱 QR Code', EN: '📱 QR Code' },
-  bankTransfer: { TH: '🏦 โอนเงินธนาคาร', EN: '🏦 Bank Transfer' },
+  qrCode: { TH: '� QR Code', EN: '� QR Code' },
+  bankTransfer: { TH: '� โอนเงินธนาคาร', EN: '� Bank Transfer' },
   scanQrCode: { TH: 'สแกน QR Code', EN: 'Scan QR Code' },
   noEvidenceYet: { TH: 'ยังไม่มีหลักฐานการชำระเงิน', EN: 'No payment evidence yet' },
   noSlipAttached: { TH: '(ลูกค้ายังไม่ได้แนบสลิป)', EN: '(Customer has not attached a slip)' },

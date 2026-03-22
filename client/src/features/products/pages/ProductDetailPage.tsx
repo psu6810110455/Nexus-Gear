@@ -1,4 +1,4 @@
-// ============================================================
+﻿// ============================================================
 // src/features/products/pages/ProductDetailPage.tsx
 // ============================================================
 
@@ -43,13 +43,13 @@ const ProductDetailPage: React.FC = () => {
       </span>
     ));
 
-  // ✅ ฟังก์ชันใส่ตะกร้า
+  //  ฟังก์ชันใส่ตะกร้า
   const handleAddToCart = async () => {
     if (!product) return;
     setAddingToCart(true);
     try {
       await addToCart(product.id, quantity);
-      toast.success(language === 'TH' ? `✅ เพิ่ม "${product.name}" ลงตะกร้าแล้ว!` : `✅ Added "${product.name}" to cart!`);
+      toast.success(language === 'TH' ? ` เพิ่ม "${product.name}" ลงตะกร้าแล้ว!` : ` Added "${product.name}" to cart!`);
     } catch (err) {
       console.error(err);
       toast.error(language === 'TH' ? "❌ เกิดข้อผิดพลาด กรุณาลองใหม่" : "❌ Error, please try again");
@@ -285,14 +285,14 @@ const ProductDetailPage: React.FC = () => {
               </div>
             </div>
 
-            {/* ✅ ปุ่มเชื่อม API แล้ว */}
+            {/*  ปุ่มเชื่อม API แล้ว */}
             <div className="flex gap-4 mt-auto">
               <button
                 onClick={handleAddToCart}
                 disabled={addingToCart || product.stock === 0}
                 className="flex-1 bg-[#18181b] border border-white/20 hover:bg-white hover:text-black text-white py-3.5 rounded-lg font-bold transition flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <span className="group-hover:scale-110 transition">🛒</span>
+                <span className="group-hover:scale-110 transition">�</span>
                 {addingToCart ? t('adding') : t('addToCart')}
               </button>
               <button

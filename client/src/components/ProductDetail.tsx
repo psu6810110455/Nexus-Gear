@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -103,7 +103,7 @@ const ProductDetail: React.FC = () => {
     window.scrollTo(0, 0);
   }, [id]);
 
-  // ✨ แยกฟังก์ชันยิง API ออกมา เพื่อให้ใช้ร่วมกันได้โดยที่ Alert ไม่ตีกัน
+  //  แยกฟังก์ชันยิง API ออกมา เพื่อให้ใช้ร่วมกันได้โดยที่ Alert ไม่ตีกัน
   const addToCartAPI = async () => {
     const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     await axios.post(`${API_BASE}/api/cart/add`, {
@@ -113,12 +113,12 @@ const ProductDetail: React.FC = () => {
     });
   };
 
-  // 🛒 ฟังก์ชันสำหรับกดปุ่ม "ใส่ตะกร้า" (มี Alert แจ้งเตือน)
+  // � ฟังก์ชันสำหรับกดปุ่ม "ใส่ตะกร้า" (มี Alert แจ้งเตือน)
   const handleAddToCart = async () => {
     if (!product) return;
     try {
       await addToCartAPI();
-      alert("✅ เพิ่มสินค้าลงตะกร้าเรียบร้อยแล้ว!");
+      alert(" เพิ่มสินค้าลงตะกร้าเรียบร้อยแล้ว!");
     } catch (error) {
       console.error("❌ ไม่สามารถเพิ่มสินค้าลงตะกร้าได้:", error);
       alert("เกิดข้อผิดพลาด ไม่สามารถเพิ่มสินค้าลงตะกร้าได้ครับ");
@@ -251,7 +251,7 @@ const ProductDetail: React.FC = () => {
                 onClick={handleAddToCart}
                 className="flex-1 bg-[#18181b] border border-white/20 hover:bg-white hover:text-black text-white py-3.5 rounded-lg font-bold transition flex items-center justify-center gap-2 group"
               >
-                <span className="group-hover:scale-110 transition">🛒</span>{" "}
+                <span className="group-hover:scale-110 transition">�</span>{" "}
                 ใส่ตะกร้า
               </button>
               <button
@@ -264,19 +264,19 @@ const ProductDetail: React.FC = () => {
 
             <div className="mt-8 pt-6 border-t border-white/10">
               <p className="text-xs text-gray-500 uppercase font-bold mb-3 flex items-center gap-2">
-                อุปกรณ์ภายในกล่อง 📦
+                อุปกรณ์ภายในกล่อง �
               </p>
               <div className="flex gap-3 opacity-60">
                 <div className="w-12 h-12 bg-white/5 border border-white/10 rounded flex flex-col items-center justify-center text-[8px] gap-1">
-                  <span>📄</span>
+                  <span>�</span>
                   <span>Manual</span>
                 </div>
                 <div className="w-12 h-12 bg-white/5 border border-white/10 rounded flex flex-col items-center justify-center text-[8px] gap-1">
-                  <span>🔌</span>
+                  <span>�</span>
                   <span>Cable</span>
                 </div>
                 <div className="w-12 h-12 bg-white/5 border border-white/10 rounded flex flex-col items-center justify-center text-[8px] gap-1">
-                  <span>🛡️</span>
+                  <span>�</span>
                   <span>Warranty</span>
                 </div>
               </div>

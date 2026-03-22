@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import api from '../../../shared/services/api';
 import { Package, DollarSign, Users, Activity, ArrowLeft } from 'lucide-react';
 
@@ -113,7 +113,7 @@ export default function DashboardPage({ onNavigate }: DashboardProps) {
             <RecentActivity orders={dashboardData.recentOrders} />
           </div>
 
-          {/* ✨ แถวที่ 3: AI Summary Box */}
+          {/*  แถวที่ 3: AI Summary Box */}
           <AISummaryBox data={dashboardData.aiSummary} />
 
         </main>

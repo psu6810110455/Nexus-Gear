@@ -1,9 +1,9 @@
-import { Controller, Post, Get, Body, Param } from '@nestjs/common';
+﻿import { Controller, Post, Get, Body, Param } from '@nestjs/common';
 import { PaymentService } from './payment.service';
-// ✨ เพิ่ม Import สำหรับตรวจสอบความถูกต้องของข้อมูล
+//  เพิ่ม Import สำหรับตรวจสอบความถูกต้องของข้อมูล
 import { IsNumber, IsString, IsNotEmpty } from 'class-validator';
 
-// ✨ ใส่ Decorators ให้ NestJS รู้ว่านี่คือข้อมูลที่ถูกต้อง
+//  ใส่ Decorators ให้ NestJS รู้ว่านี่คือข้อมูลที่ถูกต้อง
 export class CreateIntentDto {
   @IsNumber()
   @IsNotEmpty()

@@ -1,4 +1,4 @@
-// features/orders/components/RefundStatusSection.tsx
+﻿// features/orders/components/RefundStatusSection.tsx
 
 import {
   Ban,
@@ -125,7 +125,7 @@ const RefundStatusSection = ({ order, onLightbox }: Props) => {
           </p>
           <div className="bg-red-900/20 rounded-lg p-2 border border-red-500/30">
             <p className="text-red-300 text-xs">
-              ⚠️ หากคุณเห็นว่าการปฏิเสธไม่ถูกต้อง โปรดติดต่อแอดมินเพื่อสอบถาม
+               หากคุณเห็นว่าการปฏิเสธไม่ถูกต้อง โปรดติดต่อแอดมินเพื่อสอบถาม
             </p>
           </div>
         </div>

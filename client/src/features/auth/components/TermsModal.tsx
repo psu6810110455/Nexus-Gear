@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Shield, Eye, Database, Globe, UserCheck, AlertTriangle, Scale } from 'lucide-react';
 
 /* ─── Props ─── */
@@ -92,7 +92,7 @@ export const TermsModal = ({ isOpen, onClose }: TermsModalProps) => {
               <li><strong>รูปโปรไฟล์:</strong> เพื่อแสดงเป็น Avatar ในเว็บไซต์</li>
             </ul>
             <div style={{ background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.2)', borderRadius: '8px', padding: '0.75rem', marginTop: '0.5rem', fontSize: '0.85rem' }}>
-              <strong style={{ color: '#f87171' }}>⚠️ สิ่งที่เราไม่ได้เข้าถึง:</strong>
+              <strong style={{ color: '#f87171' }}> สิ่งที่เราไม่ได้เข้าถึง:</strong>
               <ul style={{ margin: '0.3rem 0 0', paddingLeft: '1.2rem' }}>
                 <li>รหัสผ่าน Google ของท่าน</li>
                 <li>รายชื่อผู้ติดต่อ, Google Drive, Gmail</li>

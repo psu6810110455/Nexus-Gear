@@ -1,7 +1,7 @@
-import { Clock, ShoppingBag } from 'lucide-react';
+﻿import { Clock, ShoppingBag } from 'lucide-react';
 import { useLanguage } from '../../../shared/context/LanguageContext';
 
-// ✨ 1. สร้าง Interface เพื่อบอก TypeScript ว่ากล่อง orders มีหน้าตาแบบนี้นะ
+//  1. สร้าง Interface เพื่อบอก TypeScript ว่ากล่อง orders มีหน้าตาแบบนี้นะ
 export interface RecentOrder {
   id: number;
   order_number: string;
@@ -10,7 +10,7 @@ export interface RecentOrder {
   payment_method: string;
 }
 
-// ✨ 2. กำหนดว่า Component นี้รับ Props ชื่อ orders เข้ามา
+//  2. กำหนดว่า Component นี้รับ Props ชื่อ orders เข้ามา
 interface RecentActivityProps {
   orders?: RecentOrder[];
 }
@@ -26,14 +26,14 @@ export default function RecentActivity({ orders = [] }: RecentActivityProps) {
       </header>
       
       <div className="space-y-6 flex-1 overflow-y-auto pr-2 custom-scrollbar">
-        {/* ✨ 3. เช็คว่ามีข้อมูลไหม ถ้าไม่มีให้ขึ้นข้อความว่างๆ */}
+        {/*  3. เช็คว่ามีข้อมูลไหม ถ้าไม่มีให้ขึ้นข้อความว่างๆ */}
         {orders.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-[#F2F4F6]/40">
             <Clock className="w-8 h-8 mb-2 opacity-50" />
             <p className="text-sm font-['Kanit']">{t('noRecentOrders')}</p>
           </div>
         ) : (
-          /* ✨ 4. วนลูปเอาข้อมูลบิลจาก Database มาแสดงผล */
+          /*  4. วนลูปเอาข้อมูลบิลจาก Database มาแสดงผล */
           orders.map((order, i) => (
             <article key={order.id} className="flex gap-4 relative">
               {/* เส้นเชื่อม Timeline */}

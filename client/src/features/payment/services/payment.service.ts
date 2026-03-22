@@ -1,6 +1,6 @@
-// src/features/payment/services/payment.service.ts
+﻿// src/features/payment/services/payment.service.ts
 
-import api from '../../../shared/services/api'; // ✅ ใช้ instance ที่ attach token อัตโนมัติ
+import api from '../../../shared/services/api'; //  ใช้ instance ที่ attach token อัตโนมัติ
 import type { Address } from '../types/payment.types';
 
 // ─── Functions: ดึงข้อมูลที่อยู่จริงจาก Backend ──────────────────────────────
@@ -31,7 +31,7 @@ export const checkout = async (
   slipFile?: File | null,
 ) => {
   try {
-    // ✅ ใช้ FormData เพราะต้องแนบไฟล์สลิป
+    //  ใช้ FormData เพราะต้องแนบไฟล์สลิป
     const formData = new FormData();
     formData.append('shippingAddress', shippingAddress);
     formData.append('paymentMethod', paymentMethod);
@@ -39,7 +39,7 @@ export const checkout = async (
       formData.append('slipImage', slipFile);
     }
 
-    // ✅ ไม่ต้องส่ง userId อีกต่อไป — backend ดึงจาก JWT token แทน
+    //  ไม่ต้องส่ง userId อีกต่อไป — backend ดึงจาก JWT token แทน
     const response = await api.post('/orders/checkout', formData);
     return response.data;
   } catch (error) {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { ShoppingCart, ArrowLeft, Square, CheckSquare, Store, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -131,7 +131,7 @@ export default function CartPage({ onNavigate }: CartProps) {
   }
   const grandTotal = Math.max(0, subtotal - discountAmount + shippingFee);
 
-  // ✨ จัดการเมื่อกดปุ่มชำระเงิน (แพ็คข้อมูลใส่ localStorage แล้วพาไปหน้า Payment)
+  //  จัดการเมื่อกดปุ่มชำระเงิน (แพ็คข้อมูลใส่ localStorage แล้วพาไปหน้า Payment)
   const handleCheckout = () => {
     if (selectedItems.length === 0) {
       toast.error(language === 'TH' ? "กรุณาเลือกสินค้าอย่างน้อย 1 ชิ้นเพื่อดำเนินการต่อ" : "Please select at least 1 item to proceed");

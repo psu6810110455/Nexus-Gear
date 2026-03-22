@@ -1,11 +1,11 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+﻿import { Injectable, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
 
 @Injectable()
 export class PaymentService {
   private stripe: Stripe;
-  // ✨ เพิ่มตัวแปรสำหรับจำสถานะจำลอง (เฉพาะตอน Demo)
+  //  เพิ่มตัวแปรสำหรับจำสถานะจำลอง (เฉพาะตอน Demo)
   private simulatedSuccessIds = new Set<string>();
 
   constructor(private configService: ConfigService) {
@@ -46,7 +46,7 @@ export class PaymentService {
     }
   }
 
-  // ✨ แก้ไขส่วนนี้: ให้เช็คจาก Memory Success ด้วย
+  //  แก้ไขส่วนนี้: ให้เช็คจาก Memory Success ด้วย
   async getPaymentStatus(paymentIntentId: string) {
     // ถ้าเคยมีคนกดปุ่ม Simulate ให้ส่งค่า succeeded กลับไปทันที
     if (this.simulatedSuccessIds.has(paymentIntentId)) {
@@ -61,7 +61,7 @@ export class PaymentService {
     }
   }
 
-  // ✨ แก้ไขส่วนนี้: เปลี่ยนจากสั่ง Stripe ให้มาสั่ง Memory เราแทน (แก้ปัญหา 400 Error)
+  //  แก้ไขส่วนนี้: เปลี่ยนจากสั่ง Stripe ให้มาสั่ง Memory เราแทน (แก้ปัญหา 400 Error)
   async simulatePaymentSuccess(paymentIntentId: string) {
     try {
       // เก็บ ID นี้ไว้ในรายการที่จ่ายสำเร็จแล้ว (ในหน่วยความจำเซิร์ฟเวอร์)

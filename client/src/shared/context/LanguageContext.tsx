@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+﻿import { createContext, useContext, useState, type ReactNode } from 'react';
 
 type Language = 'TH' | 'EN';
 
@@ -284,20 +284,20 @@ export const translations: Translations = {
     EN: 'Restock Items'
   },
   yesRestock: {
-    TH: '✅ ใช่ — คืนสต็อก',
-    EN: '✅ Yes — Restock'
+    TH: ' ใช่ — คืนสต็อก',
+    EN: ' Yes — Restock'
   },
   noRestock: {
     TH: '❌ ไม่ใช่ — ไม่คืนสต็อก',
     EN: '❌ No — Do not restock'
   },
   confirmCancel: {
-    TH: '⚠️ ยืนยันยกเลิกคำสั่งซื้อ',
-    EN: '⚠️ Confirm Cancel Order'
+    TH: ' ยืนยันยกเลิกคำสั่งซื้อ',
+    EN: ' Confirm Cancel Order'
   },
   confirmReject: {
-    TH: '🚫 ยืนยันปฏิเสธการคืนเงิน',
-    EN: '🚫 Confirm Reject Refund'
+    TH: '� ยืนยันปฏิเสธการคืนเงิน',
+    EN: '� Confirm Reject Refund'
   },
   processing: {
     TH: 'กำลังดำเนินการ...',
@@ -433,7 +433,7 @@ export const translations: Translations = {
   total: { TH: 'ยอดรวมสุทธิ', EN: 'Total' },
   checkout: { TH: 'สั่งซื้อสินค้า', EN: 'Checkout' },
   emptyCart: { TH: 'ตะกร้าสินค้าว่างเปล่า', EN: 'Your cart is empty' },
-  confirmRefund: { TH: '💰 ยืนยันการคืนเงิน', EN: '💰 Confirm Refund' },
+  confirmRefund: { TH: '� ยืนยันการคืนเงิน', EN: '� Confirm Refund' },
   qrSuccessDescTitle: { TH: 'ชำระเงินผ่าน QR Code สำเร็จแล้ว', EN: 'QR Payment Successful' },
   qrSuccessDesc: { TH: 'ไม่จำเป็นต้องแนบสลิป กดยืนยันการสั่งซื้อได้เลย', EN: 'No need to attach a slip. You can proceed to confirm your order.' },
   confirmOrderBtn: { TH: 'ยืนยันการสั่งซื้อ', EN: 'Confirm Order' },
@@ -453,9 +453,9 @@ export const translations: Translations = {
   openBankApp: { TH: 'เปิดแอปพลิเคชันธนาคารเพื่อสแกน QR Code', EN: 'Open your banking app to scan QR Code' },
   statusWaitingScan: { TH: 'รอการสแกน QR Code...', EN: 'Waiting for QR scan...' },
   statusProcessing: { TH: 'กำลังประมวลผล...', EN: 'Processing...' },
-  statusSucceeded: { TH: '✅ ชำระเงินสำเร็จ!', EN: '✅ Payment Succeeded!' },
+  statusSucceeded: { TH: ' ชำระเงินสำเร็จ!', EN: ' Payment Succeeded!' },
   statusFailed: { TH: '❌ ทำรายการไม่สำเร็จ', EN: '❌ Transaction Failed' },
-  statusExpired: { TH: '⚠️ QR Code หมดอายุ', EN: '⚠️ QR Code Expired' },
+  statusExpired: { TH: ' QR Code หมดอายุ', EN: ' QR Code Expired' },
   newQrCode: { TH: 'สร้าง QR Code ใหม่', EN: 'Create New QR Code' },
   bankAccountsTitle: { TH: 'บัญชีธนาคารสำหรับโอนเงิน', EN: 'Bank Accounts for Transfer' },
   copy: { TH: 'คัดลอก', EN: 'Copy' },
@@ -463,7 +463,7 @@ export const translations: Translations = {
   noOrderData: { TH: 'ไม่พบข้อมูลคำสั่งซื้อ กรุณาเลือกสินค้าในตะกร้าใหม่ครับ', EN: 'Order data not found. Please select items from the cart again.' },
   fileTypeInvalid: { TH: '❌ ระบบรองรับเฉพาะไฟล์รูปภาพ (JPG, PNG) เท่านั้นครับ', EN: '❌ Only image files (JPG, PNG) are supported.' },
   fileSizeTooLarge: { TH: '❌ ขนาดไฟล์ใหญ่เกินไป! กรุณาอัปโหลดรูปภาพขนาดไม่เกิน 5MB ครับ', EN: '❌ File too large! Please upload images up to 5MB.' },
-  qrCheckSuccess: { TH: 'ตรวจสอบการชำระเงินสำเร็จ! 🎉', EN: 'Payment verified successfully! 🎉' },
+  qrCheckSuccess: { TH: 'ตรวจสอบการชำระเงินสำเร็จ! ', EN: 'Payment verified successfully! ' },
   checkoutError: { TH: '❌ เกิดข้อผิดพลาดในการสั่งซื้อ กรุณาลองใหม่อีกครั้ง', EN: '❌ Order error. Please try again.' },
   notSpecifiedAddress: { TH: 'ไม่ระบุที่อยู่', EN: 'Address not specified' },
   deleteAll: { TH: 'ลบทั้งหมด', EN: 'Delete All' },

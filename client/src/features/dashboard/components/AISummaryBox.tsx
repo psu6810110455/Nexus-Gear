@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Brain, TrendingUp, TrendingDown, Minus, Zap } from 'lucide-react';
 import { useLanguage } from '../../../shared/context/LanguageContext';
 
@@ -29,26 +29,26 @@ function generateInsights(data: AISummaryData, lang: 'TH' | 'EN'): string {
 
   if (data.trend === 'up') {
     lines.push(isTH 
-      ? `📈 สูงกว่าเมื่อวาน ${data.trendPercent.toFixed(1)}% — แนวโน้มดีมาก`
-      : `📈 ${data.trendPercent.toFixed(1)}% higher than yesterday — excellent trend`);
+      ? `� สูงกว่าเมื่อวาน ${data.trendPercent.toFixed(1)}% — แนวโน้มดีมาก`
+      : `� ${data.trendPercent.toFixed(1)}% higher than yesterday — excellent trend`);
   } else if (data.trend === 'down') {
     lines.push(isTH 
-      ? `📉 ต่ำกว่าเมื่อวาน ${data.trendPercent.toFixed(1)}% — ควรตรวจสอบ stock`
-      : `📉 ${data.trendPercent.toFixed(1)}% lower than yesterday — check stock levels`);
+      ? `� ต่ำกว่าเมื่อวาน ${data.trendPercent.toFixed(1)}% — ควรตรวจสอบ stock`
+      : `� ${data.trendPercent.toFixed(1)}% lower than yesterday — check stock levels`);
   } else {
-    lines.push(isTH ? `➡️ ใกล้เคียงกับเมื่อวาน — ยอดขายคงที่` : `➡️ Similar to yesterday — stable sales`);
+    lines.push(isTH ? `➡ ใกล้เคียงกับเมื่อวาน — ยอดขายคงที่` : `➡ Similar to yesterday — stable sales`);
   }
 
   if (data.topProduct && data.topProduct !== 'N/A') {
-    lines.push(isTH ? `🏆 สินค้าขายดีที่สุด: ${data.topProduct}` : `🏆 Top Selling: ${data.topProduct}`);
+    lines.push(isTH ? `� สินค้าขายดีที่สุด: ${data.topProduct}` : `� Top Selling: ${data.topProduct}`);
   }
 
   if (data.trend === 'down') {
-    lines.push(isTH ? `💡 แนะนำ: ลองเพิ่ม promotion เพื่อกระตุ้นยอด` : `💡 Recommendation: Try adding promotions to boost sales`);
+    lines.push(isTH ? ` แนะนำ: ลองเพิ่ม promotion เพื่อกระตุ้นยอด` : ` Recommendation: Try adding promotions to boost sales`);
   } else if (data.todayOrders === 0) {
-    lines.push(isTH ? `💡 ยังไม่มีออเดอร์วันนี้ — ระบบรอการสั่งซื้อ` : `💡 No orders today yet — system waiting for purchases`);
+    lines.push(isTH ? ` ยังไม่มีออเดอร์วันนี้ — ระบบรอการสั่งซื้อ` : ` No orders today yet — system waiting for purchases`);
   } else {
-    lines.push(isTH ? `💡 แนะนำ: เพิ่ม stock สินค้าขายดีเพื่อรองรับดีมานด์` : `💡 Recommendation: Increase stock for best-sellers to meet demand`);
+    lines.push(isTH ? ` แนะนำ: เพิ่ม stock สินค้าขายดีเพื่อรองรับดีมานด์` : ` Recommendation: Increase stock for best-sellers to meet demand`);
   }
 
   return lines.join('\n');

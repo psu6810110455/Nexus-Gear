@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import {
   User,
   Mail,
@@ -17,7 +17,7 @@ interface ProfileInfoTabProps {
   userData: UserData;
   setUserData: React.Dispatch<React.SetStateAction<UserData>>;
   onOpenPasswordModal: () => void;
-  onSave: () => void; // ✅ เพิ่มบรรทัดนี้ เพื่อรับคำสั่ง Save จากตัวแม่
+  onSave: () => void; //  เพิ่มบรรทัดนี้ เพื่อรับคำสั่ง Save จากตัวแม่
 }
 
 export const ProfileInfoTab: React.FC<ProfileInfoTabProps> = ({
@@ -51,7 +51,7 @@ export const ProfileInfoTab: React.FC<ProfileInfoTabProps> = ({
     { label: t('phone'), value: userData.phone, key: "phone", icon: Phone },
   ];
 
-  // ✅ ฟังก์ชันตอนกดปุ่มบันทึก
+  //  ฟังก์ชันตอนกดปุ่มบันทึก
   const handleSaveClick = () => {
     onSave(); // สั่งให้ตัวแม่ยิง API
     setIsEditing(false); // ปิดโหมดแก้ไข
@@ -73,7 +73,7 @@ export const ProfileInfoTab: React.FC<ProfileInfoTabProps> = ({
           </button>
         ) : (
           <div className="flex gap-2">
-            {/* ✅ เปลี่ยน onClick มาเรียกใช้ handleSaveClick */}
+            {/*  เปลี่ยน onClick มาเรียกใช้ handleSaveClick */}
             <button
               onClick={handleSaveClick}
               className="bg-[#FF0000] text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg hover:bg-[#990000] transition text-[11px] sm:text-sm flex items-center gap-1"

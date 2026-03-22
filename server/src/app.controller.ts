@@ -1,4 +1,4 @@
-// server/src/app.controller.ts
+﻿// server/src/app.controller.ts
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
 
@@ -11,7 +11,7 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  // ✅ API ใหม่: ส่งข้อมูลกราฟยอดขาย (จำลองข้อมูล)
+  //  API ใหม่: ส่งข้อมูลกราฟยอดขาย (จำลองข้อมูล)
   @Get('sales-data')
   getSalesData() {
     return [

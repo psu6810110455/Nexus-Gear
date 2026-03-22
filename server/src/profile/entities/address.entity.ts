@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+﻿import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 // Import User Entity จากโฟลเดอร์ users ของคุณ
 import { User } from '../../users/entities/user.entity'; 
 
@@ -22,5 +22,5 @@ export class Address {
   user: User;
 
   @Column()
-  userId: number; // ⚠️ หมายเหตุ: ถ้าในไฟล์ user.entity.ts ของคุณ ตัวแปร id เป็นประเภท string (เช่น UUID) ให้เปลี่ยนตรงนี้เป็น string ตามด้วยนะครับ
+  userId: number; //  หมายเหตุ: ถ้าในไฟล์ user.entity.ts ของคุณ ตัวแปร id เป็นประเภท string (เช่น UUID) ให้เปลี่ยนตรงนี้เป็น string ตามด้วยนะครับ
 }

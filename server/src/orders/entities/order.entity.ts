@@ -1,4 +1,4 @@
-import {
+﻿import {
   Entity, PrimaryGeneratedColumn, Column,
   CreateDateColumn, ManyToOne, OneToMany, JoinColumn,
 } from 'typeorm';
@@ -29,11 +29,11 @@ export class Order {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   total_price: number;
 
-  // ✨ ส่วนลดคูปอง
+  //  ส่วนลดคูปอง
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   discount_amount: number;
 
-  // ✨ โค้ดคูปองที่ใช้
+  //  โค้ดคูปองที่ใช้
   @Column({ type: 'varchar', length: 50, nullable: true })
   coupon_code: string | null;
 

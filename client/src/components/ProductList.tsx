@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -34,17 +34,17 @@ function ProductList() {
   const fetchProducts = async () => {
     try {
       const token = localStorage.getItem('token');
-      console.log("🔑 Token ที่ส่งไป:", token ? "มี Token" : "ไม่มี Token");
+      console.log(" Token ที่ส่งไป:", token ? "มี Token" : "ไม่มี Token");
 
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       const response = await axios.get(`${API_BASE}/products`, { headers });
       
       const data = response.data;
-      console.log("📦 ข้อมูลสินค้าที่ได้จาก API:", data); // ดูหน้าตาข้อมูลที่ Backend ส่งมา
+      console.log("� ข้อมูลสินค้าที่ได้จาก API:", data); // ดูหน้าตาข้อมูลที่ Backend ส่งมา
 
       if (!Array.isArray(data)) {
-        console.error("🚨 ข้อมูลไม่ใช่ Array:", data);
+        console.error("� ข้อมูลไม่ใช่ Array:", data);
         setProducts([]);
         setLoading(false);
         return;
@@ -63,14 +63,14 @@ function ProductList() {
         } else if (typeof p.category === 'string') {
             catName = p.category;
         } else {
-            console.log("⚠️ สินค้านี้ไม่มี Category หรือส่งมาผิดรูปแบบ:", p);
+            console.log(" สินค้านี้ไม่มี Category หรือส่งมาผิดรูปแบบ:", p);
         }
         
         categorySet.add(catName);
         counts[catName] = (counts[catName] || 0) + 1;
       });
 
-      console.log("🏷️ หมวดหมู่ที่สกัดได้:", Array.from(categorySet));
+      console.log("� หมวดหมู่ที่สกัดได้:", Array.from(categorySet));
 
       setCategories(Array.from(categorySet));
       setCategoryCounts(counts);
@@ -114,7 +114,7 @@ function ProductList() {
         <div className="flex justify-center mb-10">
             <div className="relative w-full max-w-3xl">
                 <span className="absolute left-5 top-1/2 -translate-y-1/2 text-white/30 text-xl">
-                    🔍
+                    �
                 </span>
                 <input 
                     type="text" 

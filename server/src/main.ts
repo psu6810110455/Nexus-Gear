@@ -1,5 +1,5 @@
-import * as dotenv from 'dotenv';
-dotenv.config({ path: '.env.production' });
+﻿import * as dotenv from 'dotenv';
+dotenv.config({ path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env' });
 
 
 import { NestFactory } from '@nestjs/core';
@@ -30,6 +30,6 @@ async function bootstrap() {
   // 4. รัน Server
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
-  console.log(`🚀 Application is running on: ${await app.getUrl()}`);
+  console.log(` Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();

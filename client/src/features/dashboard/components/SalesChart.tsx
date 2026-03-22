@@ -1,7 +1,7 @@
-import { BarChart3 } from 'lucide-react';
+﻿import { BarChart3 } from 'lucide-react';
 import { useLanguage } from '../../../shared/context/LanguageContext';
 
-// ✨ 1. สร้าง Interface เพื่อรับข้อมูลยอดขายเป็นรายวัน
+//  1. สร้าง Interface เพื่อรับข้อมูลยอดขายเป็นรายวัน
 export interface DailySales {
   label: string; // ชื่อวัน (เช่น DAY 1 หรือ 01/03)
   amount: number; // ยอดขาย
@@ -27,7 +27,7 @@ export default function SalesChart({ data }: SalesChartProps) {
   // ถ้ามีข้อมูลส่งมาให้ใช้ข้อมูลจริง ถ้าไม่มีให้ใช้ defaultData
   const chartData = data && data.length > 0 ? data : defaultData;
 
-  // ✨ 2. หาค่ายอดขายที่ "สูงที่สุด" ในรอบ 7 วัน เพื่อเอามาคำนวณเปอร์เซ็นต์ความสูง (100%)
+  //  2. หาค่ายอดขายที่ "สูงที่สุด" ในรอบ 7 วัน เพื่อเอามาคำนวณเปอร์เซ็นต์ความสูง (100%)
   const maxAmount = Math.max(...chartData.map(d => d.amount), 1); // กันหาร 0
 
   return (
@@ -43,7 +43,7 @@ export default function SalesChart({ data }: SalesChartProps) {
       
       <figure className="h-64 w-full flex items-end justify-between gap-2 pt-4 px-2" aria-label="กราฟแท่งแสดงยอดขาย">
         {chartData.map((item, i) => {
-          // ✨ 3. เทียบบัญญัติไตรยางศ์เพื่อหาความสูงของกราฟ (เปอร์เซ็นต์)
+          //  3. เทียบบัญญัติไตรยางศ์เพื่อหาความสูงของกราฟ (เปอร์เซ็นต์)
           const heightPercent = (item.amount / maxAmount) * 100;
 
           return (
@@ -52,7 +52,7 @@ export default function SalesChart({ data }: SalesChartProps) {
                 className="w-full max-w-[40px] bg-gradient-to-t from-[#2E0505] to-[#990000] rounded-t-sm border-t border-[#FF0000]/50 group-hover:to-[#FF0000] transition-colors relative"
                 style={{ height: `${heightPercent}%`, minHeight: '5%' }} // ให้มีความสูงขั้นต่ำนิดนึง
               >
-                {/* ✨ 4. Tooltip แสดงยอดเงินจริงตอนเอาเมาส์ชี้ */}
+                {/*  4. Tooltip แสดงยอดเงินจริงตอนเอาเมาส์ชี้ */}
                 <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-[#FF0000] text-white text-[10px] font-['Kanit'] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 shadow-lg">
                   ฿{Number(item.amount).toLocaleString(undefined, { minimumFractionDigits: 0 })}
                 </div>

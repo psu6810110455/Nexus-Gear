@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToMany } from 'typeorm';
+﻿import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToMany } from 'typeorm';
 import { Address } from '../profile/entities/address.entity';
 
 @Entity('users')
@@ -33,7 +33,7 @@ export class User {
   @CreateDateColumn()
   createdAt: Date;
 
-  // 👇 เหลือแค่ชุดนี้ชุดเดียวเท่านั้นครับ (แก้ปัญหา Duplicate และ Object Error)
+  // � เหลือแค่ชุดนี้ชุดเดียวเท่านั้นครับ (แก้ปัญหา Duplicate และ Object Error)
   @Column({ type: 'varchar', nullable: true }) 
   resetPasswordToken: string | null; // เก็บ Token ลับ
 

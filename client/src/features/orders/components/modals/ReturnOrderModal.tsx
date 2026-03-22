@@ -1,4 +1,4 @@
-// features/orders/components/ReturnOrderModal.tsx
+﻿// features/orders/components/ReturnOrderModal.tsx
 
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
@@ -161,7 +161,7 @@ const ReturnOrderModal = ({
           {/* เงื่อนไข */}
           <aside className="bg-amber-500/5 border border-amber-500/30 rounded-xl p-4 space-y-2">
             <p className="text-amber-400 text-xs font-black uppercase tracking-widest">
-              ⚠️ เงื่อนไขการคืนสินค้า
+               เงื่อนไขการคืนสินค้า
             </p>
             <ul className="space-y-1.5 text-zinc-300 text-xs leading-relaxed">
               <li className="flex items-start gap-1.5">
@@ -238,7 +238,7 @@ const ReturnOrderModal = ({
           {/* บัญชีคืนเงิน */}
           <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 space-y-3">
             <p className="text-orange-400 text-xs font-bold">
-              💳 ข้อมูลสำหรับคืนเงิน
+              � ข้อมูลสำหรับคืนเงิน
             </p>
             <div>
               <label className="text-zinc-500 text-xs mb-1 block">
@@ -273,7 +273,7 @@ const ReturnOrderModal = ({
           {/* หลักฐาน */}
           <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 space-y-3">
             <p className="text-red-400 text-xs font-bold">
-              🎥 หลักฐานการคืนสินค้า *
+               หลักฐานการคืนสินค้า *
             </p>
             <p className="text-zinc-500 text-xs">
               แนบวีดีโอแกะกล่องแบบไม่ตัดต่อ หรือรูปภาพสินค้า (JPG, PNG, MP4 —
@@ -283,7 +283,7 @@ const ReturnOrderModal = ({
               <div className="flex items-center gap-3 bg-zinc-900 border border-zinc-700 rounded-xl p-3">
                 {evidenceFile?.type.startsWith("video/") ? (
                   <div className="w-14 h-14 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0">
-                    <span className="text-2xl">🎥</span>
+                    <span className="text-2xl"></span>
                   </div>
                 ) : (
                   <img
@@ -315,7 +315,7 @@ const ReturnOrderModal = ({
                 onClick={() => fileRef.current?.click()}
                 className="flex flex-col items-center gap-2 px-4 py-5 border-2 border-dashed border-zinc-700 hover:border-orange-500/50 rounded-xl cursor-pointer transition-colors group"
               >
-                <span className="text-2xl">📎</span>
+                <span className="text-2xl">�</span>
                 <span className="text-zinc-500 text-sm group-hover:text-zinc-300 transition-colors text-center">
                   คลิกเพื่อแนบวีดีโอหรือรูปภาพหลักฐาน
                 </span>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Globe, ChevronLeft, ChevronRight, ShoppingCart } from 'lucide-react';
 import { getServerUrl } from '../../../shared/services/api';
@@ -101,8 +101,8 @@ function HomePage() {
             <Globe style={{ width: 36, height: 36, color: 'var(--color-primary)', margin: '0 auto 1rem', display: 'block' }} />
             <div style={{ fontFamily: 'Orbitron', fontWeight: 700, fontSize: '1rem', letterSpacing: '0.2em', color: '#fff', marginBottom: '0.35rem' }}>LANGUAGE</div>
             <div style={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.78rem', marginBottom: '1.5rem' }}>{translations.select}</div>
-            <button className={`lang-btn ${language === 'TH' ? 'active' : ''}`} style={{ fontFamily: 'Kanit' }} onClick={() => { setLanguage('TH'); setShowLangModal(false); }}>🇹🇭 ภาษาไทย</button>
-            <button className={`lang-btn ${language === 'EN' ? 'active' : ''}`} style={{ fontFamily: 'Orbitron', fontSize: '0.78rem', letterSpacing: '0.15em' }} onClick={() => { setLanguage('EN'); setShowLangModal(false); }}>🇬🇧 ENGLISH</button>
+            <button className={`lang-btn ${language === 'TH' ? 'active' : ''}`} style={{ fontFamily: 'Kanit' }} onClick={() => { setLanguage('TH'); setShowLangModal(false); }}>�� ภาษาไทย</button>
+            <button className={`lang-btn ${language === 'EN' ? 'active' : ''}`} style={{ fontFamily: 'Orbitron', fontSize: '0.78rem', letterSpacing: '0.15em' }} onClick={() => { setLanguage('EN'); setShowLangModal(false); }}>�� ENGLISH</button>
           </div>
         </div>
       )}

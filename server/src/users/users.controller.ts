@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+﻿import { Controller, Post, Body } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { RegisterDto } from './dto/register.dto';
 
@@ -6,7 +6,7 @@ import { RegisterDto } from './dto/register.dto';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  // ✅ POST /users/register  ← ตรงกับที่ frontend Register.tsx เรียก
+  //  POST /users/register  ← ตรงกับที่ frontend Register.tsx เรียก
   @Post('register')
   register(@Body() dto: RegisterDto) {
     return this.usersService.register(dto);

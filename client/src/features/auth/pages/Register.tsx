@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'sonner';
@@ -34,7 +34,7 @@ const IconGoogle = () => (
   </svg>
 );
 
-// ✅ Component สำหรับ Modal ข้อกำหนดและเงื่อนไข
+//  Component สำหรับ Modal ข้อกำหนดและเงื่อนไข
 const TermsModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
   const { language } = useLanguage();
   if (!isOpen) return null;
@@ -201,7 +201,7 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
-  // ✅ State สำหรับควบคุมการเปิด/ปิด Modal
+  //  State สำหรับควบคุมการเปิด/ปิด Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -315,7 +315,7 @@ const Register = () => {
         </div>
       </div>
       
-      {/* ✅ วาง Modal ไว้ตรงนี้ */}
+      {/*  วาง Modal ไว้ตรงนี้ */}
       <TermsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
 
       <div className="auth-bottom-bar" aria-hidden="true" />

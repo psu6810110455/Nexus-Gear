@@ -1,4 +1,4 @@
-// features/orders/pages/NexusGearOrderStatus.tsx
+﻿// features/orders/pages/NexusGearOrderStatus.tsx
 
 import { useEffect, useState, useCallback } from "react";
 import { CheckCircle, AlertTriangle } from "lucide-react";
@@ -83,7 +83,7 @@ const NexusGearOrderStatus = () => {
     socket.on("orderUpdated", replaceOrder);
     socket.on("orderCancelled", replaceOrder);
     socket.on("refundProcessed", replaceOrder);
-    // ✨ NEW: Listen for reject refund events
+    //  NEW: Listen for reject refund events
     socket.on("refundRejected", replaceOrder);
     return () => {
       socket.off("orderUpdated", replaceOrder);
@@ -125,7 +125,7 @@ const NexusGearOrderStatus = () => {
       setSelectedOrder(null);
       setActiveTab("all");
       showToast(
-        "ขอบคุณสำหรับการรีวิว! คะแนนของคุณถูกบันทึกเรียบร้อยแล้ว ⭐️",
+        "ขอบคุณสำหรับการรีวิว! คะแนนของคุณถูกบันทึกเรียบร้อยแล้ว ⭐",
         true,
       );
     } catch {

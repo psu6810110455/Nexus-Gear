@@ -1,10 +1,10 @@
-// src/cart/cart.controller.ts
+﻿// src/cart/cart.controller.ts
 import { Controller, Post, Body, Get, Delete, Param, Patch, UseGuards, Request } from '@nestjs/common';
 import { CartService } from './cart.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('cart')
-@UseGuards(JwtAuthGuard) // ✅ ทุก endpoint ต้อง login
+@UseGuards(JwtAuthGuard) //  ทุก endpoint ต้อง login
 export class CartController {
   constructor(private readonly cartService: CartService) {}
 

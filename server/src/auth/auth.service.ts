@@ -1,10 +1,10 @@
-import { Injectable, UnauthorizedException, NotFoundException } from '@nestjs/common';
+﻿import { Injectable, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import * as crypto from 'crypto'; // ✅ นำเข้า crypto สำหรับสุ่มรหัส Token
+import * as crypto from 'crypto'; //  นำเข้า crypto สำหรับสุ่มรหัส Token
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
-import { MailService } from '../mail/mail.service'; // ✅ นำเข้า MailService
+import { MailService } from '../mail/mail.service'; //  นำเข้า MailService
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 
@@ -13,7 +13,7 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-    private mailService: MailService, // ✅ Inject MailService เข้ามาใช้งาน
+    private mailService: MailService, //  Inject MailService เข้ามาใช้งาน
   ) {}
 
   // 1. ฟังก์ชัน Login ปกติ
@@ -60,7 +60,7 @@ export class AuthService {
       await this.usersService.update(user.id, { picture: googleUser.picture });
     }
 
-    // ✅ เพิ่มการเช็กอีกครั้งเพื่อให้ TypeScript มั่นใจว่า user ไม่เป็น null แน่นอน
+    //  เพิ่มการเช็กอีกครั้งเพื่อให้ TypeScript มั่นใจว่า user ไม่เป็น null แน่นอน
     if (!user) {
       throw new UnauthorizedException('ระบบไม่สามารถระบุตัวตนผู้ใช้งานได้');
     }
@@ -79,7 +79,7 @@ export class AuthService {
     };
   }
 
-  // ✅ 3. ฟังก์ชันขอรีเซ็ตรหัสผ่าน (Forgot Password)
+  //  3. ฟังก์ชันขอรีเซ็ตรหัสผ่าน (Forgot Password)
   async forgotPassword(dto: ForgotPasswordDto) {
     // 3.1 ตรวจสอบว่ามีอีเมลนี้ในระบบไหม
     const user = await this.usersService.findByEmail(dto.email);
@@ -103,7 +103,7 @@ export class AuthService {
     return { message: 'ระบบได้ส่งลิงก์สำหรับตั้งรหัสผ่านใหม่ไปที่อีเมลของคุณแล้วครับ' };
   }
 
-  // ✅ 4. ฟังก์ชันตั้งรหัสผ่านใหม่ (Reset Password)
+  //  4. ฟังก์ชันตั้งรหัสผ่านใหม่ (Reset Password)
   async resetPassword(dto: ResetPasswordDto) {
     // 4.1 หา User ที่มี Token ตรงกับที่ส่งมา
     const user = await this.usersService.findByResetToken(dto.token);

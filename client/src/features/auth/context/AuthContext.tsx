@@ -1,4 +1,4 @@
-// src/features/auth/context/AuthContext.tsx
+﻿// src/features/auth/context/AuthContext.tsx
 import { createContext, useState, useContext, useEffect } from "react";
 import type { ReactNode } from "react";
 import axios from "axios";
@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // ✅ 3. ฟังก์ชันลับสำหรับเอา Token ไปแลกข้อมูล User จาก Backend
+  //  3. ฟังก์ชันลับสำหรับเอา Token ไปแลกข้อมูล User จาก Backend
   const fetchUserProfile = async (token: string) => {
     try {
       const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsLoggedIn(true);
       setUser(userData);
     } else {
-      fetchUserProfile(token); // ✅ พอได้ Token มาปุ๊บ (ล็อกอินสำเร็จ) ให้ดึงข้อมูล User ทันที
+      fetchUserProfile(token); //  พอได้ Token มาปุ๊บ (ล็อกอินสำเร็จ) ให้ดึงข้อมูล User ทันที
     }
   };
 

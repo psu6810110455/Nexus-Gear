@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import type { Product, ProductFilterParams } from '../types/product.types';
 import {
   fetchProducts,
@@ -28,12 +28,12 @@ export const useProducts = (initialFilters?: ProductFilterParams): UseProductsRe
     try {
       const data = await fetchProducts(filters);
 
-      // ✅ แก้: ตรวจสอบว่า response เป็น Array จริงก่อนใช้งาน
+      //  แก้: ตรวจสอบว่า response เป็น Array จริงก่อนใช้งาน
       // backend บางตัวส่ง { data: [...] } หรือ object อื่นมาแทน array
       const productList = Array.isArray(data) ? data : [];
       setProducts(productList);
 
-      // ✅ Fix: To get accurate category counts that reflect other filters (like search or price)
+      //  Fix: To get accurate category counts that reflect other filters (like search or price)
       // but NOT the category filter itself, we fetch the base list without the category filter.
       let baseListForCounts = productList;
       if (filters?.category && filters.category !== 'All') {
@@ -65,7 +65,7 @@ export const useProducts = (initialFilters?: ProductFilterParams): UseProductsRe
         return counts; // Always update category counts to reflect the current real max
       });
     } catch (err: any) {
-      // ✅ แก้: แยก error message ออกให้ชัดเจน ช่วย debug ได้ง่ายขึ้น
+      //  แก้: แยก error message ออกให้ชัดเจน ช่วย debug ได้ง่ายขึ้น
       let message = 'เกิดข้อผิดพลาดในการโหลดสินค้า';
 
       if (err.code === 'ERR_NETWORK' || err.code === 'ECONNREFUSED') {
@@ -83,7 +83,7 @@ export const useProducts = (initialFilters?: ProductFilterParams): UseProductsRe
       }
 
       setError(message);
-      // ✅ แก้: ไม่ล้าง products เมื่อ refetch ล้มเหลว (ให้ข้อมูลเดิมยังแสดงอยู่)
+      //  แก้: ไม่ล้าง products เมื่อ refetch ล้มเหลว (ให้ข้อมูลเดิมยังแสดงอยู่)
       // setProducts([]);  ← ลบออก: ถ้า refetch ล้มเหลว ข้อมูลเดิมยังใช้งานได้
     } finally {
       setLoading(false);

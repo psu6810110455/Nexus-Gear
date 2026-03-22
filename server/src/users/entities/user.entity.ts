@@ -1,4 +1,4 @@
-// src/users/entities/user.entity.ts
+﻿// src/users/entities/user.entity.ts
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { Address } from '../../profile/entities/address.entity';
 
@@ -13,11 +13,11 @@ export class User {
   @Column()
   password: string; // เก็บเป็นรหัสผ่านที่เข้ารหัสแล้วในอนาคต
 
-  // 🎯 แก้จาก username เป็น name ให้ตรงกับ Database
+  // � แก้จาก username เป็น name ให้ตรงกับ Database
   @Column()
   name: string;
 
-  // 🎯 เพิ่มคอลัมน์ให้ตรงกับที่ออกแบบไว้ใน SQL (เผื่ออนาคตใช้งาน)
+  // � เพิ่มคอลัมน์ให้ตรงกับที่ออกแบบไว้ใน SQL (เผื่ออนาคตใช้งาน)
   @Column({ nullable: true })
   phone: string;
 

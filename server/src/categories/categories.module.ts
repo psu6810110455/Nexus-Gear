@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+﻿import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Module } from '@nestjs/common';
@@ -63,7 +63,7 @@ class CategoriesService {
 class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
-  // ✅ GET /categories  ← ที่ frontend AdminPage ใช้
+  //  GET /categories  ← ที่ frontend AdminPage ใช้
   @Get()
   findAll() {
     return this.categoriesService.findAll();

@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+﻿import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useLanguage } from '../../../shared/context/LanguageContext';
 import {
@@ -45,7 +45,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
   const [showSummary,     setShowSummary]     = useState(false);
   const [finalOrderNum,   setFinalOrderNum]   = useState('');
 
-  // ✨ State ใหม่ — QR Stripe
+  //  State ใหม่ — QR Stripe
   const [isQrPaid,        setIsQrPaid]        = useState(false);
   const [qrPaidIntentId,  setQrPaidIntentId]  = useState<string | null>(null);
 
@@ -100,11 +100,11 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
     reader.readAsDataURL(file);
   };
 
-  // ✨ Callback รับจาก PaymentMethod เมื่อ Stripe QR จ่ายสำเร็จ
+  //  Callback รับจาก PaymentMethod เมื่อ Stripe QR จ่ายสำเร็จ
   const handleQrPaymentSuccess = (intentId: string) => {
     setIsQrPaid(true);
     setQrPaidIntentId(intentId);
-    toast.success('ตรวจสอบการชำระเงินสำเร็จ! 🎉');
+    toast.success('ตรวจสอบการชำระเงินสำเร็จ! ');
     // ข้ามไป Step 3 อัตโนมัติ
     setTimeout(() => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -121,13 +121,13 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
       formData.append('shippingAddress', addressDetail);
       formData.append('paymentMethod',   payMethod || '');
 
-      // ✨ แนบข้อมูลคูปองส่วนลดไปกับ FormData
+      //  แนบข้อมูลคูปองส่วนลดไปกับ FormData
       if (orderSummary?.coupon && orderSummary.coupon !== 'ไม่มี') {
         formData.append('couponCode', orderSummary.coupon);
         formData.append('discountAmount', String(orderSummary.discount));
       }
 
-      // ✨ ถ้า QR จ่ายผ่าน Stripe แล้ว → ส่ง intentId แทนสลิป
+      //  ถ้า QR จ่ายผ่าน Stripe แล้ว → ส่ง intentId แทนสลิป
       if (isQrPaid && qrPaidIntentId) {
         formData.append('stripePaymentIntentId', qrPaidIntentId);
       } else if (payMethod === 'transfer' && slipFile) {
@@ -147,7 +147,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
     } catch (error: any) {
       toast.error(error.response?.data?.message || '❌ เกิดข้อผิดพลาดในการสั่งซื้อ กรุณาลองใหม่อีกครั้ง');
     } finally {
-      // ✨ ย้าย setLoadingAction(false) มาไว้ตรงนี้ ทำงานเสมอไม่ว่าจะ Error หรือ Success
+      //  ย้าย setLoadingAction(false) มาไว้ตรงนี้ ทำงานเสมอไม่ว่าจะ Error หรือ Success
       setLoadingAction(false);
     }
   };
@@ -167,7 +167,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
   const selectedAddressData = savedAddresses.find(a => a.id === selectedAddr);
 
   // ── เงื่อนไขปุ่ม Confirm ──────────────────────────────────────────────────
-  // QR + จ่ายแล้ว   → กดได้เลย ✅
+  // QR + จ่ายแล้ว   → กดได้เลย 
   // Transfer         → ต้องแนบสลิปก่อน
   // QR + ยังไม่จ่าย  → ยังกดไม่ได้ (ไม่ควรถึง Step 3 ได้อยู่แล้ว)
   const isConfirmDisabled =
@@ -305,7 +305,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                         <h2 id="step2-title" className="text-xl font-bold">{t('selectPaymentMethod')}</h2>
                       </header>
 
-                      {/* ✨ ส่ง onQrPaymentSuccess เพื่อรับแจ้งเมื่อ QR จ่ายสำเร็จ */}
+                      {/*  ส่ง onQrPaymentSuccess เพื่อรับแจ้งเมื่อ QR จ่ายสำเร็จ */}
                       <PaymentMethod
                         payMethod={payMethod}
                         onSelectMethod={setPayMethod}
@@ -322,7 +322,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                         <ArrowLeft aria-hidden="true" className="w-4 h-4" /> {t('backBtn')}
                       </button>
 
-                      {/* ✨ QR: disabled จนกว่าจะจ่ายสำเร็จ | Transfer: กดต่อได้ทันที */}
+                      {/*  QR: disabled จนกว่าจะจ่ายสำเร็จ | Transfer: กดต่อได้ทันที */}
                       <button
                         onClick={goNext}
                         disabled={!payMethod || (payMethod === 'qr' && !isQrPaid)}
@@ -382,7 +382,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                           </p>
                           <p className="text-xs text-[#F2F4F6]/40 mt-1">{t('totalInclusive')} ฿{fmt(grandTotal)}</p>
 
-                          {/* ✨ Badge QR จ่ายแล้ว */}
+                          {/*  Badge QR จ่ายแล้ว */}
                           {isQrPaid && (
                             <span className="inline-flex items-center gap-1 mt-2 text-xs text-green-400 bg-green-900/30 px-2 py-1 rounded-full border border-green-800/40">
                               <Check aria-hidden="true" className="w-3 h-3" /> {t('paymentSuccess')}
@@ -437,7 +437,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                         </fieldset>
                       )}
 
-                      {/* ✨ Banner QR จ่ายแล้ว (แทนการแนบสลิป) */}
+                      {/*  Banner QR จ่ายแล้ว (แทนการแนบสลิป) */}
                       {payMethod === 'qr' && isQrPaid && (
                         <aside
                           role="status"
@@ -530,7 +530,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                         <dd className="font-['Orbitron'] m-0">฿{fmt(orderSummary.subtotal)}</dd>
                       </div>
 
-                      {/* ✨ แสดงส่วนลดคูปองเฉพาะตอนที่มีส่วนลดมากกว่า 0 เท่านั้น */}
+                      {/*  แสดงส่วนลดคูปองเฉพาะตอนที่มีส่วนลดมากกว่า 0 เท่านั้น */}
                       {orderSummary.discount > 0 && (
                         <div className="flex justify-between text-sm text-[#FF0000]">
                           <dt>{t('summaryCouponDiscount')} ({orderSummary.coupon})</dt>

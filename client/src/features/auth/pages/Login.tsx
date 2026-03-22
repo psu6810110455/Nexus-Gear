@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../../shared/services/api';
 import { useAuth } from '../../auth/context/AuthContext';
@@ -22,7 +22,7 @@ const IconEyeOff = () => (
   </svg>
 );
 
-// ✅ เพิ่มไอคอน Google
+//  เพิ่มไอคอน Google
 const IconGoogle = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -45,10 +45,10 @@ const Login = () => {
     try {
       const { data } = await api.post('/auth/login', { email, password });
       
-      // 💡 ลอง console.log ดูว่า Backend ส่งอะไรมาบ้าง จะได้เห็นชัดๆ ครับ
+      //  ลอง console.log ดูว่า Backend ส่งอะไรมาบ้าง จะได้เห็นชัดๆ ครับ
       console.log('Login Response:', data);
 
-      // ✅ ดักจับทั้งสองรูปแบบ: เผื่อ backend ส่งมาเป็น token หรือ access_token
+      //  ดักจับทั้งสองรูปแบบ: เผื่อ backend ส่งมาเป็น token หรือ access_token
       const actualToken = data.access_token || data.token; 
 
       if (!actualToken) {
@@ -64,7 +64,7 @@ const Login = () => {
     }
   };
 
-  // ✅ เพิ่มฟังก์ชันสำหรับพาผู้ใช้ไปหน้าล็อกอินของ Google
+  //  เพิ่มฟังก์ชันสำหรับพาผู้ใช้ไปหน้าล็อกอินของ Google
   const handleGoogleLogin = () => {
     localStorage.setItem('oauth_action', 'login');
     const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -118,7 +118,7 @@ const Login = () => {
                 />
                 <span style={{ display: 'flex', gap: '6px', alignItems: 'center', color: '#888' }}>
                   
-                  {/* ✅ เพิ่ม title (Tooltip) และเปลี่ยน cursor เป็น help เมื่อวางเมาส์ */}
+                  {/*  เพิ่ม title (Tooltip) และเปลี่ยน cursor เป็น help เมื่อวางเมาส์ */}
                   <span 
                     title={t('pwdHint')} 
                     style={{ cursor: 'help', display: 'flex', alignItems: 'center' }}

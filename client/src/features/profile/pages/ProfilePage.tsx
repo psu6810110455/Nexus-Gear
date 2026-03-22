@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { LogOut, Trash2 } from "lucide-react";
 import NexusGearOrderStatus from "../../orders/pages/NexusGearOrderStatus";
 import { useLanguage } from "../../../shared/context/LanguageContext";
 
-// ✅ 1. นำเข้า useAuth จาก Context ของเรา
+//  1. นำเข้า useAuth จาก Context ของเรา
 import { useAuth } from "../../auth/context/AuthContext";
 
 // นำเข้า Components หลัก
@@ -28,7 +28,7 @@ import type { Order } from "../types/profile.types";
 import * as profileApi from "../services/profile.service";
 
 export const ProfilePage = () => {
-  // ✅ 2. ดึงข้อมูล user จากระบบ
+  //  2. ดึงข้อมูล user จากระบบ
   const { user, logout } = useAuth();
   const { language, t } = useLanguage();
 
@@ -50,7 +50,7 @@ export const ProfilePage = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [ratings, setRatings] = useState<Record<string, number>>({});
 
-  // ✅ 3. อัปเดต useEffect ให้ดึงข้อมูลสดจาก Database ก่อน ถ้าไม่มีค่อยดึงจาก Google
+  //  3. อัปเดต useEffect ให้ดึงข้อมูลสดจาก Database ก่อน ถ้าไม่มีค่อยดึงจาก Google
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -59,7 +59,7 @@ export const ProfilePage = () => {
 
         setUserData((prev) => ({
           ...prev,
-          // ✅ สลับเอา user (Google) ขึ้นก่อน เพื่อไม่ให้ Mock Data มาทับ!
+          //  สลับเอา user (Google) ขึ้นก่อน เพื่อไม่ให้ Mock Data มาทับ!
           name: user?.name || profile.name || "",
           email: user?.email || profile.email || "",
           phone: profile.phone || "",
@@ -197,7 +197,7 @@ export const ProfilePage = () => {
     triggerSuccess("SUCCESS!", "เปลี่ยนรหัสผ่านเรียบร้อยแล้ว");
   };
 
-  // ✅ 4. ใช้ฟังก์ชัน logout จาก AuthContext
+  //  4. ใช้ฟังก์ชัน logout จาก AuthContext
   const handleLogout = () => {
     setShowLogoutModal(false);
     logout();

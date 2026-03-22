@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+﻿import { Link } from 'react-router-dom';
 import { useLanguage } from '../../../shared/context/LanguageContext';
 import logoImg from '../../../assets/logo.png';
 
@@ -94,9 +94,9 @@ const Footer = () => {
           {/* Contact */}
           <div>
             <div className="ft-col-title">Contact</div>
-            <span className="ft-link" style={{ cursor:'default' }}>📧 support@nexusgear.com</span>
-            <span className="ft-link" style={{ cursor:'default' }}>📞 02-XXX-XXXX</span>
-            <span className="ft-link" style={{ cursor:'default' }}>📍 กรุงเทพมหานคร, ประเทศไทย</span>
+            <span className="ft-link" style={{ cursor:'default' }}>� support@nexusgear.com</span>
+            <span className="ft-link" style={{ cursor:'default' }}>� 02-XXX-XXXX</span>
+            <span className="ft-link" style={{ cursor:'default' }}>� กรุงเทพมหานคร, ประเทศไทย</span>
           </div>
         </div>
 

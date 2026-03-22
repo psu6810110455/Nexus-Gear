@@ -8,7 +8,7 @@ export class MailService {
 
   async sendPasswordResetEmail(to: string, token: string) {
     // ลิงก์ที่จะส่งไปให้ลูกค้ากด (ชี้ไปที่หน้าเว็บ React พอร์ต 5173 ของคุณ)
-    const resetLink = `https://wd05.pupasoft.com/reset-password?token=${token}`;
+    const resetLink = `${process.env.CLIENT_URL || 'http://localhost:5173'}/reset-password?token=${token}`;
 
     await this.mailerService.sendMail({
       to, // อีเมลปลายทาง

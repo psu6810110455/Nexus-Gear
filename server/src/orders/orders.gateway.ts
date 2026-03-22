@@ -1,4 +1,4 @@
-// src/orders/orders.gateway.ts
+﻿// src/orders/orders.gateway.ts
 import {
   WebSocketGateway,
   WebSocketServer,
@@ -15,7 +15,7 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
   server: Server;
 
   handleConnection(client: Socket) {
-    console.log(`🔌 Client connected: ${client.id}`);
+    console.log(`� Client connected: ${client.id}`);
   }
 
   handleDisconnect(client: Socket) {

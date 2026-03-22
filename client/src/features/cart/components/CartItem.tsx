@@ -1,4 +1,4 @@
-import { Trash2, Minus, Plus, Square, CheckSquare } from 'lucide-react';
+﻿import { Trash2, Minus, Plus, Square, CheckSquare } from 'lucide-react';
 import type { CartItem as CartItemType } from '../types/cart.types'; 
 import { useLanguage } from '../../../shared/context/LanguageContext';
 
@@ -42,13 +42,13 @@ export default function CartItem({ item, isSelected, onToggleSelect, onUpdateQty
 
           <footer className="flex items-end justify-between mt-auto">
             <div className="flex flex-col">
-              {/* ✨ จุดที่แก้ไข 1: เช็คว่ามี originalPrice ก่อน และแปลงเป็น Number */}
+              {/*  จุดที่แก้ไข 1: เช็คว่ามี originalPrice ก่อน และแปลงเป็น Number */}
               {item.originalPrice && Number(item.originalPrice) !== Number(item.price) && (
                 <span className="text-xs text-[#F2F4F6]/30 line-through font-['Kanit']">
                   ฿{fmt(Number(item.originalPrice))}
                 </span>
               )}
-              {/* ✨ จุดที่แก้ไข 2: แปลง price เป็น Number เสมอ ป้องกันค่าว่างด้วย || 0 */}
+              {/*  จุดที่แก้ไข 2: แปลง price เป็น Number เสมอ ป้องกันค่าว่างด้วย || 0 */}
               <span className="text-xl font-['Orbitron'] font-bold text-[#FF0000] drop-shadow-[0_0_5px_rgba(255,0,0,0.3)]">
                 ฿{fmt(Number(item.price) || 0)}
               </span>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Globe, ShoppingCart, X, Menu } from 'lucide-react';
 import { useAuth } from '../../auth/context/AuthContext';
@@ -386,12 +386,12 @@ const Navbar = () => {
           <li><Link to="/shop" className="nb-mobile-link" onClick={closeMobile}>{t('shop')}</Link></li>
           {isLoggedIn && (
             <>
-              <li><Link to="/cart" className="nb-mobile-link" onClick={closeMobile}>🛒 {t('cart')}</Link></li>
-              <li><Link to="/profile" className="nb-mobile-link" onClick={closeMobile}>👤 {t('profile')}</Link></li>
+              <li><Link to="/cart" className="nb-mobile-link" onClick={closeMobile}>� {t('cart')}</Link></li>
+              <li><Link to="/profile" className="nb-mobile-link" onClick={closeMobile}>� {t('profile')}</Link></li>
             </>
           )}
           {isLoggedIn && user?.role === 'admin' && (
-            <li><Link to="/admin" className="nb-mobile-link admin" onClick={closeMobile}>⚙️ {t('adminCenter')}</Link></li>
+            <li><Link to="/admin" className="nb-mobile-link admin" onClick={closeMobile}>⚙ {t('adminCenter')}</Link></li>
           )}
         </ul>
 
@@ -400,7 +400,7 @@ const Navbar = () => {
         <ul className="nb-mobile-links">
           <li>
             <button className="nb-mobile-link" onClick={() => { closeMobile(); setShowLangModal(true); }} style={{ width: '100%', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', font: 'inherit' }}>
-              🌐 {language === 'TH' ? 'ภาษาไทย' : 'English'}
+              � {language === 'TH' ? 'ภาษาไทย' : 'English'}
             </button>
           </li>
         </ul>
@@ -439,14 +439,14 @@ const Navbar = () => {
               style={{ fontFamily: 'Kanit', fontSize: '0.95rem' }}
               onClick={() => { setLanguage('TH'); setShowLangModal(false); }}
             >
-              🇹🇭 ภาษาไทย
+              �� ภาษาไทย
             </button>
             <button
               className={`nb-lang-option ${language === 'EN' ? 'active' : ''}`}
               style={{ fontFamily: 'Orbitron', fontSize: '0.78rem', letterSpacing: '0.15em' }}
               onClick={() => { setLanguage('EN'); setShowLangModal(false); }}
             >
-              🇬🇧 ENGLISH
+              �� ENGLISH
             </button>
           </div>
         </div>

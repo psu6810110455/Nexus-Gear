@@ -1,8 +1,8 @@
-// src/orders/orders.controller.ts
+﻿// src/orders/orders.controller.ts
 import {
   Controller, Get, Post, Body, Patch, Param,
   UseInterceptors, UploadedFile, UseGuards, Request,
-  BadRequestException // ✨ 1. เพิ่ม BadRequestException สำหรับเตะไฟล์อันตรายทิ้ง
+  BadRequestException //  1. เพิ่ม BadRequestException สำหรับเตะไฟล์อันตรายทิ้ง
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -21,11 +21,11 @@ export class OrdersController {
   @Post('checkout')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('slipImage', {
-    // 🛡️ ระบบป้องกันที่ 1: จำกัดขนาดไฟล์ (Max File Size) ป้องกันโจมตีแบบยัดไฟล์ขยะจนดิสก์เต็ม
+    // � ระบบป้องกันที่ 1: จำกัดขนาดไฟล์ (Max File Size) ป้องกันโจมตีแบบยัดไฟล์ขยะจนดิสก์เต็ม
     limits: {
       fileSize: 5 * 1024 * 1024, // จำกัดสูงสุด 5MB
     },
-    // 🛡️ ระบบป้องกันที่ 2: คัดกรองประเภทไฟล์ (File Filter) ดักจับ Malware (.exe, .php, ฯลฯ)
+    // � ระบบป้องกันที่ 2: คัดกรองประเภทไฟล์ (File Filter) ดักจับ Malware (.exe, .php, ฯลฯ)
     fileFilter: (req, file, cb) => {
       // เช็ค MIME Type ว่าเป็นรูปภาพเท่านั้น
       if (!file.mimetype.match(/\/(jpg|jpeg|png|webp)$/)) {
@@ -34,7 +34,7 @@ export class OrdersController {
       }
       cb(null, true); // ปลอดภัย ให้ผ่านได้
     },
-    // 🛡️ ระบบป้องกันที่ 3: สุ่มชื่อไฟล์ใหม่ (Rename) ป้องกันแฮกเกอร์รันสคริปต์ผ่านชื่อไฟล์
+    // � ระบบป้องกันที่ 3: สุ่มชื่อไฟล์ใหม่ (Rename) ป้องกันแฮกเกอร์รันสคริปต์ผ่านชื่อไฟล์
     storage: diskStorage({
       destination: './uploads/slips',
       filename: (req, file, cb) => {
@@ -50,7 +50,7 @@ export class OrdersController {
 
     const stripePaymentIntentId = body.stripePaymentIntentId || null;
 
-    // ✨ รับข้อมูลคูปองจาก FormData
+    //  รับข้อมูลคูปองจาก FormData
     const couponCode     = body.couponCode     || null;
     const discountAmount = body.discountAmount ? parseFloat(body.discountAmount) : 0;
 
@@ -60,8 +60,8 @@ export class OrdersController {
       paymentMethod,
       slipFilename,
       stripePaymentIntentId,
-      couponCode,      // ✨ ส่งต่อเข้า service
-      discountAmount,  // ✨ ส่งต่อเข้า service
+      couponCode,      //  ส่งต่อเข้า service
+      discountAmount,  //  ส่งต่อเข้า service
     );
   }
 

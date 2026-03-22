@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+﻿import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Coupon, CouponType } from './coupon.entity';
@@ -12,7 +12,7 @@ export class CouponsService {
 
   // ── ตรวจสอบคูปอง ────────────────────────────────────────────────────────
   async validateCoupon(code: string, orderAmount: number = 0) {
-    // ✨ แก้: เช็ค undefined ก่อน trim
+    //  แก้: เช็ค undefined ก่อน trim
     if (!code) throw new BadRequestException('กรุณากรอกรหัสคูปอง');
 
     const coupon = await this.couponsRepository.findOne({

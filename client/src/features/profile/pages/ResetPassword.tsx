@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
@@ -40,7 +40,7 @@ const ResetPassword = () => {
     setIsLoading(true);
 
     try {
-      // ⚠️ ยิง API ไปที่หลังบ้าน (เช็กพอร์ตให้ตรงด้วยนะครับ)
+      //  ยิง API ไปที่หลังบ้าน (เช็กพอร์ตให้ตรงด้วยนะครับ)
       const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       const response = await axios.post(`${API_BASE}/auth/reset-password`, {
         token,
@@ -89,7 +89,7 @@ const ResetPassword = () => {
         {/* ถ้าไม่มี Token ให้ซ่อนฟอร์มไปเลย เพื่อบังคับให้ไปกดจากอีเมล */}
         {!token && !error && (
           <div className="bg-yellow-900 border border-yellow-500 text-yellow-200 px-4 py-3 rounded mb-4 text-sm text-center">
-            ⚠️ ไม่พบข้อมูล Token กรุณาเปิดลิงก์นี้จากในอีเมลของคุณโดยตรงครับ
+             ไม่พบข้อมูล Token กรุณาเปิดลิงก์นี้จากในอีเมลของคุณโดยตรงครับ
           </div>
         )}
 

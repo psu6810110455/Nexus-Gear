@@ -1,4 +1,4 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+﻿import { Injectable, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -13,7 +13,7 @@ export class UsersService {
   ) {}
 
   async register(dto: RegisterDto) {
-    // ✅ เช็คว่าอีเมลซ้ำหรือยัง
+    //  เช็คว่าอีเมลซ้ำหรือยัง
     const existing = await this.usersRepository.findOne({ where: { email: dto.email } });
     if (existing) {
       throw new ConflictException('อีเมลนี้ถูกใช้งานแล้ว');
@@ -37,7 +37,7 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { id } });
   }
 
-  // ✅ แก้จาก data: any เป็น data: Partial<User> เพื่อป้องกัน TypeORM สร้างเป็น Array
+  //  แก้จาก data: any เป็น data: Partial<User> เพื่อป้องกัน TypeORM สร้างเป็น Array
   async create(data: Partial<User>): Promise<User> {
     const newUser = this.usersRepository.create(data);
     return await this.usersRepository.save(newUser);

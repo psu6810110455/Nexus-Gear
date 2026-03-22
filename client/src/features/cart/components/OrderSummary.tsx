@@ -1,4 +1,4 @@
-import { ArrowLeft, Tag, ChevronDown, ChevronUp, X } from 'lucide-react';
+﻿import { ArrowLeft, Tag, ChevronDown, ChevronUp, X } from 'lucide-react';
 import type { CouponData } from '../types/cart.types'; // ดึง Type มาใช้ถ้ามี
 import { useLanguage } from '../../../shared/context/LanguageContext';
 import { useMemo } from 'react';
@@ -82,7 +82,7 @@ export default function OrderSummary({
                   />
                   <button onClick={applyCoupon} className="bg-[#2E0505] border border-[#990000] text-[#FF0000] hover:bg-[#990000] hover:text-white px-4 rounded-lg text-xs font-['Orbitron'] font-bold transition">{t('apply')}</button>
                 </div>
-                {couponError && <p className="text-red-500 text-[10px] pl-1 animate-pulse" role="alert">⚠ {couponError}</p>}
+                {couponError && <p className="text-red-500 text-[10px] pl-1 animate-pulse" role="alert"> {couponError}</p>}
                 {couponSuccess && <p className="text-green-500 text-[10px] pl-1" role="status">✓ {couponSuccess}</p>}
               </div>
             )}

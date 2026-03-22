@@ -1,9 +1,9 @@
-// เส้นทาง: client/src/features/profile/services/profile.service.ts
+﻿// เส้นทาง: client/src/features/profile/services/profile.service.ts
 
-// 💡 ตั้งค่า URL ของ Backend
+//  ตั้งค่า URL ของ Backend
 const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/profile`;
 
-// ✅ เพิ่ม Helper Function สำหรับหยิบ Token จากกระเป๋ามาสร้างเป็น Header ตั๋วผ่านทาง
+//  เพิ่ม Helper Function สำหรับหยิบ Token จากกระเป๋ามาสร้างเป็น Header ตั๋วผ่านทาง
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
   return {
@@ -16,7 +16,7 @@ const getAuthHeaders = () => {
 export const fetchProfile = async () => {
   const res = await fetch(API_URL, {
     method: 'GET',
-    headers: getAuthHeaders(), // ✅ แนบ Token
+    headers: getAuthHeaders(), //  แนบ Token
   });
   if (!res.ok) throw new Error('Failed to fetch profile');
   return res.json();
@@ -26,7 +26,7 @@ export const fetchProfile = async () => {
 export const updateProfile = async (data: { name?: string; phone?: string; bank_name?: string; bank_account?: string }) => {
   const res = await fetch(API_URL, {
     method: 'PATCH',
-    headers: getAuthHeaders(), // ✅ แนบ Token
+    headers: getAuthHeaders(), //  แนบ Token
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error('Failed to update profile');
@@ -37,7 +37,7 @@ export const updateProfile = async (data: { name?: string; phone?: string; bank_
 export const fetchAddresses = async () => {
   const res = await fetch(`${API_URL}/addresses`, {
     method: 'GET',
-    headers: getAuthHeaders(), // ✅ แนบ Token
+    headers: getAuthHeaders(), //  แนบ Token
   });
   if (!res.ok) throw new Error('Failed to fetch addresses');
   return res.json();
@@ -47,7 +47,7 @@ export const fetchAddresses = async () => {
 export const createAddress = async (data: { label: string; address: string; isDefault?: boolean }) => {
   const res = await fetch(`${API_URL}/addresses`, {
     method: 'POST',
-    headers: getAuthHeaders(), // ✅ แนบ Token
+    headers: getAuthHeaders(), //  แนบ Token
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error('Failed to create address');
@@ -58,7 +58,7 @@ export const createAddress = async (data: { label: string; address: string; isDe
 export const deleteAddress = async (id: number) => {
   const res = await fetch(`${API_URL}/addresses/${id}`, {
     method: 'DELETE',
-    headers: getAuthHeaders(), // ✅ แนบ Token
+    headers: getAuthHeaders(), //  แนบ Token
   });
   if (!res.ok) throw new Error('Failed to delete address');
   return res.json();
@@ -68,14 +68,14 @@ export const deleteAddress = async (id: number) => {
 export const updateAddress = async (id: number, data: { label?: string; address?: string; isDefault?: boolean }) => {
   const res = await fetch(`${API_URL}/addresses/${id}`, {
     method: 'PATCH',
-    headers: getAuthHeaders(), // ✅ แนบ Token
+    headers: getAuthHeaders(), //  แนบ Token
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error('Failed to update address');
   return res.json();
 };
 
-// ✅ 7. เพิ่มฟังก์ชันสำหรับเปลี่ยนรหัสผ่าน (Step 2)
+//  7. เพิ่มฟังก์ชันสำหรับเปลี่ยนรหัสผ่าน (Step 2)
 export const changePassword = async (data: { currentPassword: string; newPassword: string }) => {
   const res = await fetch(`${API_URL}/change-password`, {
     method: 'PATCH',
@@ -95,7 +95,7 @@ export const changePassword = async (data: { currentPassword: string; newPasswor
   return res.json(); // ถ้าผ่านฉลุย ส่งข้อความ "อัปเดตรหัสผ่านสำเร็จเรียบร้อย" กลับไป
 };
 
-// ✅ 8. ดึงประวัติคำสั่งซื้อของ User จาก Backend จริง
+//  8. ดึงประวัติคำสั่งซื้อของ User จาก Backend จริง
 export const fetchMyOrders = async () => {
   const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
   const res = await fetch(`${API_BASE}/api/orders/my-orders`, {

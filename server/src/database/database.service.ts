@@ -1,4 +1,4 @@
-// src/database/database.service.ts
+﻿// src/database/database.service.ts
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import * as mysql from 'mysql2/promise';
 import * as dotenv from 'dotenv';
@@ -21,7 +21,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       connectionLimit: 10,
       queueLimit: 0,
     });
-    console.log('🔌 Database Connected (Service Ready)');
+    console.log('� Database Connected (Service Ready)');
   }
 
   async onModuleDestroy() {

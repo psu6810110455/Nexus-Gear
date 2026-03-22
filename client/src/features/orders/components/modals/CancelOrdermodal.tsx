@@ -1,4 +1,4 @@
-// features/orders/components/CancelOrderModal.tsx
+﻿// features/orders/components/CancelOrderModal.tsx
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
@@ -100,7 +100,7 @@ const CancelOrderModal = ({
     setBankAccount("");
   };
 
-  // ✨ NEW: แสดง warning เมื่อ refund_status = rejected (แอดมินปฏิเสธแล้ว)
+  //  NEW: แสดง warning เมื่อ refund_status = rejected (แอดมินปฏิเสธแล้ว)
   const isRefundRejected = order.refund_status === "rejected";
 
   return createPortal(
@@ -130,7 +130,7 @@ const CancelOrderModal = ({
         </header>
 
         <div className="p-5 overflow-y-auto space-y-4 flex-1 scrollbar-dark">
-          {/* ✨ NEW: แสดง rejection notice */}
+          {/*  NEW: แสดง rejection notice */}
           {isRefundRejected && (
             <div className="bg-red-500/10 border border-red-500/40 rounded-xl p-4 space-y-2">
               <p className="text-red-400 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
@@ -179,7 +179,7 @@ const CancelOrderModal = ({
             </div>
           </div>
 
-          {/* ✨ NEW: ไม่แสดงฟอร์มถ้าแอดมินปฏิเสธแล้ว */}
+          {/*  NEW: ไม่แสดงฟอร์มถ้าแอดมินปฏิเสธแล้ว */}
           {!isRefundRejected && (
             <>
               {/* เหตุผลยกเลิก */}
@@ -223,7 +223,7 @@ const CancelOrderModal = ({
               {/* ข้อมูลบัญชีสำหรับคืนเงิน */}
               <div className="bg-zinc-900/50 rounded-xl p-4 border border-zinc-800 space-y-3">
                 <p className="text-orange-400 text-xs font-bold flex items-center gap-1.5">
-                  💳 ข้อมูลบัญชีสำหรับคืนเงิน
+                  � ข้อมูลบัญชีสำหรับคืนเงิน
                 </p>
                 <div>
                   <label className="text-zinc-500 text-xs mb-1 block">
@@ -272,7 +272,7 @@ const CancelOrderModal = ({
 
               <div className="bg-yellow-500/10 border border-yellow-500/40 rounded-xl p-3 flex items-center justify-center gap-2">
                 <span className="text-yellow-400 text-xs font-bold text-center leading-relaxed">
-                  ⚠️ สามารถยกเลิกได้เฉพาะคำสั่งซื้อที่ยังไม่ได้รับการจัดส่ง
+                   สามารถยกเลิกได้เฉพาะคำสั่งซื้อที่ยังไม่ได้รับการจัดส่ง
                   <br />
                   (สถานะ: รอตรวจสอบ)
                 </span>

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+﻿import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; // นำเข้า useAuth เพื่อจัดการสถานะ User
 import { toast } from 'sonner';
@@ -21,9 +21,9 @@ const LoginSuccess = () => {
         toast.success('สมัครสมาชิกด้วย Google สำเร็จ! กรุณาเข้าสู่ระบบอีกครั้ง');
         navigate('/login');
       } else {
-        // ล็อกอินผ่าน Google → ✅ บันทึก Token แล้วเด้งไปหน้าหลักเลย!
+        // ล็อกอินผ่าน Google →  บันทึก Token แล้วเด้งไปหน้าหลักเลย!
         login(token);
-        toast.success('เข้าสู่ระบบด้วย Google สำเร็จ! ยินดีต้อนรับ 🎮');
+        toast.success('เข้าสู่ระบบด้วย Google สำเร็จ! ยินดีต้อนรับ �');
         navigate('/');
       }
     } else {

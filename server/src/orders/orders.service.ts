@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+﻿import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order, OrderStatus } from './entities/order.entity';
@@ -29,8 +29,8 @@ export class OrdersService {
     paymentMethod:           string,
     slipImage:               string | null,
     stripePaymentIntentId?:  string | null,
-    couponCode?:             string | null,  // ✨ โค้ดคูปอง
-    discountAmount?:         number,         // ✨ จำนวนส่วนลด
+    couponCode?:             string | null,  //  โค้ดคูปอง
+    discountAmount?:         number,         //  จำนวนส่วนลด
   ) {
     // 1. ดึงสินค้าในตะกร้า
     const cartItems = await this.cartRepository.find({
@@ -77,9 +77,9 @@ export class OrdersService {
     order.payment_method           = paymentMethod;
     order.order_number             = 'ORD-' + Date.now();
     order.items                    = orderItems;
-    order.total_price              = finalPrice;         // ✨ ราคาหลังหักส่วนลด
-    order.discount_amount          = discount;           // ✨ บันทึกส่วนลด
-    order.coupon_code              = couponCode || null; // ✨ บันทึกโค้ดคูปอง
+    order.total_price              = finalPrice;         //  ราคาหลังหักส่วนลด
+    order.discount_amount          = discount;           //  บันทึกส่วนลด
+    order.coupon_code              = couponCode || null; //  บันทึกโค้ดคูปอง
     order.slip_image               = slipImage;
     order.status                   = OrderStatus.PENDING;
 
@@ -187,7 +187,7 @@ export class OrdersService {
     if (statusText) {
       this.chatGateway.sendSystemMessage(
         order.user.id,
-        `🔔 แจ้งเตือนออเดอร์ ${order.order_number}: ${statusText}`,
+        `� แจ้งเตือนออเดอร์ ${order.order_number}: ${statusText}`,
       );
     }
 
@@ -234,7 +234,7 @@ export class OrdersService {
 
     // Send chat notification to user
     if (order.user) {
-      this.chatGateway.sendSystemMessage(order.user.id, `🔔 ออเดอร์ ${order.order_number} ถูกยกเลิกแล้ว: ${reason}`);
+      this.chatGateway.sendSystemMessage(order.user.id, `� ออเดอร์ ${order.order_number} ถูกยกเลิกแล้ว: ${reason}`);
     }
 
     return saved;
@@ -267,7 +267,7 @@ export class OrdersService {
 
     // Send chat notification to user
     if (order.user) {
-      this.chatGateway.sendSystemMessage(order.user.id, `💰 คืนเงินสำเร็จสำหรับออเดอร์ ${order.order_number} จำนวน ฿${refundAmount.toLocaleString()}`);
+      this.chatGateway.sendSystemMessage(order.user.id, `� คืนเงินสำเร็จสำหรับออเดอร์ ${order.order_number} จำนวน ฿${refundAmount.toLocaleString()}`);
     }
 
     return saved;

@@ -1,4 +1,4 @@
-// features/orders/components/CustomerOrderModal.tsx
+﻿// features/orders/components/CustomerOrderModal.tsx
 
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
@@ -208,9 +208,9 @@ const CustomerOrderModal = ({
                     </p>
                     <p className="text-zinc-200 font-bold">
                       {method === "qr"
-                        ? "📱 QR Code"
+                        ? "� QR Code"
                         : method
-                          ? "🏦 โอนเงินธนาคาร"
+                          ? "� โอนเงินธนาคาร"
                           : "—"}
                     </p>
                   </div>

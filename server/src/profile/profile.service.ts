@@ -1,12 +1,12 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+﻿import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { Address } from './entities/address.entity';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CreateAddressDto, UpdateAddressDto } from './dto/address.dto';
-import { ChangePasswordDto } from './dto/change-password.dto'; // ✅ 1. นำเข้า DTO ใหม่
-import * as bcrypt from 'bcrypt'; // ✅ 2. นำเข้า bcrypt สำหรับเข้ารหัสผ่าน
+import { ChangePasswordDto } from './dto/change-password.dto'; //  1. นำเข้า DTO ใหม่
+import * as bcrypt from 'bcrypt'; //  2. นำเข้า bcrypt สำหรับเข้ารหัสผ่าน
 
 @Injectable()
 export class ProfileService {
@@ -33,7 +33,7 @@ export class ProfileService {
     return this.getProfile(userId);
   }
 
-  // ✅ 3. ฟังก์ชันเปลี่ยนรหัสผ่าน
+  //  3. ฟังก์ชันเปลี่ยนรหัสผ่าน
   async changePassword(userId: number, dto: ChangePasswordDto) {
     // 3.1 หา User ในฐานข้อมูล (ต้องดึงฟิลด์ password ออกมาเช็กด้วย)
     const user = await this.userRepository.findOne({

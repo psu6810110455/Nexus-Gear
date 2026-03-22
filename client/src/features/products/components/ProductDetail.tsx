@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { productDetailStyles } from '../../../styles/productDetail.styles';
 import api, { getServerUrl } from '../../../shared/services/api';
@@ -156,13 +156,13 @@ const ProductDetail = () => {
             </div>
           </div>
           <div className="pd-cta-row">
-            <button type="button" className="pd-btn-cart">🛒 ใส่ตะกร้า</button>
+            <button type="button" className="pd-btn-cart">� ใส่ตะกร้า</button>
             <button type="button" className="pd-btn-buy">ซื้อเลย</button>
           </div>
           <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-            <p style={{ fontSize: '0.7rem', color: 'var(--color-text-dim)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.1em', marginBottom: '0.75rem', fontFamily: 'Orbitron, sans-serif' }}>อุปกรณ์ภายในกล่อง 📦</p>
+            <p style={{ fontSize: '0.7rem', color: 'var(--color-text-dim)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.1em', marginBottom: '0.75rem', fontFamily: 'Orbitron, sans-serif' }}>อุปกรณ์ภายในกล่อง �</p>
             <div style={{ display: 'flex', gap: '0.75rem', opacity: 0.65 }}>
-              <BoxItem icon="📄" label="Manual" /><BoxItem icon="🔌" label="Cable" /><BoxItem icon="🛡️" label="Warranty" />
+              <BoxItem icon="�" label="Manual" /><BoxItem icon="�" label="Cable" /><BoxItem icon="�" label="Warranty" />
             </div>
           </div>
         </div>

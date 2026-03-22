@@ -45,3 +45,5 @@ test('test', async ({ page }) => {
   await page.getByRole('button', { name: 'เข้าสู่ระบบ', exact: true }).click();
   await page.getByRole('button', { name: 'เข้าสู่เว็บไซต์ · ENTER' }).click();
 });
+
+//Submit test code 

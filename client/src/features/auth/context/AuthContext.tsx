@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // ✅ 3. ฟังก์ชันลับสำหรับเอา Token ไปแลกข้อมูล User จาก Backend
   const fetchUserProfile = async (token: string) => {
     try {
-      const API_BASE = import.meta.env.VITE_API_URL || 'https://wd05.pupasoft.com/api';
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       const response = await axios.get(`${API_BASE}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }, // แนบ Token ไปเป็นบัตรผ่านประตู
       });

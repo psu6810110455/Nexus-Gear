@@ -37,7 +37,7 @@ function ProductList() {
       console.log("🔑 Token ที่ส่งไป:", token ? "มี Token" : "ไม่มี Token");
 
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const API_BASE = import.meta.env.VITE_API_URL || 'https://wd05.pupasoft.com/api';
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       const response = await axios.get(`${API_BASE}/products`, { headers });
       
       const data = response.data;

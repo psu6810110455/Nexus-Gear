@@ -15,7 +15,7 @@ const ForgotPassword = () => {
     setError('');
 
     try {
-      const API_BASE = import.meta.env.VITE_API_URL || 'https://wd05.pupasoft.com/api';
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       const response = await axios.post(`${API_BASE}/auth/forgot-password`, { email });
       setMessage(response.data.message || 'ระบบได้ส่งลิงก์สำหรับตั้งรหัสผ่านใหม่ไปที่อีเมลของคุณแล้วครับ');
       setEmail('');

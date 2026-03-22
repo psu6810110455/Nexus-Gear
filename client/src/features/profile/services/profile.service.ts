@@ -1,7 +1,7 @@
 // เส้นทาง: client/src/features/profile/services/profile.service.ts
 
 // 💡 ตั้งค่า URL ของ Backend
-const API_URL = `${import.meta.env.VITE_API_URL || 'https://wd05.pupasoft.com/api'}/profile`;
+const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/profile`;
 
 // ✅ เพิ่ม Helper Function สำหรับหยิบ Token จากกระเป๋ามาสร้างเป็น Header ตั๋วผ่านทาง
 const getAuthHeaders = () => {
@@ -97,7 +97,7 @@ export const changePassword = async (data: { currentPassword: string; newPasswor
 
 // ✅ 8. ดึงประวัติคำสั่งซื้อของ User จาก Backend จริง
 export const fetchMyOrders = async () => {
-  const API_BASE = import.meta.env.VITE_API_URL || 'https://wd05.pupasoft.com/api';
+  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
   const res = await fetch(`${API_BASE}/api/orders/my-orders`, {
     method: 'GET',
     headers: getAuthHeaders(),

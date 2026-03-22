@@ -41,7 +41,7 @@ const ResetPassword = () => {
 
     try {
       // ⚠️ ยิง API ไปที่หลังบ้าน (เช็กพอร์ตให้ตรงด้วยนะครับ)
-      const API_BASE = import.meta.env.VITE_API_URL || 'https://wd05.pupasoft.com/api';
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       const response = await axios.post(`${API_BASE}/auth/reset-password`, {
         token,
         newPassword,

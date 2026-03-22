@@ -210,7 +210,7 @@ const Register = () => {
     if (!acceptedTerms) return toast.error(language === 'TH' ? 'กรุณายอมรับข้อกำหนดและเงื่อนไขก่อนครับ' : 'Please accept terms and conditions');
 
     try {
-      const API_BASE = import.meta.env.VITE_API_URL || 'https://wd05.pupasoft.com/api';
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       const { data } = await axios.post(`${API_BASE}/users/register`, {
         name: username, email, password,
       });
@@ -226,7 +226,7 @@ const Register = () => {
 
   const handleGoogleRegister = () => {
     localStorage.setItem('oauth_action', 'register');
-    const API_BASE = import.meta.env.VITE_API_URL || 'https://wd05.pupasoft.com/api';
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     window.location.href = `${API_BASE}/auth/google`;
   };
 

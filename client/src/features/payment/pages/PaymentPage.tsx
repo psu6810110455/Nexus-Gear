@@ -509,7 +509,7 @@ export default function PaymentPage({ onNavigate }: PaymentProps) {
                           <div className="flex items-start gap-3">
                             <figure className="w-8 h-8 rounded bg-[#1a1a1a] border border-[#990000]/20 flex items-center justify-center m-0 overflow-hidden shrink-0">
                               {(item.imageUrl || item.image_url)
-                                ? <img src={item.imageUrl ? (item.imageUrl.startsWith('http') ? item.imageUrl : 'https://wd05.pupasoft.com' + item.imageUrl) : item.image_url || 'https://dummyimage.com/100x100/000/fff'} alt={item.name} className="w-full h-full object-cover opacity-80" />
+                                ? <img src={item.imageUrl ? (item.imageUrl.startsWith('http') ? item.imageUrl : 'http://localhost:3000' + item.imageUrl) : item.image_url || 'https://dummyimage.com/100x100/000/fff'} alt={item.name} className="w-full h-full object-cover opacity-80" />
                                 : <span className="text-[10px] text-[#F2F4F6]/30">IMG</span>
                               }
                             </figure>

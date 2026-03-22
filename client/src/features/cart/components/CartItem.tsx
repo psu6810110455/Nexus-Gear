@@ -26,7 +26,7 @@ export default function CartItem({ item, isSelected, onToggleSelect, onUpdateQty
       {/* รายละเอียดสินค้า */}
       <div className="flex-1 flex gap-5">
         <figure className="m-0">
-          <img src={item.imageUrl ? 'https://wd05.pupasoft.com' + item.imageUrl : item.image || 'https://dummyimage.com/100x100/000/fff'} alt={item.name} className="w-24 h-24 object-cover rounded-xl border border-[#990000]/30 bg-[#1a1a1a]" />
+          <img src={item.imageUrl ? 'http://localhost:3000' + item.imageUrl : item.image || 'https://dummyimage.com/100x100/000/fff'} alt={item.name} className="w-24 h-24 object-cover rounded-xl border border-[#990000]/30 bg-[#1a1a1a]" />
         </figure>
         
         <div className="flex-1 min-w-0 flex flex-col justify-between h-24">

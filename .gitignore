@@ -46,6 +46,19 @@ Thumbs.db
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+client/test-results/
+client/playwright-report/
+client/blob-report/
+client/playwright/.cache/
+client/playwright/.auth/
+client/tests/dummy-image.png
+*.webm
+
 # Nexus Gear Specific
 server/uploads/
 tests/mock-slip.jpg
+
+# Temp files
+*.tmp
+out.txt
+admin-page-load.png

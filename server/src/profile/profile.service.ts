@@ -5,8 +5,8 @@ import { User } from '../users/entities/user.entity';
 import { Address } from './entities/address.entity';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CreateAddressDto, UpdateAddressDto } from './dto/address.dto';
-import { ChangePasswordDto } from './dto/change-password.dto'; //  1. นำเข้า DTO ใหม่
-import * as bcrypt from 'bcrypt'; //  2. นำเข้า bcrypt สำหรับเข้ารหัสผ่าน
+import { ChangePasswordDto } from './dto/change-password.dto'; // นำเข้า DTO ใหม่
+import * as bcrypt from 'bcrypt'; // นำเข้า bcrypt สำหรับเข้ารหัสผ่าน
 
 @Injectable()
 export class ProfileService {
@@ -17,7 +17,7 @@ export class ProfileService {
     private readonly addressRepository: Repository<Address>,
   ) {}
 
-  // 1. ดึงข้อมูลส่วนตัว (ไม่ดึงรหัสผ่านออกมา)
+  // ดึงข้อมูลส่วนตัว (ไม่ดึงรหัสผ่านออกมา)
   async getProfile(userId: number) {
     const user = await this.userRepository.findOne({
       where: { id: userId },
@@ -27,13 +27,13 @@ export class ProfileService {
     return user;
   }
 
-  // 2. อัปเดตข้อมูลส่วนตัว
+  // อัปเดตข้อมูลส่วนตัว
   async updateProfile(userId: number, dto: UpdateProfileDto) {
     await this.userRepository.update(userId, dto);
     return this.getProfile(userId);
   }
 
-  //  3. ฟังก์ชันเปลี่ยนรหัสผ่าน
+  // ฟังก์ชันเปลี่ยนรหัสผ่าน
   async changePassword(userId: number, dto: ChangePasswordDto) {
     // 3.1 หา User ในฐานข้อมูล (ต้องดึงฟิลด์ password ออกมาเช็กด้วย)
     const user = await this.userRepository.findOne({
@@ -59,12 +59,12 @@ export class ProfileService {
     return { message: 'อัปเดตรหัสผ่านสำเร็จเรียบร้อย' };
   }
 
-  // 4. ดึงที่อยู่ทั้งหมดของผู้ใช้
+  // ดึงที่อยู่ทั้งหมดของผู้ใช้
   async getAddresses(userId: number) {
     return this.addressRepository.find({ where: { userId }, order: { id: 'DESC' } });
   }
 
-  // 5. เพิ่มที่อยู่ใหม่
+  // เพิ่มที่อยู่ใหม่
   async createAddress(userId: number, dto: CreateAddressDto) {
     // ถ้าตั้งเป็นค่าเริ่มต้น (Default) ต้องไปปลด Default ของที่อยู่อื่นออกก่อน
     if (dto.isDefault) {
@@ -74,7 +74,7 @@ export class ProfileService {
     return this.addressRepository.save(newAddress);
   }
 
-  // 6. อัปเดตที่อยู่
+  // อัปเดตที่อยู่
   async updateAddress(userId: number, addressId: number, dto: UpdateAddressDto) {
     if (dto.isDefault) {
       await this.addressRepository.update({ userId }, { isDefault: false });
@@ -83,7 +83,7 @@ export class ProfileService {
     return this.addressRepository.findOne({ where: { id: addressId } });
   }
 
-  // 7. ลบที่อยู่
+  // ลบที่อยู่
   async deleteAddress(userId: number, addressId: number) {
     const result = await this.addressRepository.delete({ id: addressId, userId });
     if (result.affected === 0) throw new NotFoundException('ไม่พบที่อยู่ที่ต้องการลบ');

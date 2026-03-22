@@ -3,15 +3,15 @@ import { ProfileService } from './profile.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CreateAddressDto, UpdateAddressDto } from './dto/address.dto';
 import { ChangePasswordDto } from './dto/change-password.dto'; 
-//  1. นำเข้า UseGuards และ JwtAuthGuard 
+// นำเข้า UseGuards และ JwtAuthGuard 
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'; //  หมายเหตุ: เช็ก Path โฟลเดอร์ auth ของคุณให้ตรงด้วยนะครับ
 
 @Controller('profile')
-@UseGuards(JwtAuthGuard) //  2. ติดตั้งยาม บังคับว่าต้องมี Token ถึงจะเข้ามาใช้งานได้
+@UseGuards(JwtAuthGuard) // ติดตั้งยาม บังคับว่าต้องมี Token ถึงจะเข้ามาใช้งานได้
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
-  //  3. ดึง ID จาก Token ของจริง (เลิกใช้ || 1 แล้ว)
+  // ดึง ID จาก Token ของจริง (เลิกใช้ || 1 แล้ว)
   private getUserId(req: any): number {
     // โค้ดนี้จะรองรับทั้ง req.user.id, userId หรือ sub (ขึ้นอยู่กับตอนที่คุณสร้าง Token)
     return req.user?.id || req.user?.userId || req.user?.sub; 

@@ -6,7 +6,7 @@ import { RegisterDto } from './dto/register.dto';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  //  POST /users/register  ← ตรงกับที่ frontend Register.tsx เรียก
+  //  POST /users/register
   @Post('register')
   register(@Body() dto: RegisterDto) {
     return this.usersService.register(dto);

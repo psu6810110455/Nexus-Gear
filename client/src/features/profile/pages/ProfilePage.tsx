@@ -4,7 +4,7 @@ import { LogOut, Trash2 } from "lucide-react";
 import NexusGearOrderStatus from "../../orders/pages/NexusGearOrderStatus";
 import { useLanguage } from "../../../shared/context/LanguageContext";
 
-//  1. นำเข้า useAuth จาก Context ของเรา
+// นำเข้า useAuth จาก Context ของเรา
 import { useAuth } from "../../auth/context/AuthContext";
 
 // นำเข้า Components หลัก
@@ -28,7 +28,7 @@ import type { Order } from "../types/profile.types";
 import * as profileApi from "../services/profile.service";
 
 export const ProfilePage = () => {
-  //  2. ดึงข้อมูล user จากระบบ
+  // ดึงข้อมูล user จากระบบ
   const { user, logout } = useAuth();
   const { language, t } = useLanguage();
 
@@ -50,11 +50,11 @@ export const ProfilePage = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [ratings, setRatings] = useState<Record<string, number>>({});
 
-  //  3. อัปเดต useEffect ให้ดึงข้อมูลสดจาก Database ก่อน ถ้าไม่มีค่อยดึงจาก Google
+  // อัปเดต useEffect ให้ดึงข้อมูลสดจาก Database ก่อน ถ้าไม่มีค่อยดึงจาก Google
   useEffect(() => {
     const loadData = async () => {
       try {
-        // 1. วิ่งไปดึงข้อมูลโปรไฟล์ล่าสุดจาก Database
+        // วิ่งไปดึงข้อมูลโปรไฟล์ล่าสุดจาก Database
         const profile = await profileApi.fetchProfile();
 
         setUserData((prev) => ({
@@ -67,11 +67,11 @@ export const ProfilePage = () => {
           bank_account: profile.bank_account || "",
         }));
 
-        // 2. โหลดข้อมูลที่อยู่
+        // โหลดข้อมูลที่อยู่
         const addrs = await profileApi.fetchAddresses();
         setAddresses(addrs);
 
-        // 3. โหลดประวัติคำสั่งซื้อจริงจาก Database
+        // โหลดประวัติคำสั่งซื้อจริงจาก Database
         try {
           const realOrders = await profileApi.fetchMyOrders();
           setOrders(realOrders);
@@ -197,7 +197,7 @@ export const ProfilePage = () => {
     triggerSuccess("SUCCESS!", "เปลี่ยนรหัสผ่านเรียบร้อยแล้ว");
   };
 
-  //  4. ใช้ฟังก์ชัน logout จาก AuthContext
+  // ใช้ฟังก์ชัน logout จาก AuthContext
   const handleLogout = () => {
     setShowLogoutModal(false);
     logout();

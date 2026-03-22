@@ -1,7 +1,7 @@
 ﻿import { Clock, ShoppingBag } from 'lucide-react';
 import { useLanguage } from '../../../shared/context/LanguageContext';
 
-//  1. สร้าง Interface เพื่อบอก TypeScript ว่ากล่อง orders มีหน้าตาแบบนี้นะ
+// สร้าง Interface เพื่อบอก TypeScript ว่ากล่อง orders มีหน้าตาแบบนี้นะ
 export interface RecentOrder {
   id: number;
   order_number: string;
@@ -10,7 +10,7 @@ export interface RecentOrder {
   payment_method: string;
 }
 
-//  2. กำหนดว่า Component นี้รับ Props ชื่อ orders เข้ามา
+// กำหนดว่า Component นี้รับ Props ชื่อ orders
 interface RecentActivityProps {
   orders?: RecentOrder[];
 }

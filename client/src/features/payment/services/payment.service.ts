@@ -1,6 +1,6 @@
 ﻿// src/features/payment/services/payment.service.ts
 
-import api from '../../../shared/services/api'; //  ใช้ instance ที่ attach token อัตโนมัติ
+import api from '../../../shared/services/api';
 import type { Address } from '../types/payment.types';
 
 // ─── Functions: ดึงข้อมูลที่อยู่จริงจาก Backend ──────────────────────────────

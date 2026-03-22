@@ -5,7 +5,7 @@ import Stripe from 'stripe';
 @Injectable()
 export class PaymentService {
   private stripe: Stripe;
-  //  เพิ่มตัวแปรสำหรับจำสถานะจำลอง (เฉพาะตอน Demo)
+  //  เพิ่มตัวแปรสำหรับจำสถานะจำลอง
   private simulatedSuccessIds = new Set<string>();
 
   constructor(private configService: ConfigService) {

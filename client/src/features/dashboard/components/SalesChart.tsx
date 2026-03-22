@@ -1,7 +1,7 @@
 ﻿import { BarChart3 } from 'lucide-react';
 import { useLanguage } from '../../../shared/context/LanguageContext';
 
-//  1. สร้าง Interface เพื่อรับข้อมูลยอดขายเป็นรายวัน
+// สร้าง Interface เพื่อรับข้อมูลยอดขายเป็นรายวัน
 export interface DailySales {
   label: string; // ชื่อวัน (เช่น DAY 1 หรือ 01/03)
   amount: number; // ยอดขาย
@@ -27,7 +27,7 @@ export default function SalesChart({ data }: SalesChartProps) {
   // ถ้ามีข้อมูลส่งมาให้ใช้ข้อมูลจริง ถ้าไม่มีให้ใช้ defaultData
   const chartData = data && data.length > 0 ? data : defaultData;
 
-  //  2. หาค่ายอดขายที่ "สูงที่สุด" ในรอบ 7 วัน เพื่อเอามาคำนวณเปอร์เซ็นต์ความสูง (100%)
+  // หาค่ายอดขายที่ "สูงที่สุด" ในรอบ 7 วัน เพื่อเอามาคำนวณเปอร์เซ็นต์ความสูง (100%)
   const maxAmount = Math.max(...chartData.map(d => d.amount), 1); // กันหาร 0
 
   return (
@@ -43,7 +43,7 @@ export default function SalesChart({ data }: SalesChartProps) {
       
       <figure className="h-64 w-full flex items-end justify-between gap-2 pt-4 px-2" aria-label="กราฟแท่งแสดงยอดขาย">
         {chartData.map((item, i) => {
-          //  3. เทียบบัญญัติไตรยางศ์เพื่อหาความสูงของกราฟ (เปอร์เซ็นต์)
+          // เทียบบัญญัติไตรยางศ์เพื่อหาความสูงของกราฟ (เปอร์เซ็นต์)
           const heightPercent = (item.amount / maxAmount) * 100;
 
           return (

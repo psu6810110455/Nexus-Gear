@@ -32,7 +32,7 @@ export class OrdersService {
     couponCode?:             string | null,  //  โค้ดคูปอง
     discountAmount?:         number,         //  จำนวนส่วนลด
   ) {
-    // 1. ดึงสินค้าในตะกร้า
+    // ดึงสินค้าในตะกร้า
     const cartItems = await this.cartRepository.find({
       where: { user: { id: userId } },
       relations: ['product'],
@@ -41,11 +41,11 @@ export class OrdersService {
       throw new BadRequestException('ตะกร้าสินค้าว่างเปล่า ไม่สามารถสั่งซื้อได้');
     }
 
-    // 2. หา User
+    // หา User
     const user = await this.usersRepository.findOneBy({ id: userId });
     if (!user) throw new NotFoundException('User not found');
 
-    // 3. คำนวณราคาและสร้าง Order Items
+    // คำนวณราคาและสร้าง Order Items
     let subtotal = 0;
     const orderItems: OrderItem[] = [];
 
@@ -66,11 +66,11 @@ export class OrdersService {
       await this.productsRepository.save(product);
     }
 
-    // 4. คำนวณราคาสุทธิหลังหักคูปอง
+    // คำนวณราคาสุทธิหลังหักคูปอง
     const discount   = Number(discountAmount) || 0;
     const finalPrice = Math.max(0, subtotal - discount);
 
-    // 5. สร้าง Order
+    // สร้าง Order
     const order                    = new Order();
     order.user                     = user;
     order.shipping_address         = shippingAddress;
@@ -91,7 +91,7 @@ export class OrdersService {
 
     const savedOrder = await this.ordersRepository.save(order);
 
-    // 6. ล้างตะกร้า
+    // ล้างตะกร้า
     await this.cartRepository.delete({ user: { id: userId } });
 
     return {

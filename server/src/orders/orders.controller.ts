@@ -2,7 +2,7 @@
 import {
   Controller, Get, Post, Body, Patch, Param,
   UseInterceptors, UploadedFile, UseGuards, Request,
-  BadRequestException //  1. เพิ่ม BadRequestException สำหรับเตะไฟล์อันตรายทิ้ง
+  BadRequestException // เพิ่ม BadRequestException สำหรับเตะไฟล์อันตรายทิ้ง
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';

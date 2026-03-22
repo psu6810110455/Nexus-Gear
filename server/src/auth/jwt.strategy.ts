@@ -14,7 +14,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    //  เพิ่ม role กลับไปด้วย เพื่อให้ Guard ใช้ตรวจสอบได้
+    //  เพิ่ม role กลับไปด้วย
     return { userId: payload.sub, email: payload.email, role: payload.role };
   }
 }

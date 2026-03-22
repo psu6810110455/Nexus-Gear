@@ -5,7 +5,7 @@ import { UsersModule } from '../users/users.module';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { GoogleStrategy } from './strategies/google.strategy'; //  1. Import แผนที่ Google เข้ามา
+import { GoogleStrategy } from './strategies/google.strategy'; // Import แผนที่ Google
 import { ConfigModule } from '@nestjs/config';
 import { MailModule } from '../mail/mail.module';
 
@@ -20,7 +20,7 @@ import { MailModule } from '../mail/mail.module';
       signOptions: { expiresIn: '7d' },
     }),
   ],
-  providers: [AuthService, GoogleStrategy, JwtStrategy], //  2. เพิ่ม GoogleStrategy ลงใน providers
+  providers: [AuthService, GoogleStrategy, JwtStrategy], // เพิ่ม GoogleStrategy ลงใน providers
   controllers: [AuthController],
   exports: [JwtModule],
 })

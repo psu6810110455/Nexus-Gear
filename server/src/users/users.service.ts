@@ -37,7 +37,7 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { id } });
   }
 
-  //  แก้จาก data: any เป็น data: Partial<User> เพื่อป้องกัน TypeORM สร้างเป็น Array
+  //  แก้จาก data: any เป็น data: Partial<User>
   async create(data: Partial<User>): Promise<User> {
     const newUser = this.usersRepository.create(data);
     return await this.usersRepository.save(newUser);

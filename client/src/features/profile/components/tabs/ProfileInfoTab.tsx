@@ -17,7 +17,7 @@ interface ProfileInfoTabProps {
   userData: UserData;
   setUserData: React.Dispatch<React.SetStateAction<UserData>>;
   onOpenPasswordModal: () => void;
-  onSave: () => void; //  เพิ่มบรรทัดนี้ เพื่อรับคำสั่ง Save จากตัวแม่
+  onSave: () => void; //
 }
 
 export const ProfileInfoTab: React.FC<ProfileInfoTabProps> = ({

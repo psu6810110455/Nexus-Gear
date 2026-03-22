@@ -63,7 +63,7 @@ class CategoriesService {
 class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
-  //  GET /categories  ← ที่ frontend AdminPage ใช้
+  //  GET /categories
   @Get()
   findAll() {
     return this.categoriesService.findAll();

@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  //  3. ฟังก์ชันลับสำหรับเอา Token ไปแลกข้อมูล User จาก Backend
+  // ฟังก์ชันลับสำหรับเอา Token ไปแลกข้อมูล User จาก Backend
   const fetchUserProfile = async (token: string) => {
     try {
       const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';

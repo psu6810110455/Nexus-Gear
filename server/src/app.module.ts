@@ -24,19 +24,19 @@ import { CouponsModule }    from './coupons/coupons.module';
 @Global()
 @Module({
   imports: [
-    // 1. ตั้งค่าการโหลดไฟล์ .env ให้ฉลาดขึ้น
+    // ตั้งค่าการโหลดไฟล์ .env ให้ฉลาดขึ้น
     ConfigModule.forRoot({ 
       isGlobal: true,
       envFilePath: process.env.NODE_ENV === 'production' ? '.env.production' : '.env',
     }),
 
-    // 2. ตั้งค่าไฟล์ Static
+    // ตั้งค่าไฟล์ Static
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads',
     }),
 
-    // 3. ตั้งค่า Database ให้ดึงค่าจาก ConfigService (ไม่ Hardcode)
+    // ตั้งค่า Database ให้ดึงค่าจาก ConfigService
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

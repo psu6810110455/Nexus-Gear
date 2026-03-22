@@ -8,7 +8,7 @@ export class CartService {
 
   //  ฟังก์ชันที่ 1: เพิ่มสินค้าลงตะกร้า (addToCart)
   async addToCart(userId: number, productId: number, quantity: number) {
-    // 1. เช็คก่อนว่า User นี้เคยมีสินค้านี้ในตะกร้าหรือยัง?
+    // เช็คก่อนว่า User นี้เคยมีสินค้านี้ในตะกร้าหรือยัง?
     const existingItems = await this.db.query(
       'SELECT id, quantity FROM cart_items WHERE user_id = ? AND product_id = ?',
       [userId, productId],

@@ -6,7 +6,7 @@ export class DashboardService {
   constructor(private readonly db: DatabaseService) {}
 
   async getDashboardSummary() {
-    // 1. ยอดขายรวม และ จำนวนบิลทั้งหมด
+    // ยอดขายรวม และ จำนวนบิลทั้งหมด
     const summaryResult: any = await this.db.query(
       `SELECT 
         COUNT(id) as totalOrders, 
@@ -14,7 +14,7 @@ export class DashboardService {
        FROM orders`
     );
 
-    // 2. รายการสั่งซื้อล่าสุด 5 รายการ
+    // รายการสั่งซื้อล่าสุด 5 รายการ
     const recentOrders: any = await this.db.query(
       `SELECT id, order_number, shipping_address, total_price, status
        FROM orders 
@@ -22,7 +22,7 @@ export class DashboardService {
        LIMIT 5`
     );
 
-    // 3. ยอดขายย้อนหลัง 7 วัน (สำหรับกราฟ)
+    // ยอดขายย้อนหลัง 7 วัน (สำหรับกราฟ)
     const salesChartData: any = await this.db.query(
       `SELECT 
         DATE_FORMAT(created_at, '%d/%m') as label,
@@ -33,7 +33,7 @@ export class DashboardService {
        ORDER BY DATE(created_at) ASC`
     );
 
-    // 4. [AI SUMMARY] ยอดขายวันนี้
+    // ยอดขายวันนี้
     const todayResult: any = await this.db.query(
       `SELECT 
         COUNT(id) as todayOrders,
@@ -42,7 +42,7 @@ export class DashboardService {
        WHERE DATE(created_at) = CURDATE()`
     );
 
-    // 5. [AI SUMMARY] ยอดขายเมื่อวาน
+    // ยอดขายเมื่อวาน
     const yesterdayResult: any = await this.db.query(
       `SELECT 
         COALESCE(SUM(total_price), 0) as yesterdaySales
@@ -50,7 +50,7 @@ export class DashboardService {
        WHERE DATE(created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)`
     );
 
-    // 6. [AI SUMMARY] สินค้าขายดีที่สุด
+    // สินค้าขายดีที่สุด
     let topProductResult: any = [];
     try {
       topProductResult = await this.db.query(

@@ -1,6 +1,6 @@
 ﻿import React, { useState } from 'react';
 import { X, Lock, Key } from 'lucide-react';
-//  1. นำเข้า API Service
+// นำเข้า API Service
 import * as profileApi from '../../services/profile.service';
 import { toast } from 'sonner';
 
@@ -11,7 +11,7 @@ interface PasswordModalProps {
 }
 
 export const PasswordModal: React.FC<PasswordModalProps> = ({ isOpen, onClose, onUpdate }) => {
-  //  2. สร้าง State สำหรับเก็บค่ารหัสผ่าน
+  // สร้าง State สำหรับเก็บค่ารหัสผ่าน
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -19,7 +19,7 @@ export const PasswordModal: React.FC<PasswordModalProps> = ({ isOpen, onClose, o
 
   if (!isOpen) return null;
 
-  //  3. ฟังก์ชันสำหรับส่งข้อมูลไปบันทึก
+  // ฟังก์ชันสำหรับส่งข้อมูลไปบันทึก
   const handleUpdate = async () => {
     // ตรวจสอบเบื้องต้น
     if (!currentPassword || !newPassword || !confirmPassword) {

@@ -8,6 +8,6 @@ import { UsersController } from './users.controller';
   imports: [TypeOrmModule.forFeature([User])],
   controllers: [UsersController],
   providers: [UsersService],
-  exports: [UsersService], //  export ให้ AuthModule ใช้ได้
+  exports: [UsersService],
 })
 export class UsersModule {}

@@ -1,5 +1,5 @@
 ﻿// src/features/cart/services/cart.service.ts
-import api from '../../../shared/services/api'; //  ใช้ instance ที่ attach token อัตโนมัติ
+import api from '../../../shared/services/api';
 import type { CartItem, CouponData } from '../types/cart.types';
 
 export const fetchCartItems = async (): Promise<CartItem[]> => {
